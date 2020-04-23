@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>关于积分的Db设计之一 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="积分设计,有效期">
+    <meta name="description" content="今天来讲一个业务场景及其对应的解决方案：用户积分！肯定不陌生，毕竟现在很多电商系统都提供积分功能。简单说一下我手里的电商项目中积分的相关规则：  下单会根据订单金额，奖励对应比例的积分 订单结算时，用户可以使用积分来按照比例抵扣现金消费 积分存在有效期，过期作废 用户可以查看自身的积分流水 用户可以查看当前可用积分总数  极其常规的业务逻辑，对吧~~这里延伸几点规则，算是基于上述规则的合理推导：">
+<meta name="keywords" content="积分设计,有效期">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于积分的Db设计之一">
+<meta property="og:url" content="https://blog.kazaff.me/2020/04/23/关于积分的db设计之一/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="今天来讲一个业务场景及其对应的解决方案：用户积分！肯定不陌生，毕竟现在很多电商系统都提供积分功能。简单说一下我手里的电商项目中积分的相关规则：  下单会根据订单金额，奖励对应比例的积分 订单结算时，用户可以使用积分来按照比例抵扣现金消费 积分存在有效期，过期作废 用户可以查看自身的积分流水 用户可以查看当前可用积分总数  极其常规的业务逻辑，对吧~~这里延伸几点规则，算是基于上述规则的合理推导：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="关于积分的Db设计之一">
+<meta name="twitter:description" content="今天来讲一个业务场景及其对应的解决方案：用户积分！肯定不陌生，毕竟现在很多电商系统都提供积分功能。简单说一下我手里的电商项目中积分的相关规则：  下单会根据订单金额，奖励对应比例的积分 订单结算时，用户可以使用积分来按照比例抵扣现金消费 积分存在有效期，过期作废 用户可以查看自身的积分流水 用户可以查看当前可用积分总数  极其常规的业务逻辑，对吧~~这里延伸几点规则，算是基于上述规则的合理推导：">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">关于积分的Db设计之一</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">关于积分的Db设计之一</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2020-04-23T09:37:12.000Z" itemprop="datePublished" class="page-time">
+  Apr 23 2020
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/数据库/">数据库</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+<article id="post-关于积分的db设计之一"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">关于积分的Db设计之一</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2020年04月23日 9:37" datetime="2020-04-23T09:37:12.000Z"  itemprop="datePublished">Apr 23 2020</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/数据库/">数据库</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>今天来讲一个业务场景及其对应的解决方案：用户积分！肯定不陌生，毕竟现在很多电商系统都提供积分功能。简单说一下我手里的电商项目中积分的相关规则：</p>
+<ol>
+<li>下单会根据订单金额，奖励对应比例的积分</li>
+<li>订单结算时，用户可以使用积分来按照比例抵扣现金消费</li>
+<li>积分存在有效期，过期作废</li>
+<li>用户可以查看自身的积分流水</li>
+<li>用户可以查看当前可用积分总数</li>
+</ol>
+<p>极其常规的业务逻辑，对吧~~<br>这里延伸几点规则，算是基于上述规则的合理推导：</p>
+<ol>
+<li>结算时，若用户选择使用积分，需要优先使用快要到期的积分部分</li>
+<li>退款时，若用户之前有使用积分，需要按照积分的有效期，优先退还到期时间晚的积分部分</li>
+<li>有积分快过期时给用户足够的提醒</li>
+<li>允许用户看到累积过期的积分总数</li>
+</ol>
+<p>那么接下来，如果要你来设计满足上面这些需求点的db结构，你会怎么做呢？<br>经过我们开发组的一轮商讨，给出了下面的一个表设计方案：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> points(</span><br><span class="line">    <span class="keyword">id</span> <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span> AUTO_INCREMENT  <span class="keyword">COMMENT</span> <span class="string">'主键'</span> ,</span><br><span class="line">    user_id <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>   <span class="keyword">COMMENT</span> <span class="string">'用户id'</span> ,</span><br><span class="line">    total_point <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>  <span class="keyword">DEFAULT</span> <span class="number">0</span> <span class="keyword">COMMENT</span> <span class="string">'积分总值'</span> ,</span><br><span class="line">    <span class="keyword">expire</span> <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>   <span class="keyword">COMMENT</span> <span class="string">'到期时间戳'</span> ,</span><br><span class="line">    cost_point <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>  <span class="keyword">DEFAULT</span> <span class="number">0</span> <span class="keyword">COMMENT</span> <span class="string">'消耗积分值'</span> ,</span><br><span class="line">    used_detail <span class="built_in">TEXT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>  <span class="keyword">DEFAULT</span> [] <span class="keyword">COMMENT</span> <span class="string">'使用占比明细'</span> ,</span><br><span class="line">    order_id <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>  <span class="keyword">DEFAULT</span> <span class="number">0</span> <span class="keyword">COMMENT</span> <span class="string">'订单id'</span> ,</span><br><span class="line">    PRIMARY <span class="keyword">KEY</span> (<span class="keyword">id</span>)</span><br><span class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span> <span class="keyword">CHARSET</span>=utf8;</span><br></pre></td></tr></table></figure>
+<p>单看表结构，无法直观的理解到这种设计的用意，我下面拿一个实际场景来举例吧~~</p>
+<p>假设目前就只有一个客户，他通过下单，已经挣到了200积分，那么在db中会保存对应的记录：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">id</th>
+<th style="text-align:left">user_id</th>
+<th style="text-align:left">total_point</th>
+<th style="text-align:left">expire</th>
+<th style="text-align:left">cost_point</th>
+<th style="text-align:left">order_id</th>
+<th style="text-align:left">used_detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">1</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">+100</td>
+<td style="text-align:left">2020/3/30</td>
+<td style="text-align:left">0</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">[]</td>
+</tr>
+<tr>
+<td style="text-align:left">2</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">+100</td>
+<td style="text-align:left">2020/4/30</td>
+<td style="text-align:left">0</td>
+<td style="text-align:left">2</td>
+<td style="text-align:left">[]</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>注意：我把expire字段写成容易阅读的时间格式了，实际存储的应该是unix时间戳</p>
+</blockquote>
+<p>目前应该不需要额外的解释，除了<code>cost_point</code>，<code>used_detail</code>外，其它字段的含义都是很直观的。</p>
+<p>接下来，我们的客户又要开始shopping了，不过这次他结账的时候想要使用积分来抵扣现金了，那么db中会如何记录呢？</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">id</th>
+<th style="text-align:left">user_id</th>
+<th style="text-align:left">total_point</th>
+<th style="text-align:left">expire</th>
+<th style="text-align:left">cost_point</th>
+<th style="text-align:left">order_id</th>
+<th style="text-align:left">used_detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">1</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">+100</td>
+<td style="text-align:left">2020/3/30</td>
+<td style="text-align:left">100</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">[]</td>
+</tr>
+<tr>
+<td style="text-align:left">2</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">+100</td>
+<td style="text-align:left">2020/4/30</td>
+<td style="text-align:left">50</td>
+<td style="text-align:left">2</td>
+<td style="text-align:left">[]</td>
+</tr>
+<tr>
+<td style="text-align:left">3</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">-150</td>
+<td style="text-align:left">0</td>
+<td style="text-align:left">0</td>
+<td style="text-align:left">3</td>
+<td style="text-align:left">[{id:2, val:-50},{id: 1, val:-100}]</td>
+</tr>
+</tbody>
+</table>
+<p>看到了么？这个时候，<code>used_detail</code>里保存了这次使用积分的细节，以json结构字符串保存在表中。这个json结构也比较明了吧：</p>
+<ul>
+<li>id: 指向对应的积分记录</li>
+<li>val: 标识消耗了对应积分记录中的多少积分</li>
+</ul>
+<p>同时，对应积分记录的<code>cost_point</code>字段也会出现对应的值。</p>
+<p>这么设计是否能很好的满足我们的业务需要呢？我们来拿前面提到的业务指标来核查一下是否都满足。其中一些简单的业务规则咱们就不讨论了，我们就拿其中比较重要的一些来检查：</p>
+<ol>
+<li>积分存在有效期，过期作废</li>
+<li>用户可以查看当前可用积分总数</li>
+<li>允许用户看到累积过期的积分总数</li>
+<li>结算时，若用户选择使用积分，需要优先使用快要到期的积分部分</li>
+<li>退款时，若用户之前有使用积分，需要按照积分的有效期，优先退还到期时间晚的积分部分</li>
+</ol>
+<p>第1点，靠<code>expire</code>字段可以很容易保证，只需要检查一下<code>expire</code>和当前时间对比一下，就可知道哪些积分已经过期了；<br>第2、3、4点，靠<code>expire</code>，<code>total_point</code>和<code>cost_point</code>三个字段就可以实时计算出值，不过感觉不是那么直观，相当于每次都需要做实时聚合操作；<br>第5点，可以靠<code>used_detail</code>字段中的明细信息，在退款时保证正确的返还合规的积分。</p>
+<p>从上面的分析我们应该得到了初步的结论，这么设计表结构，有它精妙的地方，也有不足的地方。可以看出，我们在设计这个结构之初，过于关注退款所带来的限制条件，而忽略了一个细节：<strong>相比其它，退款发生的频率应该是最低的</strong>。这意味着，在相对频繁的场景中（如可用积分总数），我们不得不进行复杂繁琐的计算。</p>
+<p>那么我们来试着在第4点的时候，把程序要做的步骤列一下：</p>
+<ol start="0">
+<li>开启事务</li>
+<li><code>SELECT * FROM points WHERE user_id=1 AND expire &gt; NOW AND total_point != cost_point ORDER BY expire asc FOR UPDATE</code>；</li>
+<li>根据客户想要使用的积分数，从第一步得到的数据集合中，遵照集合中的记录顺序，完成扣减计算；</li>
+<li>更新需要更新的记录，并提交事务。</li>
+</ol>
+<p>除了步骤多外，事务中的锁也会成为一个问题（当然同一个用户并发下单的可能性有待商讨）。但不可否认的是这么设计表结构是会导致这个场景中数据的使用是比较“麻烦”的~~不知道读到这里，你是否觉得这个表结构是可以接受的呢？是否觉得使用数据时并不是很复杂呢？</p>
+<p>那有没有更好一些的设计方案呢？</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.382Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2020/04/23/关于积分的db设计之一/" target="_blank" rel="external">https://blog.kazaff.me/2020/04/23/关于积分的db设计之一/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/有效期/">有效期</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/积分设计/">积分设计</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2020/04/23/关于积分的db设计之一/&title=《关于积分的Db设计之一》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2020/04/23/关于积分的db设计之一/&title=《关于积分的Db设计之一》 — kazaff's blog&source=develop,code,full-stack,architecture,deploy,database,test" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2020/04/23/关于积分的db设计之一/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《关于积分的Db设计之一》 — kazaff's blog&url=https://blog.kazaff.me/2020/04/23/关于积分的db设计之一/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2020/04/23/关于积分的db设计之一/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2020/04/23/关于积分的db设计之二/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">关于积分的Db设计之二</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2019/12/09/go get 如何指定库的版本/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Go Get 如何指定库的版本</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2020/04/23/关于积分的db设计之一/&title=《关于积分的Db设计之一》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2020/04/23/关于积分的db设计之一/&title=《关于积分的Db设计之一》 — kazaff's blog&source=develop,code,full-stack,architecture,deploy,database,test" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2020/04/23/关于积分的db设计之一/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《关于积分的Db设计之一》 — kazaff's blog&url=https://blog.kazaff.me/2020/04/23/关于积分的db设计之一/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2020/04/23/关于积分的db设计之一/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2020/04/23/关于积分的db设计之一/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

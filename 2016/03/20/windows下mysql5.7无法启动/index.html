@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>window下mysql5.7无法启动 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="mysql,window,密码">
+    <meta name="description" content="放了个周末，第一天上班就发现mysql无法启动了，阿西吧~一大早就先整了一个小时，真是不划算啊~">
+<meta name="keywords" content="mysql,window,密码">
+<meta property="og:type" content="article">
+<meta property="og:title" content="window下mysql5.7无法启动">
+<meta property="og:url" content="https://blog.kazaff.me/2016/03/20/windows下mysql5.7无法启动/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="放了个周末，第一天上班就发现mysql无法启动了，阿西吧~一大早就先整了一个小时，真是不划算啊~">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="window下mysql5.7无法启动">
+<meta name="twitter:description" content="放了个周末，第一天上班就发现mysql无法启动了，阿西吧~一大早就先整了一个小时，真是不划算啊~">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">window下mysql5.7无法启动</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">window下mysql5.7无法启动</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2016-03-20T09:37:00.000Z" itemprop="datePublished" class="page-time">
+  Mar 20 2016
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/运维/">运维</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+<article id="post-windows下mysql5.7无法启动"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">window下mysql5.7无法启动</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2016年03月20日 9:37" datetime="2016-03-20T09:37:00.000Z"  itemprop="datePublished">Mar 20 2016</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/运维/">运维</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>放了个周末，第一天上班就发现mysql无法启动了，阿西吧~<br>一大早就先整了一个小时，真是不划算啊~<br><a id="more"></a><br>之前都是使用集成开发环境，很少自己手动安装mysql，不过由于这次必须使用mysql5.7，而集成环境自带的mysql版本不够（或者直接提供的是MariaDB）,所以只能自己安装了~</p>
+<p>直接下载mysql5.7的window安装器，很简单就装好了，所以也没有特别在意，简单修改了一下my.ini就用了一个多礼拜~<br>上周六关机的时候电源断早了，所以今天开机发现window开机提示非法关机了，导致我的工作区都丢了，郁闷！（平时我都是休眠系统的！）</p>
+<p>启动到桌面后，发现mysql无法启动了！好灵异，更奇怪的是，我看了一下my.ini都自动给我恢复成my.default.ini了！草！<br>mysql安装的时候我也没有把它加到服务中，这下好了，我tm无法启动它了！</p>
+<p>网上查了一下，win下，可以执行下面的命令（后面所有命令都建议在管理员权限下做）：</p>
+<pre><code>mysqld  --initialize
+</code></pre><p>前提是，你得先有一个my.ini，并配置好basedir，basedir指向的文件夹也要有对应文件夹啊~</p>
+<p>这一步做完，mysql会初始化创建它要使用的data数据！（这不是废话么！）</p>
+<p>然后将mysql加入到win的系统服务中：</p>
+<pre><code>mysqld --install MySQL
+</code></pre><p>或者先卸载服务:</p>
+<pre><code>mysqld --remove
+</code></pre><p>完事儿了你基本上就已经可以启动你的mysql服务了！<br>然后你还不能高兴过头！因为，密码也丢了！！！</p>
+<p>网上很多资料讲的找回密码方案在mysql5.7下似乎都不管用了！<br>我只能，在我的my.ini文件中加入下面这个参数：</p>
+<pre><code>skip-grant-tables
+</code></pre><p>除此之外，难倒我只能选择重新安装mysql了么？要知道卸载mysql也不是一件容易事儿啊~<br>难倒我只能重装操作系统了吗？</p>
+<p>谁有高招，求赐教！</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.382Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2016/03/20/windows下mysql5.7无法启动/" target="_blank" rel="external">https://blog.kazaff.me/2016/03/20/windows下mysql5.7无法启动/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/window/">window</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/密码/">密码</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2016/03/20/windows下mysql5.7无法启动/&title=《window下mysql5.7无法启动》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2016/03/20/windows下mysql5.7无法启动/&title=《window下mysql5.7无法启动》 — kazaff's blog&source=放了个周末，第一天上班就发现mysql无法启动了，阿西吧~一大早就先整了一个小时，真是不划算啊~" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2016/03/20/windows下mysql5.7无法启动/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《window下mysql5.7无法启动》 — kazaff's blog&url=https://blog.kazaff.me/2016/03/20/windows下mysql5.7无法启动/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2016/03/20/windows下mysql5.7无法启动/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2016/03/24/忙里偷闲说说atom/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">忙里偷闲说说Atom</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2016/03/11/Google Drive的权限设计/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Google Dirve的权限设计</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2016/03/20/windows下mysql5.7无法启动/&title=《window下mysql5.7无法启动》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2016/03/20/windows下mysql5.7无法启动/&title=《window下mysql5.7无法启动》 — kazaff's blog&source=放了个周末，第一天上班就发现mysql无法启动了，阿西吧~一大早就先整了一个小时，真是不划算啊~" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2016/03/20/windows下mysql5.7无法启动/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《window下mysql5.7无法启动》 — kazaff's blog&url=https://blog.kazaff.me/2016/03/20/windows下mysql5.7无法启动/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2016/03/20/windows下mysql5.7无法启动/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2016/03/20/windows下mysql5.7无法启动/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>Vue-Validator初体验 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="vue.js,validator,jquery">
+    <meta name="description" content="之前一直都是做SPA项目，不过最近由于种种原因，需要返璞归真来基于jquery做项目！但无奈之前一直使用像ng或react这样的大杀器在编程，思维上已经有了一定的模式，突然回到jquery时代，感觉不会写代码了！真是感叹前端发展的迅猛啊~ 其实react已算很轻了，但jsx语法我感觉确实是一个坎，虽然在我看来是精华也是趋势，但在业务量面前我实在不忍心再给团队成员加砝码了！ 之所以考虑让项目基于jq">
+<meta name="keywords" content="vue.js,validator,jquery">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Vue-Validator初体验">
+<meta property="og:url" content="https://blog.kazaff.me/2016/04/20/Vue-validator初体验/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="之前一直都是做SPA项目，不过最近由于种种原因，需要返璞归真来基于jquery做项目！但无奈之前一直使用像ng或react这样的大杀器在编程，思维上已经有了一定的模式，突然回到jquery时代，感觉不会写代码了！真是感叹前端发展的迅猛啊~ 其实react已算很轻了，但jsx语法我感觉确实是一个坎，虽然在我看来是精华也是趋势，但在业务量面前我实在不忍心再给团队成员加砝码了！ 之所以考虑让项目基于jq">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.378Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Vue-Validator初体验">
+<meta name="twitter:description" content="之前一直都是做SPA项目，不过最近由于种种原因，需要返璞归真来基于jquery做项目！但无奈之前一直使用像ng或react这样的大杀器在编程，思维上已经有了一定的模式，突然回到jquery时代，感觉不会写代码了！真是感叹前端发展的迅猛啊~ 其实react已算很轻了，但jsx语法我感觉确实是一个坎，虽然在我看来是精华也是趋势，但在业务量面前我实在不忍心再给团队成员加砝码了！ 之所以考虑让项目基于jq">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Vue-Validator初体验</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Vue-Validator初体验</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2016-04-20T09:37:00.000Z" itemprop="datePublished" class="page-time">
+  Apr 20 2016
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/前端/">前端</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-5"><a class="post-toc-link" href="#安装"><span class="post-toc-number">1.</span> <span class="post-toc-text">安装</span></a></li><li class="post-toc-item post-toc-level-5"><a class="post-toc-link" href="#绑定model"><span class="post-toc-number">2.</span> <span class="post-toc-text">绑定model</span></a></li><li class="post-toc-item post-toc-level-5"><a class="post-toc-link" href="#结构复杂的model如何绑定"><span class="post-toc-number">3.</span> <span class="post-toc-text">结构复杂的model如何绑定</span></a></li><li class="post-toc-item post-toc-level-5"><a class="post-toc-link" href="#和jquery配合"><span class="post-toc-number">4.</span> <span class="post-toc-text">和jquery配合</span></a></li><li class="post-toc-item post-toc-level-5"><a class="post-toc-link" href="#页面初次加载显示问题"><span class="post-toc-number">5.</span> <span class="post-toc-text">页面初次加载显示问题</span></a></li><li class="post-toc-item post-toc-level-5"><a class="post-toc-link" href="#resetValidation"><span class="post-toc-number">6.</span> <span class="post-toc-text">$resetValidation()</span></a></li><li class="post-toc-item post-toc-level-5"><a class="post-toc-link" href="#lazy的正确使用方法"><span class="post-toc-number">7.</span> <span class="post-toc-text">lazy的正确使用方法</span></a></li></ol>
+        </nav>
+    </aside>
+    
+<article id="post-Vue-validator初体验"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Vue-Validator初体验</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2016年04月20日 9:37" datetime="2016-04-20T09:37:00.000Z"  itemprop="datePublished">Apr 20 2016</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/前端/">前端</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>之前一直都是做SPA项目，不过最近由于种种原因，需要返璞归真来基于jquery做项目！但无奈之前一直使用像ng或react这样的大杀器在编程，思维上已经有了一定的模式，突然回到jquery时代，感觉不会写代码了！真是感叹前端发展的迅猛啊~</p>
+<p>其实react已算很轻了，但jsx语法我感觉确实是一个坎，虽然在我看来是精华也是趋势，但在业务量面前我实在不忍心再给团队成员加砝码了！</p>
+<p>之所以考虑让项目基于jquery，是因为目前的前端开发人员和我所在的城市的前端开发人员整体程度比较低（只熟悉jquery），所以这么抉择，虽然保守，但让项目可以更快的完成，也有利于扩员，算是一种权衡！</p>
+<p>但jquery确实太老了，只用jquery显然不能满足项目的需求，尤其是我这种生活在美好的数据绑定环境下的人，确实无法接受老旧的dom操作！</p>
+<p>我在github上搜索：”jquery data binding”，推荐给我的一款基于jquery的数据绑定库是真尼玛难用，所以我就不贴链接了，怕被打脸！总之，我们的目的是尽量找学习成本低，侵入性低的库，哪怕功能比较弱一些，哪怕性能比较差一些（我们的项目是内部系统，so~）！</p>
+<p>结果，偶然间哥注意到了Vue.js，完美！！！学习成本非常的低，而且十分的优雅，社区也很繁荣，简直了！那么接下来就是掌握一下它的使用方法，由于它出生在和react差不多一个时代，所以思路和用法都类似，看看官方文档就能上手做项目了！（希望没有大坑在等我~）</p>
+<p>单用vue，肯定也还是不够的，既然我们引入了它，自然要发挥它最大功效，回到今天的主题：表单验证！（别嫌我啰嗦，我就是话多！）</p>
+<p>之前用过不少表单验证插件，但实话说，看完vue-validator的<a href="http://vuejs.github.io/vue-validator/" target="_blank" rel="noopener">官方文档</a>，真的让我非常的震撼，基本上属于扩展性非常强的插件了，作者考虑到了绝大多数适配的场景，堪称完美！</p>
+<p>不过，在实际使用的时候，还是有一些文档上没有写太详细的小坑，我的任务就是把我使用的时候碰到的问题记录下来，我们开始吧！</p>
+<h5 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h5><p>由于我没有使用任何加载框架，只是简单的在浏览器上使用vue和vue-validator，所以我们只需要直接加载它们即可，不需要做额外的工作，这里我使用的是<a href="http://www.bootcdn.cn/" target="_blank" rel="noopener">bootcdn</a>提供的cdn，代码如下：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"//cdn.bootcss.com/vue/1.0.17/vue.js"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"//cdn.bootcss.com/vue-validator/2.0.0-alpha.22/vue-validator.js"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>需要注意的是加载顺序和版本，我测试加载vue-validator的1.X版本的话并不会自动装载到vue中，不清楚是版本的事儿还是其它问题，总之，使用最新的版本即可。</p>
+<h5 id="绑定model"><a href="#绑定model" class="headerlink" title="绑定model"></a>绑定model</h5><p>最新的vue-validator下，在使用时已经不支持下面的写法：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span></span></span><br><span class="line"><span class="tag">	<span class="attr">type</span>=<span class="string">"text"</span></span></span><br><span class="line"><span class="tag">	<span class="attr">v-model</span>=<span class="string">"test"</span></span></span><br><span class="line"><span class="tag">	<span class="attr">v-validate</span>=<span class="string">"&#123;required:true&#125;"</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+<p>会提示：<br>    Uncaught TypeError: Cannot read property ‘replace’ of undefined</p>
+<p>所以你只能老老实实的写成：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span></span></span><br><span class="line"><span class="tag">	<span class="attr">type</span>=<span class="string">"text"</span></span></span><br><span class="line"><span class="tag">	<span class="attr">v-validate:test</span>=<span class="string">"&#123;required:true&#125;"</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+<h5 id="结构复杂的model如何绑定"><a href="#结构复杂的model如何绑定" class="headerlink" title="结构复杂的model如何绑定"></a>结构复杂的model如何绑定</h5><p>我的例子中model的结构比较恶心，是这样的：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> blockBox = <span class="keyword">new</span> Vue(&#123;</span><br><span class="line">	el: <span class="string">"#blockBox"</span>,</span><br><span class="line">	data: &#123;</span><br><span class="line">		table: &#123;</span><br><span class="line">			rowA: &#123;</span><br><span class="line">				columnA: <span class="string">"a-a"</span>,</span><br><span class="line">				columnB: <span class="string">'a-b'</span>,</span><br><span class="line">				columnC: <span class="string">'a-c'</span></span><br><span class="line">			&#125;,</span><br><span class="line">			rowB: &#123;</span><br><span class="line">				columnA: <span class="string">'b-a'</span>,</span><br><span class="line">				columnB: <span class="string">'b-b'</span>,</span><br><span class="line">				columnC: <span class="string">'b-c'</span></span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;);</span><br></pre></td></tr></table></figure>
+<p>那我总不能写成这样吧：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span></span></span><br><span class="line"><span class="tag">	<span class="attr">type</span>=<span class="string">"text"</span></span></span><br><span class="line"><span class="tag">	<span class="attr">v-validate:table.rowA.columnA</span>=<span class="string">"&#123;required:true&#125;"</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+<p>丑不说，何况这么写也是错误的！</p>
+<p>怎么办？按照<a href="http://vuejs.github.io/vue-validator/en/structure.html" target="_blank" rel="noopener">官方的说法</a>应该这么写：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span></span></span><br><span class="line"><span class="tag">	<span class="attr">class</span>=<span class="string">"form-control"</span></span></span><br><span class="line"><span class="tag">	<span class="attr">type</span>=<span class="string">"text"</span></span></span><br><span class="line"><span class="tag">	<span class="attr">v-model</span>=<span class="string">"table.rowA.columnA"</span></span></span><br><span class="line"><span class="tag">	<span class="attr">v-validate:message-aa</span>=<span class="string">"&#123;required:true&#125;"</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"errors"</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">p</span> <span class="attr">v-if</span>=<span class="string">"$blockBoxValidator.messageAa.required"</span> <span class="attr">class</span>=<span class="string">"lang"</span> <span class="attr">data-key</span>=<span class="string">"blockBoxAA"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>完美，注意我在<code>v-validate:message-aa</code>中的写法！千万不能写成驼峰式的，如<code>v-validate:messageAA</code>，这么做会报错哟~原因我才和vue解析有关，这应该牵扯到了html属性的格式规范问题！总之你避免这么写就ok了！</p>
+<h5 id="和jquery配合"><a href="#和jquery配合" class="headerlink" title="和jquery配合"></a>和jquery配合</h5><p>我不想说我下面的这个场景是否合理，但为了快糙猛的把项目demo搞出来，我遇到了下面的问题。</p>
+<p>场景是我们的项目需要多语言支持，界面上能看到的元素（不包括用户输入）都应该支持切换语言，包括表单错误提醒！目前我所使用的切换语言的方法很简单：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">p</span> <span class="attr">v-if</span>=<span class="string">"$blockBoxValidator.message_aa.required"</span> <span class="attr">class</span>=<span class="string">"lang"</span> <span class="attr">data-key</span>=<span class="string">"blockBoxAA"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span></span><br><span class="line"><span class="javascript">$(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="actionscript">	<span class="comment">//多语言处理</span></span></span><br><span class="line"><span class="javascript">	$(<span class="string">".lang"</span>).each(<span class="function"><span class="keyword">function</span>(<span class="params">node</span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">		$(<span class="keyword">this</span>).html($langCFG[$(<span class="keyword">this</span>).data(<span class="string">"key"</span>)]);</span></span><br><span class="line">	&#125;);</span><br><span class="line">&#125;);</span><br><span class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>利用jquery的<code>domready</code>事件来第一时间替换需要显示的文字！这就有个问题出现了，若你在<code>domready</code>事件触发前就初始化了vue和vue-validator，根据表单验证逻辑很可能导致<code>v-if</code>指令直接干掉表示错误信息的那个<code>p</code>标签，所以自然也不会正确的执行多语言替换的逻辑。</p>
+<p>在不考虑花时间研究vue-validator生命周期的前提下，我们如何更快的绕过这个问题呢？第一感觉是，将初始化vue和vue-validator的工作也放在<code>domready</code>中（但注意一定要放在多语言处理的代码之后）。不过你还会遇到另外一个问题，这个时候你在浏览器调试终端中按照vue官方的例子打印你创建的<code>vm</code>时，会报错提示变量定义不存在~具体原因不清楚，不过我们依然可以搞定这个问题，最终的代码如下：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">p</span> <span class="attr">v-if</span>=<span class="string">"$blockBoxValidator.message_aa.required"</span> <span class="attr">class</span>=<span class="string">"lang"</span> <span class="attr">data-key</span>=<span class="string">"blockBoxAA"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span></span><br><span class="line"><span class="actionscript"><span class="keyword">var</span> blockBox = <span class="literal">null</span>;	<span class="comment">//变量声明，这样能保证在调试终端中可以直接使用'blockBox.$log()'</span></span></span><br><span class="line"><span class="javascript">$(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></span><br><span class="line"><span class="actionscript">	<span class="comment">//多语言处理</span></span></span><br><span class="line"><span class="javascript">	$(<span class="string">".lang"</span>).each(<span class="function"><span class="keyword">function</span>(<span class="params">node</span>)</span>&#123;</span></span><br><span class="line"><span class="javascript">		$(<span class="keyword">this</span>).html($langCFG[$(<span class="keyword">this</span>).data(<span class="string">"key"</span>)]);</span></span><br><span class="line">	&#125;);</span><br><span class="line"></span><br><span class="line"><span class="actionscript">	<span class="comment">//放在多语言处理下面，且在domready事件内</span></span></span><br><span class="line"><span class="actionscript">	blockBox = <span class="keyword">new</span> Vue(&#123;</span></span><br><span class="line"><span class="actionscript">		el: <span class="string">"#blockBox"</span>,</span></span><br><span class="line">		data: &#123;</span><br><span class="line">			table: &#123;</span><br><span class="line">				rowA: &#123;</span><br><span class="line"><span class="actionscript">					columnA: <span class="string">"a-a"</span>,</span></span><br><span class="line"><span class="actionscript">					columnB: <span class="string">'a-b'</span>,</span></span><br><span class="line"><span class="actionscript">					columnC: <span class="string">'a-c'</span></span></span><br><span class="line">				&#125;,</span><br><span class="line">				rowB: &#123;</span><br><span class="line"><span class="actionscript">					columnA: <span class="string">'b-a'</span>,</span></span><br><span class="line"><span class="actionscript">					columnB: <span class="string">'b-b'</span>,</span></span><br><span class="line"><span class="actionscript">					columnC: <span class="string">'b-c'</span></span></span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	);</span><br><span class="line">&#125;);</span><br><span class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>理论上，你只要把你想用js做的业务逻辑代码都放在<code>domready</code>事件的回调方法中的vue初始化之后，就可以像和单独使用vue写代码一样的流程来进行开发了！</p>
+<h5 id="页面初次加载显示问题"><a href="#页面初次加载显示问题" class="headerlink" title="页面初次加载显示问题"></a>页面初次加载显示问题</h5><p>这应该不是vue-validator的问题，这应该属于vue的问题域。之前angular推荐的解决方案是提供了一个指令来监听模版解析完毕的事件。<br>我搜了一圈没找到官方或第三方提供的类似功能的实现，不过自己来做也不是什么难事儿：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">body</span> <span class="attr">id</span>=<span class="string">"body"</span> <span class="attr">style</span>=<span class="string">"display:none"</span>&gt;</span></span><br><span class="line">&#123;&#123;test&#125;&#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span></span><br><span class="line"><span class="actionscript"><span class="keyword">new</span> Vue(&#123;</span></span><br><span class="line"><span class="actionscript">	el:<span class="string">"#body"</span>,</span></span><br><span class="line"><span class="actionscript">	ready: <span class="function"><span class="keyword">function</span><span class="params">()</span></span>&#123;</span></span><br><span class="line"><span class="javascript">		$(<span class="string">"#body"</span>).show();</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>其实思路就是借助vue组件的生命周期hook来及时的修改css样式，你也可以添加loading动画等高级特效，我懒我就不弄了~</p>
+<h5 id="resetValidation"><a href="#resetValidation" class="headerlink" title="$resetValidation()"></a>$resetValidation()</h5><p>重置验证的场景是这样的：当你的表单被用户合法修改保存后，用户并没有跳转到其他页面，仍然在当前页面下，由于表单内容已经和最原始的版本不一样，你需要resetValidation一下从而使vue-validator的各个状态匹配业务场景（包括但不限于<code>dirty</code>,<code>modified</code>等状态）。不过这里有两个小插曲：</p>
+<ol>
+<li>我直接使用的bootcdn提供的版本导致js报错说$resetValidation()未定义，切换成官方的最新版本即可解决；</li>
+<li>应该是跟vue的<a href="http://vuejs.org.cn/guide/reactivity.html#异步更新队列" target="_blank" rel="noopener">vm更新机制</a>有关:</li>
+</ol>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> that = <span class="keyword">this</span>;</span><br><span class="line">setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">	that.$resetValidation();</span><br><span class="line">&#125;,<span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<p>否则呢，你无法看到期望的结果~</p>
+<h5 id="lazy的正确使用方法"><a href="#lazy的正确使用方法" class="headerlink" title="lazy的正确使用方法"></a>lazy的正确使用方法</h5><p>有些表单的初始化数据需要异步获取，太正常不过了，对吧？vue-validator提供了lazy模式，刚好匹配这种场景。所以，你只需要在<code>validator</code>标签上添加<code>lazy</code>属性即可，<a href="http://vuejs.github.io/vue-validator/en/lazy.html" target="_blank" rel="noopener">官方例子</a>简单明了，似乎没有什么要解释的！不过，问题来了，官方的例子代码是基于vue的动态组件写的，动态组件才有<code>activate</code>事件，而如果你像我一样是用在普通组件下的，那么自然不会触发<code>activate</code>事件，那回调逻辑自然不会被执行，<code>this.$activateValidator()</code>不会执行的话，看看vue-validator会提示什么：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[vue-validator] validator element directive need to specify &apos;name&apos; param attribute: (e.g. &lt;validator name=&quot;validator1&quot;&gt;...&lt;/validator&gt;)</span><br></pre></td></tr></table></figure>
+<p>看起来提示的非常不准确，让我排查了好久，甚至去联系作者来查看这个问题！其实你只要确保在正确的时机调用<code>$activateValidator()</code>方法就可以了，那什么叫正确的时机：</p>
+<ul>
+<li>普通组件的<code>ready</code>事件回调中</li>
+<li>动态组件的<code>activate</code>事件回调中</li>
+</ul>
+<p>否则你一定会看到上面的那个提醒，特别提醒，下面的写法依然会看到提醒：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ready: <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">	setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">		<span class="keyword">this</span>.$activateValidator();</span><br><span class="line">	&#125;.bind(<span class="keyword">this</span>), <span class="number">3000</span>);</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>这应该是作者好心办的”错事儿”吧，他要求你只能在组件渲染前把该做的都做了（数据获取），不然你就是在自讨苦吃~当然，这种设计哲学并非没有道理，全看权衡和喜好！</p>
+<hr>
+<p>好了，先总结到这里，如果以后有啥新的结论，再说~</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.378Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2016/04/20/Vue-validator初体验/" target="_blank" rel="external">https://blog.kazaff.me/2016/04/20/Vue-validator初体验/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jquery/">jquery</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/validator/">validator</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vue-js/">vue.js</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2016/04/20/Vue-validator初体验/&title=《Vue-Validator初体验》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2016/04/20/Vue-validator初体验/&title=《Vue-Validator初体验》 — kazaff's blog&source=develop,code,full-stack,architecture,deploy,database,test" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2016/04/20/Vue-validator初体验/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Vue-Validator初体验》 — kazaff's blog&url=https://blog.kazaff.me/2016/04/20/Vue-validator初体验/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2016/04/20/Vue-validator初体验/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2016/04/30/ztree如何优雅自定义ajax的header参数/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Ztree如何优雅自定义ajax的header参数</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2016/04/02/如何禁止chrome自动跳转https/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">如何禁止Chrome自动跳转https</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2016/04/20/Vue-validator初体验/&title=《Vue-Validator初体验》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2016/04/20/Vue-validator初体验/&title=《Vue-Validator初体验》 — kazaff's blog&source=develop,code,full-stack,architecture,deploy,database,test" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2016/04/20/Vue-validator初体验/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Vue-Validator初体验》 — kazaff's blog&url=https://blog.kazaff.me/2016/04/20/Vue-validator初体验/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2016/04/20/Vue-validator初体验/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2016/04/20/Vue-validator初体验/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

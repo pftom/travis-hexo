@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>No WebApplicationContext Found | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="spring,ioc,filter,servlet,DelegatingFilterProxy">
+    <meta name="description" content="No WebApplicationContext found: no ContextLoaderListener registered?  上面个异常信息可把我给坑苦了，整整一下午啊，外加一晚上。其实吧，问题不在于人家这个报错，你瞅瞅，多体贴，甚至都加上了人性化的提醒，相对其他异常信息来说，这已经很友好了不是么？">
+<meta name="keywords" content="spring,ioc,filter,servlet,DelegatingFilterProxy">
+<meta property="og:type" content="article">
+<meta property="og:title" content="No WebApplicationContext Found">
+<meta property="og:url" content="https://blog.kazaff.me/2014/12/09/No WebApplicationContext found no ContextLoaderListener registered/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="No WebApplicationContext found: no ContextLoaderListener registered?  上面个异常信息可把我给坑苦了，整整一下午啊，外加一晚上。其实吧，问题不在于人家这个报错，你瞅瞅，多体贴，甚至都加上了人性化的提醒，相对其他异常信息来说，这已经很友好了不是么？">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.378Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="No WebApplicationContext Found">
+<meta name="twitter:description" content="No WebApplicationContext found: no ContextLoaderListener registered?  上面个异常信息可把我给坑苦了，整整一下午啊，外加一晚上。其实吧，问题不在于人家这个报错，你瞅瞅，多体贴，甚至都加上了人性化的提醒，相对其他异常信息来说，这已经很友好了不是么？">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">No WebApplicationContext Found</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">No WebApplicationContext Found</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2014-12-09T11:13:12.000Z" itemprop="datePublished" class="page-time">
+  Dec 9 2014
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/j2ee/">j2ee</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+<article id="post-No WebApplicationContext found no ContextLoaderListener registered"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">No WebApplicationContext Found</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2014年12月09日 11:13" datetime="2014-12-09T11:13:12.000Z"  itemprop="datePublished">Dec 9 2014</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/j2ee/">j2ee</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <blockquote>
+<p>No WebApplicationContext found: no ContextLoaderListener registered?</p>
+</blockquote>
+<p>上面个异常信息可把我给坑苦了，整整一下午啊，外加一晚上。其实吧，问题不在于人家这个报错，你瞅瞅，多体贴，甚至都加上了人性化的提醒，相对其他异常信息来说，这已经很友好了不是么？<br><a id="more"></a><br>先来简单说一下问题场景吧：<strong>我的目的很直白，就是想在Servlet的Filter中使用Spring的Ioc注入指定的Bean</strong>。</p>
+<p>怎么样，直白的都要哭了！</p>
+<p>对于我这种新手，确实一开始是不知道Filter中是无法使用spring的依赖注入的，原因很简单，因为Filter并不受spring管理，自然无法使用Ioc了！不过，我又不能直接“new”想用的bean，因为最终我的bean会使用依赖注入相关的资源！</p>
+<p>要说这种需求一点儿都不偏门，gg上一搜一大把：<a href="http://zy116494718.iteye.com/blog/1918131" target="_blank" rel="noopener">苦逼版</a>，<a href="http://blog.csdn.net/geloin/article/details/7441937" target="_blank" rel="noopener">二逼版</a>。</p>
+<p>苦逼版其实也挺好的，简单明了，不过对我这种强迫症患者来说，总感觉难受，可能是由于手动调用<code>getBean()</code>的缘故吧～我也不清楚，反正难受！</p>
+<p>着重来说说这个二逼版，<code>DelegatingFilterProxy</code>这个类就是spring专门针对我们的问题场景量身定做的一个现成的实现版本，其实TA内部会帮我们调用苦逼版中的相关代码，有兴趣的同学强烈推荐看看<a href="http://grepcode.com/file/repository.springsource.com/org.springframework/org.springframework.web/3.2.2/org/springframework/web/filter/DelegatingFilterProxy.java#DelegatingFilterProxy.doFilter%28%29" target="_blank" rel="noopener">源码</a>。</p>
+<p>我就是由于白天浮躁的环境让我一不小心上了鬼子的当！我其实是一个温文尔雅的人，真真儿的。但我现在杀人的心都有！如果你点开了我上面提供的二逼版链接，那你留意一下TA的这句话：</p>
+<blockquote>
+<p> (1) contextAttribute，使用委派Bean的范围，其值必须从org.springframework.context.ApplicationContext.WebApplicationContext中取得，默认值是session；</p>
+</blockquote>
+<p>卧槽，写的真尼玛专业啊，我都信了！原因是因为我的场景恰恰是需要设置注入进来的Bean的生命周期为request的，我就理所应当的认为TA说的木牛错，我还傻不拉唧的花了一下午的时间把”singleton”、“session”、“request”等使了个遍！</p>
+<p>片头那个错误信息折磨了我几个小时，作者你造么？你能别吓唬乱写么？</p>
+<p>哥这性子就是倔，回到家游戏都没玩，电影也没看，美剧缓冲着也不管了，心想劳资这么正儿八经的一个需求，怎么可能Spring就不能满足呢？</p>
+<p>我又写了个简单的测试专门来排查问题，然后又去看源码！可算让我知道原因了！就是上面的那句扯犊子的话给我坑的！</p>
+<p><code>contextAttribute</code>属性是在调用<code>WebApplicationContextUtils.getWebApplicationContext(getServletContext(), attrName)</code>的时候当第二个参数用的，追到<code>WebApplicationContextUtils</code>类去查源码，你就知道世界满满的恶意了！</p>
+<p>哥为了真理，网吧包宿的钱都准备好了，作者你造么？</p>
+<p>那么这个属性到底做甚的？看<a href="http://grepcode.com/file/repository.springsource.com/org.springframework/org.springframework.web/3.2.2/org/springframework/web/context/support/WebApplicationContextUtils.java#WebApplicationContextUtils.getWebApplicationContext%28javax.servlet.ServletContext%2Cjava.lang.String%29" target="_blank" rel="noopener">这里</a>：</p>
+<blockquote>
+<p>attrName the name of the ServletContext attribute to look for</p>
+</blockquote>
+<p>就这吧，我还能说点啥，妈蛋，哥再也不相信你(<a href="http://my.csdn.net/geloin)了。" target="_blank" rel="noopener">http://my.csdn.net/geloin)了。</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.378Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2014/12/09/No WebApplicationContext found no ContextLoaderListener registered/" target="_blank" rel="external">https://blog.kazaff.me/2014/12/09/No WebApplicationContext found no ContextLoaderListener registered/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DelegatingFilterProxy/">DelegatingFilterProxy</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/filter/">filter</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ioc/">ioc</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/servlet/">servlet</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spring/">spring</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2014/12/09/No WebApplicationContext found no ContextLoaderListener registered/&title=《No WebApplicationContext Found》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2014/12/09/No WebApplicationContext found no ContextLoaderListener registered/&title=《No WebApplicationContext Found》 — kazaff's blog&source=
+No WebApplicationContext found: no ContextLoaderListener registered?
+
+上面个异常信..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2014/12/09/No WebApplicationContext found no ContextLoaderListener registered/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《No WebApplicationContext Found》 — kazaff's blog&url=https://blog.kazaff.me/2014/12/09/No WebApplicationContext found no ContextLoaderListener registered/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2014/12/09/No WebApplicationContext found no ContextLoaderListener registered/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2014/12/15/如何把java项目打包为可执行的jar/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">如何把Java项目打包为可执行的jar</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2014/12/05/@Scope(prototype)的正确用法/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">注解Scope(prototype)的正确用法</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2014/12/09/No WebApplicationContext found no ContextLoaderListener registered/&title=《No WebApplicationContext Found》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2014/12/09/No WebApplicationContext found no ContextLoaderListener registered/&title=《No WebApplicationContext Found》 — kazaff's blog&source=
+No WebApplicationContext found: no ContextLoaderListener registered?
+
+上面个异常信..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2014/12/09/No WebApplicationContext found no ContextLoaderListener registered/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《No WebApplicationContext Found》 — kazaff's blog&url=https://blog.kazaff.me/2014/12/09/No WebApplicationContext found no ContextLoaderListener registered/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2014/12/09/No WebApplicationContext found no ContextLoaderListener registered/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2014/12/09/No WebApplicationContext found no ContextLoaderListener registered/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

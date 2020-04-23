@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>［译］Reactjs性能篇 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="react,dom,shouldComponentUpdate,Immutable-js">
+    <meta name="description" content="英文有限，技术一般，海涵海涵，由于不是翻译出身，所以存在大量的瞎胡乱翻译的情况，信不过我的，请看原文～～ 原文地址：https://facebook.github.io/react/docs/advanced-performance.html">
+<meta name="keywords" content="react,dom,shouldComponentUpdate,Immutable-js">
+<meta property="og:type" content="article">
+<meta property="og:title" content="［译］Reactjs性能篇">
+<meta property="og:url" content="https://blog.kazaff.me/2015/09/10/译-Reactjs性能篇/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="英文有限，技术一般，海涵海涵，由于不是翻译出身，所以存在大量的瞎胡乱翻译的情况，信不过我的，请看原文～～ 原文地址：https://facebook.github.io/react/docs/advanced-performance.html">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://facebook.github.io/react/img/docs/should-component-update.png">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.386Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="［译］Reactjs性能篇">
+<meta name="twitter:description" content="英文有限，技术一般，海涵海涵，由于不是翻译出身，所以存在大量的瞎胡乱翻译的情况，信不过我的，请看原文～～ 原文地址：https://facebook.github.io/react/docs/advanced-performance.html">
+<meta name="twitter:image" content="https://facebook.github.io/react/img/docs/should-component-update.png">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">［译］Reactjs性能篇</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">［译］Reactjs性能篇</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2015-09-10T09:37:12.000Z" itemprop="datePublished" class="page-time">
+  Sep 10 2015
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/前端/">前端</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+<article id="post-译-Reactjs性能篇"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">［译］Reactjs性能篇</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2015年09月10日 9:37" datetime="2015-09-10T09:37:12.000Z"  itemprop="datePublished">Sep 10 2015</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/前端/">前端</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>英文有限，技术一般，海涵海涵，由于不是翻译出身，所以存在大量的瞎胡乱翻译的情况，信不过我的，请看原文～～</p>
+<p>原文地址：<a href="https://facebook.github.io/react/docs/advanced-performance.html" target="_blank" rel="noopener">https://facebook.github.io/react/docs/advanced-performance.html</a></p>
+<a id="more"></a>
+<hr>
+<p>###性能优化</p>
+<p>每当开发者选择将react用在真实项目中时都会先问一个问题：使用react是否会让项目速度更快，更灵活，更容易维护。此外每次状态数据发生改变时都会进行重新渲染界面的处理做法会不会造成性能瓶颈？而在react内部则是通过使用一些精妙的技巧来最小化每次造成ui更新的昂贵的dom操作从而保证性能的。</p>
+<p>####避免直接作用于DOM<br>react实现了一层虚拟dom，它用来映射浏览器的原生dom树。通过这一层虚拟的dom，可以让react避免直接操作dom，因为直接操作浏览器dom的速度要远低于操作javascript对象。每当组件的属性或者状态发生改变时，react会在内存中构造一个新的虚拟dom与原先老的进行对比，用来判断是否需要更新浏览器的dom树，这样就尽可能的优化了渲染dom的性能损耗。</p>
+<p>在此之上，react提供了组件生命周期函数，<code>shouldComponentUpdate</code>，组件在决定重新渲染（虚拟dom比对完毕生成最终的dom后）之前会调用该函数，该函数将是否重新渲染的权限交给了开发者，该函数默认直接返回<code>true</code>，表示默认直接出发dom更新：</p>
+<pre><code>shouldComponentUpdate: function(nextProps, nextState) {
+      return true;
+}
+</code></pre><p>值得注意的是，react会非常频繁的调用该函数，所以如果你打算自己实现该函数的逻辑，请尽可能保证性能。</p>
+<p>比方说，你有一个拥有多个帖子的聊天应用，如果此时只有一个发生了变化，如果你如下实现了<code>shouldComponentUpdate</code>，react会根据情况避免重新渲染那些没有发生变化的帖子：</p>
+<pre><code>shouldComponentUpdate: function(nextProps, nextState) {
+      // TODO: return whether or not current chat thread is different to former one.
+      // 根据实际情况判断当前帖子的状态是否和之前不同
+}
+</code></pre><p>总之，react尽可能的避免了昂贵的dom操作，并且允许开发者干涉该行为。</p>
+<p>####shouldComponentUpdate实战<br>这里举个包含子元素的组件例子，如下图：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://facebook.github.io/react/img/docs/should-component-update.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p>图中每个圆点表示一个dom节点，当某个dom节点的<code>shouldComponentUpdate</code>返回<code>false</code>时（例如c2），react就无需为其更新dom，注意，react甚至根本不会去调用c4和c5节点的<code>shouldComponentUpdate</code>函数哦～</p>
+<p>图中c1和c3的<code>shouldComponentUpdate</code>返回了<code>true</code>，因此react会检查检查其它们包含的直接子节点。最有趣的是c8节点，虽然调用它的<code>shouldComponentUpdate</code>方法返回的是<code>true</code>，但react检查后发现其dom结构并未发生改变，所以react最终是不会重新渲染其浏览器dom的。</p>
+<p>上图的情况下，react最终只会重新渲染c6，原因你应该懂的。</p>
+<p>那么我们应该如何实现<code>shouldComponentUpdate</code>函数呢？假设你有一个只包含字符串的组件，如下：</p>
+<pre><code>React.createClass({
+      propTypes: {
+        value: React.PropTypes.string.isRequired
+      },
+
+      render: function() {
+        return &lt;div&gt;{this.props.value}&lt;/div&gt;;
+      }
+});
+</code></pre><p>我们可以简单的直接实现<code>shouldComponentUpdate</code>如下：</p>
+<pre><code>shouldComponentUpdate: function(nextProps, nextState) {
+      return this.props.value !== nextProps.value;
+}
+</code></pre><p>目前为止一切都很顺利，处理基础类型的属性和状态是很简单的，我们可以直接使用js语言提供的<code>===</code>比对来实现一个mix并注入到所有组件中，事实上，react自身已经提供了一个类似的：<a href="https://facebook.github.io/react/docs/pure-render-mixin.html" target="_blank" rel="noopener">PureRenderMixin</a>。</p>
+<p>但是如果你的组件所拥有的属性或状态不是基础类型呢，而是复合类型呢？比方说是一个js对象，<code>{foo: &#39;bar&#39;}</code>：</p>
+<pre><code>React.createClass({
+      propTypes: {
+        value: React.PropTypes.object.isRequired
+      },
+
+      render: function() {
+        return &lt;div&gt;{this.props.value.foo}&lt;/div&gt;;
+      }
+});
+</code></pre><p>这种情况下我们刚才实现的那种<code>shouldComponentUpdate</code>就歇菜了：</p>
+<pre><code>// 假设 this.props.value 是 { foo: &apos;bar&apos; }
+// 假设 nextProps.value 是 { foo: &apos;bar&apos; },
+// 但是nextProps和this.props对应的引用不相同
+this.props.value !== nextProps.value; // true
+</code></pre><p>要想修复这个问题，简单粗暴的方法是我们直接比对<code>foo</code>的值，如下：</p>
+<pre><code>shouldComponentUpdate: function(nextProps, nextState) {
+      return this.props.value.foo !== nextProps.value.foo;
+}
+</code></pre><p>我们当然可以通过深比对来确定属性或状态是否确实发生了改变，但是这种深比对是非常昂贵的，还记得我们刚出说过<code>shouldComponentUpdate</code>函数的调用非常频繁么？更何况我们为每个model去单独实现一个匹配的深比对逻辑，对于开发人员来说也是非常痛苦的。最重要的是，如果我们不是很小心的处理对象引用关系的话，还会带来灾难。例如下面这个组件：</p>
+<pre><code>React.createClass({
+      getInitialState: function() {
+        return { value: { foo: &apos;bar&apos; } };
+      },
+
+      onClick: function() {
+        var value = this.state.value;
+        value.foo += &apos;bar&apos;; // ANTI-PATTERN!
+        this.setState({ value: value });
+      },
+
+      render: function() {
+        return (
+              &lt;div&gt;
+                &lt;InnerComponent value={this.state.value} /&gt;
+                &lt;a onClick={this.onClick}&gt;Click me&lt;/a&gt;
+              &lt;/div&gt;
+        );
+      }
+});
+</code></pre><p>起初，InnerComponent组件进行渲染，它得到的value属性为<code>{foo: &#39;bar&#39;}</code>。当用户点击链接后，父组件的状态将会更新为<code>{ value: { foo: &#39;barbar&#39; } }</code>，触发了InnerComponent组件的重新渲染，因为它得到了一个新的属性：<code>{ foo: &#39;barbar&#39; }</code>。</p>
+<p>看上去一切都挺好的，其实问题在于，父组件和子组件供用了同一个对象的引用，当用户触发click事件时，InnerComponent的prop将会发生改变，因此它的<code>shouldComponentUpdate</code>函数将会被调用，而此时如果按照我们目前的<code>shouldComponentUpdate</code>比对逻辑的话，<code>this.props.value.foo</code>和<code>nextProps.value.foo</code>是相等的，因为事实上，它们同时引用同一个对象哦～所以，我们将会看到，InnerComponent的ui并没有更新。哎～，不信的话，我贴出完整代码：</p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta charset=&quot;utf-8&quot;&gt;
+        &lt;title&gt;demo&lt;/title&gt;
+        &lt;!--引入React库--&gt;
+        &lt;script src=&quot;lib/react.min.js&quot;&gt;&lt;/script&gt;
+        &lt;!--引入JSX转换库--&gt;
+        &lt;script src=&quot;lib/JSXTransformer.js&quot;&gt;&lt;/script&gt;
+        &lt;!--组件样式--&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;!--定义容器--&gt;
+        &lt;div id=&quot;content&quot;&gt;&lt;/div&gt;
+
+        &lt;!--声明脚本类型为JSX--&gt;
+        &lt;script type=&quot;text/jsx&quot;&gt;
+
+            var InnerComponent = React.createClass({
+                shouldComponentUpdate: function(nextProps, nextState) {
+                      return this.props.value.foo !== nextProps.value.foo;
+                },
+                  render: function() {
+                    return (
+                          &lt;div&gt;
+                            {this.props.value.foo}
+                          &lt;/div&gt;
+                    );
+                  }
+            });
+
+            var OutComponent = React.createClass({
+                  getInitialState: function() {
+                    return { value: { foo: &apos;bar&apos; } };
+                  },
+
+                  onClick: function() {
+                    var value = this.state.value;
+                    value.foo += &apos;bar&apos;; // ANTI-PATTERN!
+                    this.setState({ value: value });
+                  },
+
+                  render: function() {
+                    return (
+                          &lt;div&gt;
+                            &lt;InnerComponent value={this.state.value} /&gt;
+                            &lt;a onClick={this.onClick}&gt;Click me&lt;/a&gt;
+                          &lt;/div&gt;
+                    );
+                  }
+            });
+
+            React.render(&lt;OutComponent /&gt;, document.querySelector(&quot;#content&quot;));
+
+        &lt;/script&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</code></pre><p>####Immutable-js的救赎<br><a href="https://github.com/facebook/immutable-js" target="_blank" rel="noopener">Immutable-js</a>是一个javascript集合库，作者是Lee Byron，该项目最近从fb开源。它提供了不可变集合类型：</p>
+<ul>
+<li>不可变性：一旦创建，这个集合不允许再更改。</li>
+<li>延续性：新集合可以衍生自一个已经创建过的集合，并作一些改动，此时源集合不会受到任何影响。</li>
+<li>结构共享：如果新集合衍生自一个老集合，那么新集合中与老集合相同的部份将会共享同一块内存，这样做的好处是节省内存开销，并能在创建新集合对象时减少内存拷贝的性能损耗。</li>
+</ul>
+<p>不可变性使得监控状态变化变得可行，每次状态发生变化，将总是返回一个新的对象，我们只需要检查改变前后的对象引用是否相同即可。举个例子：</p>
+<pre><code>var x = { foo: &quot;bar&quot; };
+var y = x;
+y.foo = &quot;baz&quot;;
+x === y; // true
+</code></pre><p>尽管变量y被修改，但由于y和x的引用相同，最后的比对仍然返回true。如果上面的代码用immutable-js来实现：</p>
+<pre><code>var SomeRecord = Immutable.Record({ foo: null });
+var x = new SomeRecord({ foo: &apos;bar&apos;  });
+var y = x.set(&apos;foo&apos;, &apos;baz&apos;);
+x === y; // false
+</code></pre><p>看到了么，是不是很爽？</p>
+<p>另外一种监控变量的方法是设置一个标识位，但这需要开发者编写额外的代码，哎，反正活着就是麻烦。</p>
+<p>总之，不可变集合结构提供了你一个廉价且简单的监控对象改变的方法，你可以放在<code>shouldComponentUpdate</code>中。因此，如果你的model属性和状态是基于immutable-js来实现的，那么你就可以直接使用官方提供的<code>PureRenderMixin</code>哟～</p>
+<p>####Immutable-js和Flux<br>如果你恰巧使用<a href="https://facebook.github.io/flux/" target="_blank" rel="noopener">Flux</a>，并且你又基于immutable-js来实现你的store，那你先看一下相关的<a href="https://facebook.github.io/immutable-js/docs/#/" target="_blank" rel="noopener">api</a>吧。</p>
+<p>让我们来用个模拟应用演示一下使用一种可行的方案。首先，我们需要定义一下用到的model：</p>
+<pre><code>var User = Immutable.Record({
+      id: undefined,
+      name: undefined,
+      email: undefined
+});
+
+var Message = Immutable.Record({
+      timestamp: new Date(),
+      sender: undefined,
+      text: &apos;&apos;
+});
+</code></pre><p>每个Record接受一个对象，分别定义了字段和默认值。我们的messages store需要使用的是list结构：</p>
+<pre><code>this.users = Immutable.List();
+this.messages = Immutable.List();
+</code></pre><p>很简单吧，接着，每当store接受到一个新的message时，我们只需要创建一个新的record并把它加入到列表中即可：</p>
+<pre><code>this.messages = this.messages.push(new Message({
+      timestamp: payload.timestamp,
+      sender: payload.sender,
+      text: payload.text
+});
+</code></pre><p>对比我们刚刚讲过的immutable-js特性，在react的组件中我们只需要直接注入<code>PureRenderMixin</code>即可高枕无忧。</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.386Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2015/09/10/译-Reactjs性能篇/" target="_blank" rel="external">https://blog.kazaff.me/2015/09/10/译-Reactjs性能篇/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Immutable-js/">Immutable-js</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dom/">dom</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/react/">react</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/shouldComponentUpdate/">shouldComponentUpdate</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/09/10/译-Reactjs性能篇/&title=《［译］Reactjs性能篇》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/09/10/译-Reactjs性能篇/&title=《［译］Reactjs性能篇》 — kazaff's blog&source=英文有限，技术一般，海涵海涵，由于不是翻译出身，所以存在大量的瞎胡乱翻译的情况，信不过我的，请看原文～～
+原文地址：https://facebook.gi..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/09/10/译-Reactjs性能篇/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《［译］Reactjs性能篇》 — kazaff's blog&url=https://blog.kazaff.me/2015/09/10/译-Reactjs性能篇/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/09/10/译-Reactjs性能篇/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2015/10/08/译-全栈Redux实战/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">［译]全栈Redux实战</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2015/08/25/React开发web系统初体验/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">React开发web系统初体验</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/09/10/译-Reactjs性能篇/&title=《［译］Reactjs性能篇》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/09/10/译-Reactjs性能篇/&title=《［译］Reactjs性能篇》 — kazaff's blog&source=英文有限，技术一般，海涵海涵，由于不是翻译出身，所以存在大量的瞎胡乱翻译的情况，信不过我的，请看原文～～
+原文地址：https://facebook.gi..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/09/10/译-Reactjs性能篇/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《［译］Reactjs性能篇》 — kazaff's blog&url=https://blog.kazaff.me/2015/09/10/译-Reactjs性能篇/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/09/10/译-Reactjs性能篇/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2015/09/10/译-Reactjs性能篇/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

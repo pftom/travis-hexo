@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>注解Scope(prototype)的正确用法 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="会话,session,spring,依赖注入,作用域,生命周期,scope">
+    <meta name="description" content="昨天加班在搞一个关于session的问题，有兴趣的童鞋可以去这里观望一下。 总之除了吃惊外就是感觉手脚束缚！现在只能彻底放弃使用默认的session机制了，不知道这算是好事儿还是坏事儿。">
+<meta name="keywords" content="会话,session,spring,依赖注入,作用域,生命周期,scope">
+<meta property="og:type" content="article">
+<meta property="og:title" content="注解Scope(prototype)的正确用法">
+<meta property="og:url" content="https://blog.kazaff.me/2014/12/05/@Scope(prototype)的正确用法/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="昨天加班在搞一个关于session的问题，有兴趣的童鞋可以去这里观望一下。 总之除了吃惊外就是感觉手脚束缚！现在只能彻底放弃使用默认的session机制了，不知道这算是好事儿还是坏事儿。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.378Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="注解Scope(prototype)的正确用法">
+<meta name="twitter:description" content="昨天加班在搞一个关于session的问题，有兴趣的童鞋可以去这里观望一下。 总之除了吃惊外就是感觉手脚束缚！现在只能彻底放弃使用默认的session机制了，不知道这算是好事儿还是坏事儿。">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">注解Scope(prototype)的正确用法</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">注解Scope(prototype)的正确用法</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2014-12-05T10:37:12.000Z" itemprop="datePublished" class="page-time">
+  Dec 5 2014
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/java/">java</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+<article id="post-@Scope(prototype)的正确用法"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">注解Scope(prototype)的正确用法</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2014年12月05日 10:37" datetime="2014-12-05T10:37:12.000Z"  itemprop="datePublished">Dec 5 2014</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/java/">java</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>昨天加班在搞一个关于session的问题，有兴趣的童鞋可以去<a href="http://segmentfault.com/q/1010000002406950" target="_blank" rel="noopener">这里</a>观望一下。</p>
+<p>总之除了吃惊外就是感觉手脚束缚！现在只能彻底放弃使用默认的<code>session</code>机制了，不知道这算是好事儿还是坏事儿。<br><a id="more"></a><br>现在的思路是这样的：</p>
+<ol>
+<li>在Servlet过滤器中把<code>ServletRequest</code>对象替换为自己的<code>Wrapper</code>实例，在其中实现<code>getSession()</code>方法，返回我们自定义的<code>HttpSession</code>对象</li>
+<li>我们实现一个继承了<code>HttpSession</code>接口的自定义会话类，用于第一步的返回，该自定义会话类提供接受<code>sessionId</code>参数获取会话数据的方法</li>
+<li>通过拿在<code>request</code>对象中获取的<code>sessionId</code>去<code>redis</code>中取得对应的登录用户的信息：<code>sessionUser</code>对象；</li>
+<li>在每次请求处理完后（过滤器最后一行代码）让自定义会话类把会话数据回写入<code>redis</code>，由于要持久化对象到<code>redis</code>中，所以要选择一个高效能的序列化与反序列化实现。</li>
+</ol>
+<p>当然也可以再进一步优化，例如说最后一步，检查如果<code>MySession</code>对象没有被修改则不需要回写等。</p>
+<p>说到现在，貌似和这篇文章的主题没有半毛钱关系的说~~表着急嘛，这不是要开始说了嘛！</p>
+<p>上面的第三步提到，我们自定义的这个会话对象的生命周期应该为：<strong>每次请求</strong>。如果采用<code>spring</code>默认提供的<code>singleton</code>的话就乱套了，你懂的！</p>
+<p>在和同事讨论上面的自定义会话机制的实现时，他叮嘱我说：</p>
+<blockquote>
+<p><code>@Scope(&quot;request&quot;)</code>作用域使用时要加上额外的参数（proxyMode）</p>
+</blockquote>
+<p>不过并没有给我说清楚到底为啥。本着打破砂锅问到底的神经，我在GG和百度上搜索了一下，不知道是不是因为关键字写的不合理，总之并没有找到有用的中文资料，大多都是相互转载，而且讲的都是理论，并且用的也配置文件方式而非注解。</p>
+<p>无奈只得翻墙查了一下，找到了一篇很好的<a href="http://whyjava.wordpress.com/2010/10/30/spring-scoped-proxy-beans-an-alternative-to-method-injection/" target="_blank" rel="noopener">文章</a>，而且早在2010年就已经总结出来了，为啥国内社区的就没有呢？真的是我搜的方式不对么？</p>
+<p>不扯淡了，文章中说：</p>
+<blockquote>
+<p>Method Injection is useful in scenarios where you need to inject a smaller scope bean in a larger scope bean.  For example, you have to inject a prototype bean inside an singleton bean , on each method invocation of Singleton bean. Just defining your bean prototype, does not create new instance each time a singleton bean is called because container creates a singleton bean only once, and thus only sets a prototype bean once. </p>
+</blockquote>
+<p>大概意思是，当你把声明为相对范围小的作用域（例如：prototy）对象注入到相对范围大的作用域（例如：singleton）对象时，由于外层对象只会初始化一次，所以会导致内部注入的对象也只会被初始化一次。</p>
+<p>道理十分的简单，就是因为这个原因，所以你有意把作用域定义为<code>prototy</code>的类可能并不是按照你认为的方式运作。</p>
+<p>解决这个问题的方法有多种，比方说你可以使用<strong>Method Injection</strong>，而不是直接注入在类属性中，不过这就要求程序员在使用时需要特别对待这些类。</p>
+<p>现在就是<strong>*proxyMode</strong>发挥作用的时候：</p>
+<pre><code>@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS, value = &quot;prototype&quot;)
+</code></pre><p>这么写，就可以保证该类会按照你大脑中的方式使用了：<strong>每次使用都会重新初始化一个对象</strong>。</p>
+<p>源码就不去深究了。8~</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.378Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2014/12/05/@Scope(prototype)的正确用法/" target="_blank" rel="external">https://blog.kazaff.me/2014/12/05/@Scope(prototype)的正确用法/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scope/">scope</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/session/">session</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spring/">spring</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/会话/">会话</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/作用域/">作用域</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/依赖注入/">依赖注入</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/生命周期/">生命周期</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2014/12/05/@Scope(prototype)的正确用法/&title=《注解Scope(prototype)的正确用法》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2014/12/05/@Scope(prototype)的正确用法/&title=《注解Scope(prototype)的正确用法》 — kazaff's blog&source=昨天加班在搞一个关于session的问题，有兴趣的童鞋可以去这里观望一下。
+总之除了吃惊外就是感觉手脚束缚！现在只能彻底放弃使用默认的session机制了..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2014/12/05/@Scope(prototype)的正确用法/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《注解Scope(prototype)的正确用法》 — kazaff's blog&url=https://blog.kazaff.me/2014/12/05/@Scope(prototype)的正确用法/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2014/12/05/@Scope(prototype)的正确用法/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2014/12/09/No WebApplicationContext found no ContextLoaderListener registered/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">No WebApplicationContext Found</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2014/12/01/解决springMVC4下使用@ResponseBody的中文乱码/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">解决springMVC4下使用@ResponseBody的中文乱码问题</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2014/12/05/@Scope(prototype)的正确用法/&title=《注解Scope(prototype)的正确用法》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2014/12/05/@Scope(prototype)的正确用法/&title=《注解Scope(prototype)的正确用法》 — kazaff's blog&source=昨天加班在搞一个关于session的问题，有兴趣的童鞋可以去这里观望一下。
+总之除了吃惊外就是感觉手脚束缚！现在只能彻底放弃使用默认的session机制了..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2014/12/05/@Scope(prototype)的正确用法/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《注解Scope(prototype)的正确用法》 — kazaff's blog&url=https://blog.kazaff.me/2014/12/05/@Scope(prototype)的正确用法/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2014/12/05/@Scope(prototype)的正确用法/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2014/12/05/@Scope(prototype)的正确用法/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

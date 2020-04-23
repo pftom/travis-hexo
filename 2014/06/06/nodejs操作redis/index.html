@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>Nodejs操作redis | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="redis">
+    <meta name="description" content="前前后后已经写过好多个语言与redis进行结合了，有php，c++，java，今天总算要用nodejs来操作redis了，不知为何还有点儿小兴奋~~ 虽然限于nodejs的异步编程模型的影响，直观上和其它语言非常不同，但基本上花一些时间都可以很快的适应，操作redis的方法依然如此，与操作mysql的api没什么两样~ 我还是准备着重介绍关于redis的认证，事务和批处理相关的内容，毕竟redis">
+<meta name="keywords" content="redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nodejs操作redis">
+<meta property="og:url" content="https://blog.kazaff.me/2014/06/06/nodejs操作redis/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="前前后后已经写过好多个语言与redis进行结合了，有php，c++，java，今天总算要用nodejs来操作redis了，不知为何还有点儿小兴奋~~ 虽然限于nodejs的异步编程模型的影响，直观上和其它语言非常不同，但基本上花一些时间都可以很快的适应，操作redis的方法依然如此，与操作mysql的api没什么两样~ 我还是准备着重介绍关于redis的认证，事务和批处理相关的内容，毕竟redis">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Nodejs操作redis">
+<meta name="twitter:description" content="前前后后已经写过好多个语言与redis进行结合了，有php，c++，java，今天总算要用nodejs来操作redis了，不知为何还有点儿小兴奋~~ 虽然限于nodejs的异步编程模型的影响，直观上和其它语言非常不同，但基本上花一些时间都可以很快的适应，操作redis的方法依然如此，与操作mysql的api没什么两样~ 我还是准备着重介绍关于redis的认证，事务和批处理相关的内容，毕竟redis">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Nodejs操作redis</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Nodejs操作redis</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2014-06-06T14:53:12.000Z" itemprop="datePublished" class="page-time">
+  Jun 6 2014
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/nodejs/">nodejs</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#ready"><span class="post-toc-number">1.</span> <span class="post-toc-text">ready</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#end"><span class="post-toc-number">2.</span> <span class="post-toc-text">end</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#drain"><span class="post-toc-number">3.</span> <span class="post-toc-text">drain</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#redis-createClient-port-host-options"><span class="post-toc-number">4.</span> <span class="post-toc-text">redis.createClient(port, host, options)</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#client-auth-password-callback"><span class="post-toc-number">5.</span> <span class="post-toc-text">client.auth(password, callback)</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#client-end"><span class="post-toc-number">6.</span> <span class="post-toc-text">client.end()</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#client-unref"><span class="post-toc-number">7.</span> <span class="post-toc-text">client.unref()</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#client-multi-commands"><span class="post-toc-number">8.</span> <span class="post-toc-text">client.multi([commands])</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#Multi-exec-callback"><span class="post-toc-number">9.</span> <span class="post-toc-text">Multi.exec(callback)</span></a></li></ol>
+        </nav>
+    </aside>
+    
+<article id="post-nodejs操作redis"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Nodejs操作redis</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2014年06月06日 14:53" datetime="2014-06-06T14:53:12.000Z"  itemprop="datePublished">Jun 6 2014</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/nodejs/">nodejs</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>前前后后已经写过好多个语言与redis进行结合了，有php，c++，java，今天总算要用nodejs来操作redis了，不知为何还有点儿小兴奋~~</p>
+<p>虽然限于nodejs的异步编程模型的影响，直观上和其它语言非常不同，但基本上花一些时间都可以很快的适应，操作redis的方法依然如此，与操作mysql的api没什么两样~</p>
+<p>我还是准备着重介绍关于redis的认证，事务和批处理相关的内容，毕竟redis的数据结构本身非常的直观，并没有什么好多讲的~<br><a id="more"></a><br>哦，忘记说了，我使用的库是：<a href="https://github.com/mranney/node_redis" target="_blank" rel="noopener">redis</a>，从官网上可以了解很全面信息，这里面有个小插曲，我的桌面OS是win7 64bit，但是死活安装不好vs环境，导致无法成功编译hiredis，所以只能使用redis提供的javascript接口，这在<a href="https://github.com/mranney/node_redis#performance" target="_blank" rel="noopener">性能</a>上会有所降低，不过目前这并不是我的关注点。</p>
+<p>javascript是基于事件驱动的，nodejs理所当然的也拥有事件驱动引擎，所以先看一下这个redis库提供了哪些重要的事件：</p>
+<h2 id="ready"><a href="#ready" class="headerlink" title="ready"></a>ready</h2><p>与redis服务创建连接成功后，会触发“ready”事件，这表明服务器端已经准备好接受命令了，但这并不表明必须在该事件发生后才能使用client执行命令，那是因为在“ready”事件触发之前，用client执行的命令会存放在队列中，等到就绪后会根据顺序依次调用命令。</p>
+<h2 id="end"><a href="#end" class="headerlink" title="end"></a>end</h2><p>当连接关闭后，会触发“end”事件。</p>
+<h2 id="drain"><a href="#drain" class="headerlink" title="drain"></a>drain</h2><p>当连接缓冲区可写后，会触发“drain”事件，这有助于你控制发送频率。</p>
+<hr>
+<p>下面来介绍一些重要的接口：</p>
+<h2 id="redis-createClient-port-host-options"><a href="#redis-createClient-port-host-options" class="headerlink" title="redis.createClient(port, host, options)"></a>redis.createClient(port, host, options)</h2><p>默认port是6379，默认的host当然是127.0.0.1，options为一个对象，可以包含下列的属性：</p>
+<ul>
+<li>parser： redis协议的解析器，默认是hiredis，如果像我一样悲剧的装不上，那该项会被设置为javascript；</li>
+<li>no_ready_check： 默认为false，当连接建立后，服务器端可能还处在从磁盘加载数据的loading阶段，这个时候服务器端是不会响应任何命令的，这个时候node_redis会发送INFO命令来检查服务器状态，一旦INFO命令收到响应了，则表明服务器端已经可以提供服务了，此时node_redis会触发“ready”事件，这就是为什么会有“connect”和“ready”事件之分，如果你关闭了这个功能，我觉得会出现一些貌似灵异的问题；</li>
+<li>enable_offline_queue： 默认为true，前面提到过，当连接ready之前，client会把收到的命令放入队列中等待执行，如果关闭该项，所有ready前的调用都将会立刻得到一个error callback；</li>
+<li>retry_max_delay： 默认为null，默认情况下client连接失败后会重试，每次重试的时间间隔会翻倍，直到永远，而设置这个值会增加一个阀值，单位为毫秒；</li>
+<li>connect_timeout: 默认为false，默认情况下客户端将会一直尝试连接，设置该参数可以限制尝试连接的总时间，单位为毫秒；</li>
+<li>max_attempts: 默认为null，可以设置该参数来限制尝试的总次数；</li>
+<li>auth_pass： 默认为null，该参数用来认证身份。</li>
+</ul>
+<h2 id="client-auth-password-callback"><a href="#client-auth-password-callback" class="headerlink" title="client.auth(password, callback)"></a>client.auth(password, callback)</h2><p>这个接口用来认证身份的，如果你要连接的redis服务器是需要认证身份的，那么你必须确保这个方法是创建连接后第一个被调用的。需要注意的是，为了让使重连足够的简单，client.auth()保存了密码，用于每次重连后的认证，而回调只有会执行一次哦~~</p>
+<p>另外你需要确保的是，千万别自作聪明的把client.auth()放在“ready”或“connect”事件的回调中，你将会得到一行神秘的报错：</p>
+<pre><code>Error: Ready check failed: ERR operation not permitted
+</code></pre><p>只需要在redis.createClient()代码后直接调用clietn.auth()即可，具体原因我没有深究~</p>
+<h2 id="client-end"><a href="#client-end" class="headerlink" title="client.end()"></a>client.end()</h2><p>这个方法会强行关闭连接，并不会等待所有的响应。如果不想如此暴力，推荐使用client.quit()，该方法会在收到所有响应后发送QUIT命令。</p>
+<h2 id="client-unref"><a href="#client-unref" class="headerlink" title="client.unref()"></a>client.unref()</h2><p>这个方法作用于底层socket连接，可以在程序没有其他任务后自动退出，可以类比nodejs自己的unref()。这个方法目前是个试验特性，只支持一部分redis协议。</p>
+<h2 id="client-multi-commands"><a href="#client-multi-commands" class="headerlink" title="client.multi([commands])"></a>client.multi([commands])</h2><p>multi命令可以理解为打包，它会把命令都存放在队列里，直到调用exec方法，redis服务器端会一次性原子性的执行所有发来的命令，node_redis接口最终会返回一个Multi对象。</p>
+<h2 id="Multi-exec-callback"><a href="#Multi-exec-callback" class="headerlink" title="Multi.exec(callback)"></a>Multi.exec(callback)</h2><p>client.multi()会返回一个Multi对象，它包含所有的命令，直到调用Multi.exec()。我们来主要说一下这个方法的回调函数中的两个参数：</p>
+<ul>
+<li>err: null或者Array，没有出错当然就会返回null，如果出错则返回命令队列链中对应的发生错误的命令的错误信息，数组中最后一个元素exec()方法自身的错误信息，<strong>这里我要说的是，可以看出这种方式所谓的原子性主要是指的命令链中的命令一定会保证一起在服务器端执行，而不是指的像关系型数据库那样的回滚功能</strong>；</li>
+<li>results： null或者Array，返回命令链中每个命令的返回信息。</li>
+</ul>
+<pre><code>var redis  = require(&quot;./index&quot;),
+    client = redis.createClient(), set_size = 20;
+
+client.sadd(&quot;bigset&quot;, &quot;a member&quot;);
+client.sadd(&quot;bigset&quot;, &quot;another member&quot;);
+
+while (set_size &gt; 0) {
+    client.sadd(&quot;bigset&quot;, &quot;member &quot; + set_size);
+    set_size -= 1;
+}
+
+// multi chain with an individual callback
+client.multi()
+    .scard(&quot;bigset&quot;)
+    .smembers(&quot;bigset&quot;)
+    .keys(&quot;*&quot;, function (err, replies) {
+        // NOTE: code in this callback is NOT atomic
+        // this only happens after the the .exec call finishes.
+        client.mget(replies, redis.print);
+    })
+    .dbsize()
+    .exec(function (err, replies) {
+        console.log(&quot;MULTI got &quot; + replies.length + &quot; replies&quot;);
+        replies.forEach(function (reply, index) {
+            console.log(&quot;Reply &quot; + index + &quot;: &quot; + reply.toString());
+        });
+    });
+</code></pre>
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.382Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2014/06/06/nodejs操作redis/" target="_blank" rel="external">https://blog.kazaff.me/2014/06/06/nodejs操作redis/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2014/06/06/nodejs操作redis/&title=《Nodejs操作redis》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2014/06/06/nodejs操作redis/&title=《Nodejs操作redis》 — kazaff's blog&source=前前后后已经写过好多个语言与redis进行结合了，有php，c++，java，今天总算要用nodejs来操作redis了，不知为何还有点儿小兴奋~~
+虽然..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2014/06/06/nodejs操作redis/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Nodejs操作redis》 — kazaff's blog&url=https://blog.kazaff.me/2014/06/06/nodejs操作redis/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2014/06/06/nodejs操作redis/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2014/07/03/是什么系列之Servlet/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">是什么系列之Servlet</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2014/06/05/用nodejs实现一个小小爬虫/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">用Nodejs实现一个小小爬虫</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2014/06/06/nodejs操作redis/&title=《Nodejs操作redis》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2014/06/06/nodejs操作redis/&title=《Nodejs操作redis》 — kazaff's blog&source=前前后后已经写过好多个语言与redis进行结合了，有php，c++，java，今天总算要用nodejs来操作redis了，不知为何还有点儿小兴奋~~
+虽然..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2014/06/06/nodejs操作redis/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Nodejs操作redis》 — kazaff's blog&url=https://blog.kazaff.me/2014/06/06/nodejs操作redis/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2014/06/06/nodejs操作redis/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2014/06/06/nodejs操作redis/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

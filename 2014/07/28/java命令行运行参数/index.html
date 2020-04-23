@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>Java命令行参数 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="jvm">
+    <meta name="description" content="妈蛋，实在是顶不住部分文章的排版，看着太让人心焦了~~所以，对一篇文章重新排版一下，希望能帮助到其他人~ 先发出原文链接，供眼神好的童鞋~~">
+<meta name="keywords" content="jvm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java命令行参数">
+<meta property="og:url" content="https://blog.kazaff.me/2014/07/28/java命令行运行参数/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="妈蛋，实在是顶不住部分文章的排版，看着太让人心焦了~~所以，对一篇文章重新排版一下，希望能帮助到其他人~ 先发出原文链接，供眼神好的童鞋~~">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java命令行参数">
+<meta name="twitter:description" content="妈蛋，实在是顶不住部分文章的排版，看着太让人心焦了~~所以，对一篇文章重新排版一下，希望能帮助到其他人~ 先发出原文链接，供眼神好的童鞋~~">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Java命令行参数</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Java命令行参数</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2014-07-28T14:53:12.000Z" itemprop="datePublished" class="page-time">
+  Jul 28 2014
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/java/">java</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#如何查看参数列表"><span class="post-toc-number">1.</span> <span class="post-toc-text">如何查看参数列表</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#基本参数说明"><span class="post-toc-number">2.</span> <span class="post-toc-text">基本参数说明</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#扩展参数说明"><span class="post-toc-number">3.</span> <span class="post-toc-text">扩展参数说明</span></a></li></ol>
+        </nav>
+    </aside>
+    
+<article id="post-java命令行运行参数"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Java命令行参数</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2014年07月28日 14:53" datetime="2014-07-28T14:53:12.000Z"  itemprop="datePublished">Jul 28 2014</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/java/">java</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>妈蛋，实在是顶不住部分文章的排版，看着太让人心焦了~~所以，对一篇文章重新排版一下，希望能帮助到其他人~</p>
+<p>先发出<a href="http://xinklabi.iteye.com/blog/837435" target="_blank" rel="noopener">原文链接</a>，供眼神好的童鞋~~</p>
+<a id="more"></a>
+<p>下面是小弟排版后的内容：</p>
+<p>Java在运行已编译完成的类时，是通过java虚拟机来装载和执行的，java虚拟机通过操作系统命令<code>JAVA_HOME&quot;bin/&quot;java -option</code>来启动，<code>option</code>为虚拟机参数， <code>JAVA_HOME</code>为JDK安装路径，通过虚拟机参数可对虚拟机的运行状态进行调整，掌握参数的含义可对虚拟机的运行模式有更深入的理解。</p>
+<h2 id="如何查看参数列表"><a href="#如何查看参数列表" class="headerlink" title="如何查看参数列表"></a>如何查看参数列表</h2><p>虚拟机参数分为基本和扩展两类，在命令行中输入<code>JAVA_HOME&quot;bin/&quot;java</code>就可得到基本的参数列表，在命令行中输入<code>JAVA_HOME&quot;bin/&quot;java -X</code>就可以得到扩展参数列表。</p>
+<h2 id="基本参数说明"><a href="#基本参数说明" class="headerlink" title="基本参数说明"></a>基本参数说明</h2><p><strong>-client/-server</strong></p>
+<p>这两个参数用于设置虚拟机使用何种运行模式，<code>client</code>模式启动比较快，但运行时性能和内存管理效率不如<code>server</code>模式，通常用于客户端应用程序。相反，<code>server</code>模式启动稍慢，但可获得更高的运行性能。</p>
+<p>在win上，缺省的虚拟机类型为<code>client</code>模式，如果要使用<code>server</code>模式就需要在启动虚拟机时加上<code>-server</code>参数，以获得更高性能。对服务器应用，推荐采用<code>server</code>模式，尤其是多个cpu的系统。</p>
+<p>在Linux，Solaris上缺省采用的是<code>server</code>模式。</p>
+<p><strong>-hotspot</strong></p>
+<p>含义与<code>client</code>相同，jdk1.4以前使用的参数，现在已经不再使用，取而代之的是<code>client</code>。</p>
+<p><strong>-classpath/-cp</strong></p>
+<p>虚拟机在运行一个类时需要将其装入内存，搜索类的方式和顺序如下：</p>
+<ol>
+<li>Bootstrap classes</li>
+<li>Extension Classes</li>
+<li>User Classes</li>
+</ol>
+<p><code>Bootstrap</code>中的路径是虚拟机自带的jar或zip文件，虚拟机首选搜索这些包文件，用下面这种方式可得到虚拟机搜索的路径：</p>
+<pre><code>System.getProperty(&quot;sun.boot.class.path&quot;)
+</code></pre><p><code>Extension</code>位于jre的<code>lib/ext</code>目录下的jar文件，虚拟机在搜索完Bootstrap后就搜索该目录下的jar文件，用下面这种方式可得到虚拟机使用的Extension搜索路径：</p>
+<pre><code>System.getProperty(&quot;java.ext.dirs&quot;)
+</code></pre><p><code>User</code>类搜索顺序为：</p>
+<ol>
+<li><code>-classpath</code>指定的路径</li>
+<li>环境变量<code>CLASSPATH</code></li>
+<li>当前目录</li>
+</ol>
+<p>在使用<code>-classpath/-cp</code>时，多个目录之间用分号分隔。推荐使用该命令来指定虚拟机要搜索的类路径，而不是依赖环境变量，以减少多个项目同时使用环境变量时存在的潜在冲突（多版本库）。</p>
+<p>可在运行时通过下面的代码获取虚拟机查找类的路径：</p>
+<pre><code>System.getProperty(&quot;java.class.path&quot;)
+</code></pre><p><strong>-D<propertyname>=value</propertyname></strong></p>
+<p>在虚拟机的系统属性中设置属性名/值对，运行在此虚拟机上的应用程序可用：</p>
+<pre><code>System.getProperty(&quot;属性名&quot;)
+</code></pre><p>得到value的值。</p>
+<p>如果value中有空格，则需要用双引号将该值括起来，如：<code>-Dname=&quot;kazaf f&quot;</code>。</p>
+<p>该参数通常用于设置系统级全局变量值，如配置文件路径，保证该属性在程序中任何地方都可访问。</p>
+<p><strong>-verbose[:class|gc|jni]</strong></p>
+<p>在输出设备上显示虚拟机运行信息。 <code>-verbose</code>和<code>-verbose:class</code>含义相同，表示输出虚拟机装入的类的信息，格式如下：</p>
+<pre><code>[Loaded java.io.FilePermission$1 from shared objects file]
+</code></pre><p>当虚拟机报告类找不到或类冲突时，用此参数来查看虚拟机装入类的情况。</p>
+<p><code>-verbose:gc</code>用于在虚拟机发生内存回收时在输出设备上显示信息，格式如下：</p>
+<pre><code>[Full GC 268K-&gt;168K(1984K), 0.0187390 secs]
+</code></pre><p><code>-verbose:jni</code>用于在虚拟机调用native方法时在设备上输出显示信息，格式如下：</p>
+<pre><code>[Dynamic-linking native method HelloNative.sum ... JNI]
+</code></pre><p>该参数用于监视虚拟机调用本地方法的情况，在发生jni错误时可以为诊断提供便利。</p>
+<p><strong>-ea[:<packagename>…|:<classname>]/-enableassertions[:<packagename>…|:<classname>]</classname></packagename></classname></packagename></strong></p>
+<p>从jdk1.4开始，java可支持断言机制，用于诊断运行时问题。通常在测试阶段使断言有效，在线上运行时不需要运行断言。断言后的表达式的值是一个逻辑值，为<code>true</code>时断言不运行，为<code>false</code>时断言抛出<code>java.lang.AssertionError</code>错误。</p>
+<p>这个参数就是用来设置虚拟机是否启动断言机制，缺省时虚拟机关闭断言机制，用<code>-ea</code>可打开断言机制，不加<code>packagename</code>和<code>classname</code>表示运行所有包和类中的断言，如果希望只是运行某些包或类中的断言，可将包名或类名加到<code>-ea</code>之后，例如：<code>-ea:com.foo.util</code>。</p>
+<p><strong>-da[:<packagename>…|:<classname>]/-disableassertions[:<packagename>…|:<classname>]</classname></packagename></classname></packagename></strong><br>用来设置虚拟机关闭断言处理，用法与<code>-ea</code>类似。</p>
+<p><strong>-esa/-enablessystemassertions</strong></p>
+<p>设置虚拟机开启系统类的断言。</p>
+<p><strong>-dsa/-disablesystemassertions</strong></p>
+<p>设置虚拟机关闭系统类的断言。</p>
+<p><strong>-agentlib:<libname>[=<options>]</options></libname></strong></p>
+<p>该参数是jdk5新引入的，用于虚拟机装载本地代理库。其中<code>libname</code>为本地代理库文件名，虚拟机的搜索路径为环境变量<code>path</code>中的路径，<code>options</code>为传给本地库启动时的参数，多个参数之间用逗号分隔。</p>
+<p>在win平台中，虚拟机搜索本地库后缀名名为<code>.dll</code>，在Unix上则为<code>.so</code>文件。例如可以用<code>-agentlib:hprof</code>来获取虚拟机的运行情况。可用<code>-agentlib:hprof=help</code>来得到使用帮助列表（确保在win平台下的jre的<code>lib</code>目录下存在<code>hprof.dll</code>文件）。</p>
+<p><strong>-agentpath:<jarpath>[=<options>]</options></jarpath></strong></p>
+<p>设置虚拟机按全路径装载本地库，不再搜索<code>PATH</code>中的路径，其他功能同<code>-agentlib</code>。</p>
+<p><strong>-javaagent:<jarpath>[=<options>]</options></jarpath></strong></p>
+<p>虚拟机启动时装入java语言设备代理。<code>jarpath</code>文件中的<code>mainfest</code>文件必须有<code>Agent-Class</code>属性。代理类要实现</p>
+<pre><code>public static void premain(String agentArgs, Instrumentation inst)
+</code></pre><p>方法。当虚拟机初始化时，将按照代理类的说明顺序调用<code>premain</code>方法。</p>
+<h2 id="扩展参数说明"><a href="#扩展参数说明" class="headerlink" title="扩展参数说明"></a>扩展参数说明</h2><p><strong>-Xmixed</strong></p>
+<p>设置<code>-client</code>模式虚拟机对使用频率高的方法进行<code>Just-In-Time</code>编译和执行，对其他方法使用解释方式执行，该方式是虚拟机缺省模式。</p>
+<p><strong>-Xint</strong></p>
+<p>设置<code>-client</code>模式下运行的虚拟机以解释方式执行类的字节码，不将字节码编译为本机码。</p>
+<p><strong>-Xbootclasspath[/a|/p]:path</strong></p>
+<p>改变虚拟机装载缺省系统运行包<code>rt.jar</code>的路径，从<code>-Xbootclasspath</code>中设定的搜索路径中装载运行类。除非你自己能写一个运行时，否则不会用到这个参数。</p>
+<p>其中<code>/a</code>将在缺省搜索路径后加上path中的搜索路径，而<code>/p</code>在缺省路径前先搜索path中的路径。</p>
+<p><strong>-Xnoclassgc</strong></p>
+<p>关闭虚拟机对class的垃圾回收功能。</p>
+<p><strong>-Xincgc</strong></p>
+<p>启动增量垃圾收集器，缺省是关闭的。增量垃圾收集器能减少偶尔发生的长时间的垃圾回收造成的暂停时间。但增量垃圾收集器和应用程序并发执行，因此会占用部分CPU在应用程序上的功能。</p>
+<p><strong>-Xloggc:<file></file></strong></p>
+<p>将虚拟机每次垃圾回收的信息写到日志文件中，文件名由<code>file</code>指定，内容和<code>-verbose:gc</code>输出内容相同。</p>
+<p><strong>-Xbatch</strong></p>
+<p>虚拟机的缺省运行方式是在后台编译类代码，然后在前台执行代码，使用该参数将关闭虚拟机后台编译，在前台编译完成后再执行。</p>
+<p><strong>-Xms<size></size></strong></p>
+<p>设置虚拟机可用内存堆的初始大小，缺省单位为字节。该大小为1024的整数倍并且要大于1MB，可用k(K)或m(M)为单位来设置较大的内存数。初始堆的大小为2MB。例如：<code>-Xms6400K</code>、<code>-Xms256M</code></p>
+<p><strong>-Xmx<size></size></strong></p>
+<p>设置虚拟机内存堆的最大可用大小，缺省单位为字节，缺省堆最大值为64MB。该值必须为1024整数倍并且要大于2MB，可用k(K)或m(M)为单位来设置较大的内存数。</p>
+<p>当应用程序申请了大内存，运行时虚拟机抛出<code>java.lang.OutOfMemoryError: Java heap space</code>错误，就需要用改参数设置更大的内存数。</p>
+<p><strong>-Xss<size></size></strong></p>
+<p>设置线程栈的大小，缺省单位为字节，通常操作系统分配给线程栈的缺省大小为1MB。另外，也可以在java中创建线程对象时设置栈的大小，构造函数原型为：</p>
+<pre><code>Thread(ThreadGroup group, Runnable target, String name, long stackSzie)
+</code></pre><p><strong>-Xprof</strong></p>
+<p>输出CPU运行时的诊断信息。</p>
+<p><strong>-Xfuture</strong></p>
+<p>对类文件进行严格格式检查，以保证类代码符合类代码规范。为保证向后兼容，虚拟机缺省不进行严格的格式检查。</p>
+<p><strong>-Xrs</strong></p>
+<p>减少虚拟机中操作系统的信号的使用。该参数通常在虚拟机以后台服务方式运行时使用（如Serlet）。</p>
+<p><strong>-Xcheck:jni</strong></p>
+<p>对jni函数执行检查。</p>
+<p><strong>-Xshare:off</strong></p>
+<p>不尝试使用共享类的数据</p>
+<p><strong>-Xshare:auto</strong></p>
+<p>在可能的情况下使用共享类的数据，默认值。</p>
+<p><strong>-Xshare:on</strong></p>
+<p>要求使用共享类的数据，否则运行失败。</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.382Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2014/07/28/java命令行运行参数/" target="_blank" rel="external">https://blog.kazaff.me/2014/07/28/java命令行运行参数/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jvm/">jvm</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2014/07/28/java命令行运行参数/&title=《Java命令行参数》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2014/07/28/java命令行运行参数/&title=《Java命令行参数》 — kazaff's blog&source=妈蛋，实在是顶不住部分文章的排版，看着太让人心焦了~~所以，对一篇文章重新排版一下，希望能帮助到其他人~
+先发出原文链接，供眼神好的童鞋~~" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2014/07/28/java命令行运行参数/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Java命令行参数》 — kazaff's blog&url=https://blog.kazaff.me/2014/07/28/java命令行运行参数/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2014/07/28/java命令行运行参数/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2014/08/08/php页面白屏/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Php页面白屏</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2014/07/18/是什么系列之RMI/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">是什么系列之RMI</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2014/07/28/java命令行运行参数/&title=《Java命令行参数》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2014/07/28/java命令行运行参数/&title=《Java命令行参数》 — kazaff's blog&source=妈蛋，实在是顶不住部分文章的排版，看着太让人心焦了~~所以，对一篇文章重新排版一下，希望能帮助到其他人~
+先发出原文链接，供眼神好的童鞋~~" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2014/07/28/java命令行运行参数/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Java命令行参数》 — kazaff's blog&url=https://blog.kazaff.me/2014/07/28/java命令行运行参数/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2014/07/28/java命令行运行参数/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2014/07/28/java命令行运行参数/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

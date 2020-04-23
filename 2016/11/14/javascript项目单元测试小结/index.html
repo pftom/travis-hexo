@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>Javascript项目单元测试小结 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="test,unit,Sinon">
+    <meta name="description" content="这几天在写一个采集程序，用nodejs。老实讲这是第二次（相对正式）写和采集有关的模块，第一次是因为要定时访问自身项目来触发缓存的，细节可以看这里。后来从上一家公司离职，也没有继续维护这个程序了。这次算是正宗的采集模块（确实是从目标网站中获取有价值的内容，我就不方便透露具体细节了~），而且这个项目是正式产品，不像之前公司那样扯~~这篇文章本身不是讲采集程序细节的，其实个人感觉开源的采集系统已经很成">
+<meta name="keywords" content="test,unit,Sinon">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Javascript项目单元测试小结">
+<meta property="og:url" content="https://blog.kazaff.me/2016/11/14/javascript项目单元测试小结/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="这几天在写一个采集程序，用nodejs。老实讲这是第二次（相对正式）写和采集有关的模块，第一次是因为要定时访问自身项目来触发缓存的，细节可以看这里。后来从上一家公司离职，也没有继续维护这个程序了。这次算是正宗的采集模块（确实是从目标网站中获取有价值的内容，我就不方便透露具体细节了~），而且这个项目是正式产品，不像之前公司那样扯~~这篇文章本身不是讲采集程序细节的，其实个人感觉开源的采集系统已经很成">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Javascript项目单元测试小结">
+<meta name="twitter:description" content="这几天在写一个采集程序，用nodejs。老实讲这是第二次（相对正式）写和采集有关的模块，第一次是因为要定时访问自身项目来触发缓存的，细节可以看这里。后来从上一家公司离职，也没有继续维护这个程序了。这次算是正宗的采集模块（确实是从目标网站中获取有价值的内容，我就不方便透露具体细节了~），而且这个项目是正式产品，不像之前公司那样扯~~这篇文章本身不是讲采集程序细节的，其实个人感觉开源的采集系统已经很成">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Javascript项目单元测试小结</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Javascript项目单元测试小结</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2016-11-14T09:37:12.000Z" itemprop="datePublished" class="page-time">
+  Nov 14 2016
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/nodejs/">nodejs</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+<article id="post-javascript项目单元测试小结"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Javascript项目单元测试小结</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2016年11月14日 9:37" datetime="2016-11-14T09:37:12.000Z"  itemprop="datePublished">Nov 14 2016</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/nodejs/">nodejs</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>这几天在写一个采集程序，用nodejs。老实讲这是第二次（相对正式）写和采集有关的模块，第一次是因为要定时访问自身项目来触发缓存的，细节可以看<a href="http://blog.kazaff.me/2014/06/05/%E7%94%A8nodejs%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E5%B0%8F%E5%B0%8F%E7%88%AC%E8%99%AB/">这里</a>。后来从上一家公司离职，也没有继续维护这个程序了。<br>这次算是正宗的采集模块（确实是从目标网站中获取有价值的内容，我就不方便透露具体细节了~），而且这个项目是正式产品，不像之前公司那样扯~~这篇文章本身不是讲采集程序细节的，其实个人感觉开源的采集系统已经很成熟了，如果不是有特别特殊的需求，还是不要重复造轮子的好。<br><a id="more"></a><br>我们回到主题，讲一下测试。但在这之前呢，我还是要啰嗦一点（毕竟是总结嘛~）：产品。如果你做的是练习项目（毕业设计），或内部使用的小工具，又或是一个垃圾网站外包（总价才1000块），你可能会选择快糙猛的直奔功能去。这没错，我也会这么做（虽然可能强迫症患者（或道德模范）会觉得这么做太丢份儿）。但正式的产品，还是需要认真对待的。那怎么才叫认真对待呢？那就是所有产品相关的事物都要有：<strong>监控和测试</strong>。</p>
+<p>现在很多云厂商提供的所有服务都有配套的监控功能，国内外还有专门做监控服务的公司，此外还有很多开源的监控系统（<a href="http://blog.kazaff.me/2016/08/10/Open-Falcon%E5%88%9D%E6%8E%A2/">Open-Falcon初探</a>）供我们选择，所以真的没有什么借口不去做监控。不过，还是推荐使用成熟的商用监控服务，因为监控平台自身的高可用和低性能损耗是非常重要的，也是技术含量较高的。</p>
+<p>终于要说测试了，之前我写过几篇和测试相关的文章：</p>
+<ul>
+<li><a href="http://blog.kazaff.me/2016/08/18/%E5%B0%8F%E5%9B%A2%E9%98%9F%E7%8E%A9%E4%B8%8D%E8%BD%AC%E7%9A%84%E6%B5%8B%E8%AF%95/">小团队玩不转的测试</a></li>
+<li><a href="http://blog.kazaff.me/2016/08/24/casperjs+mocha+chai%E6%90%AD%E5%BB%BAE2E%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83/">casperjs+mocha+chai搭建E2E测试环境</a></li>
+<li><a href="http://blog.kazaff.me/2016/11/11/%E8%AF%91-Sinon%E5%85%A5%E9%97%A8%EF%BC%9A%E5%88%A9%E7%94%A8Mocks%EF%BC%8CSpies%E5%92%8CStubs%E5%AE%8C%E6%88%90javascript%E6%B5%8B%E8%AF%95/">译-Sinon入门:利用Mocks，Spies和Stubs完成javascript测试</a></li>
+</ul>
+<p>前两篇说的都是“端到端测试”，这种测试一般都是在项目对应功能很稳定后，才比较适合进行。之前我们团队在推行这种测试时，由于对应功能出现了比较大的变更，导致开发人员的测试脚本失效，很是影响气势。假如项目文档，这种“端到端测试”还是非常有效的，而且也很有意义。</p>
+<p>我们这次要说的是单元测试，应该上面第三篇文章的实战总结篇~~</p>
+<p>单元测试可以在项目初期，甚至没有开始写正式代码之间就开始（TDD），测试颗粒度是函数或方法。<strong>你需要把测试目标方法看作是一个黑盒子，根据传递已知的输入参数，来对输出结果进行断言</strong>。单元测试无法代替集成测试和端到端测试。</p>
+<p>很容易，不是么？但对于正式产品而言，单元测试相当重要，毕竟人不可靠（俗话说好记星不如烂笔头，测试脚本就是烂笔头）。试想一下，你自己3个月前写的代码你确定还记得么（我的记忆只有3天）？一个1000行项目，某个函数你有胆量在几周后随意更改其输入输出结构？即便是你记忆超群，你能确保别人不修改你的代码么？</p>
+<p>我们如何一次性解决这类问题？单元测试，没错。有了测试脚本，下一步就是自动化测试流程（<a href="http://blog.kazaff.me/2016/06/16/%E5%B0%9D%E8%AF%95%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90--%E7%AC%AC%E4%B8%80%E7%89%88/">尝试持续集成</a>），这里我们就不展开了。接下来我们主要讲javascript项目的单元测试。</p>
+<p>这里用“javascript项目”的目的是：浏览器端项目和nodejs项目都适用。但这并不表示任何javascript代码都可以很容易被单元测试，你依然需要在代码结构上下大功夫，这考验你的代码驾驭能力和代码架构能力。这部分的知识靠的是日积月累，幸运的是大量资料都提供了相当多的最佳实践和准则~~</p>
+<p>在这次的项目测试中，Sinon提供了相当大的便利，但是由于第一次使用，也碰到了一些问题，下面就列出我在写测试项时的一些收获和采坑：</p>
+<ol>
+<li>尽可能使用Sinon提供的断言，因为它携带了更多的错误信息供我们排查；</li>
+<li>把方法（或函数）想象成黑盒子，不要试图测试方法体中的内部变量状态，关注返回值；</li>
+<li>方法中依赖的第三方资源都要尽可能模拟，不仅是为了避免测试环境复杂，也因为阻断它们的变更而导致的破坏；</li>
+<li>没有返回值的方法一般都修改了对应模块（或类）的属性状态，尽可能避免开发时写这种方法（函数式编程理念），测试它们需要提供测试脚本访问这些属性的能力（Get方法或直接定义成public）；</li>
+<li>测试脚本一定要关注方法输入参数的边缘情况，不要只围绕着正常系走，所有分支都要测试到（盯着方法体代码写测试项，很容易陷入思维困局~~）；</li>
+<li>异步逻辑的测试，可以使用Sinon的stub，通过检查stub的调用次数、输入参数和callback来完成单元测试（对于callback不依赖传参的方法，参考第4条）；</li>
+<li>Sinon的Fake timers使用时记住要先创建fake timer，再导入目标方法的定义，否则sinon无法控制目标方法的时间轴（例如setTimeout）；</li>
+<li>关注测试脚本需要的运行时间，尽可能编写运行效率高的测试项，毕竟测试脚本多数情况下都是交给自动化测试流程运行的，时效性意义很大（每次代码提交都可能会触发执行测试）;</li>
+<li>由于Nodejs require的缓存机制，如果不同的测试项需要重新加载（参考第七条），则需要在测试项前后分别执行<code>delete require.cache[require.resolve(&#39;目标模块&#39;)];</code>。</li>
+</ol>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.382Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2016/11/14/javascript项目单元测试小结/" target="_blank" rel="external">https://blog.kazaff.me/2016/11/14/javascript项目单元测试小结/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Sinon/">Sinon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/test/">test</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/unit/">unit</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2016/11/14/javascript项目单元测试小结/&title=《Javascript项目单元测试小结》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2016/11/14/javascript项目单元测试小结/&title=《Javascript项目单元测试小结》 — kazaff's blog&source=这几天在写一个采集程序，用nodejs。老实讲这是第二次（相对正式）写和采集有关的模块，第一次是因为要定时访问自身项目来触发缓存的，细节可以看这里。后来从..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2016/11/14/javascript项目单元测试小结/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Javascript项目单元测试小结》 — kazaff's blog&url=https://blog.kazaff.me/2016/11/14/javascript项目单元测试小结/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2016/11/14/javascript项目单元测试小结/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2016/11/15/nodejs下DNS缓存问题/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">nodejs下DNS缓存问题</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2016/11/11/译-Sinon入门：利用Mocks，Spies和Stubs完成javascript测试/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">译-Sinon入门:利用Mocks，Spies和Stubs完成javascript测试</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2016/11/14/javascript项目单元测试小结/&title=《Javascript项目单元测试小结》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2016/11/14/javascript项目单元测试小结/&title=《Javascript项目单元测试小结》 — kazaff's blog&source=这几天在写一个采集程序，用nodejs。老实讲这是第二次（相对正式）写和采集有关的模块，第一次是因为要定时访问自身项目来触发缓存的，细节可以看这里。后来从..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2016/11/14/javascript项目单元测试小结/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Javascript项目单元测试小结》 — kazaff's blog&url=https://blog.kazaff.me/2016/11/14/javascript项目单元测试小结/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2016/11/14/javascript项目单元测试小结/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2016/11/14/javascript项目单元测试小结/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

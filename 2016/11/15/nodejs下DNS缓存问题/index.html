@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>nodejs下DNS缓存问题 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="dnscache,request,window">
+    <meta name="description" content="无意间看到一个文章，是关于nodejs下发送http请求不会缓存dns结果的。这意味着，如果你基于nodejs写了一个http采集程序，不提供dns缓存则会让每次请求都傻傻的重复解析域名为ip地址。听起来会非常影响性能不是么？">
+<meta name="keywords" content="dnscache,request,window">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nodejs下DNS缓存问题">
+<meta property="og:url" content="https://blog.kazaff.me/2016/11/15/nodejs下DNS缓存问题/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="无意间看到一个文章，是关于nodejs下发送http请求不会缓存dns结果的。这意味着，如果你基于nodejs写了一个http采集程序，不提供dns缓存则会让每次请求都傻傻的重复解析域名为ip地址。听起来会非常影响性能不是么？">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="nodejs下DNS缓存问题">
+<meta name="twitter:description" content="无意间看到一个文章，是关于nodejs下发送http请求不会缓存dns结果的。这意味着，如果你基于nodejs写了一个http采集程序，不提供dns缓存则会让每次请求都傻傻的重复解析域名为ip地址。听起来会非常影响性能不是么？">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">nodejs下DNS缓存问题</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">nodejs下DNS缓存问题</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2016-11-15T09:37:12.000Z" itemprop="datePublished" class="page-time">
+  Nov 15 2016
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/nodejs/">nodejs</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+<article id="post-nodejs下DNS缓存问题"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">nodejs下DNS缓存问题</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2016年11月15日 9:37" datetime="2016-11-15T09:37:12.000Z"  itemprop="datePublished">Nov 15 2016</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/nodejs/">nodejs</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>无意间看到一个<a href="http://www.madhur.co.in/blog/2016/05/28/nodejs-dns-cache.html" target="_blank" rel="noopener">文章</a>，是关于nodejs下发送http请求不会缓存dns结果的。这意味着，如果你基于nodejs写了一个http采集程序，不提供dns缓存则会让每次请求都傻傻的重复解析域名为ip地址。听起来会非常影响性能不是么？<br><a id="more"></a><br>我的项目中，发送http请求并不是使用的node原生的http库，而是依赖一个常用的<code>Request</code>库。我查阅了一下该库的相关文档和github issue，也发现了一些和dns相关的帖子。不过多数说的是，关于dns问题，本身并不是<code>Request</code>库的范畴，而归结于nodejs的内核问题。omg，感觉好深奥啊！</p>
+<p>幸好，上面提到的那篇文章中也提出了两个解决方案：</p>
+<ul>
+<li>应用级别：<a href="https://github.com/yahoo/dnscache" target="_blank" rel="noopener">dnscache</a></li>
+<li>操作系统级别：<a href="https://www.isc.org/downloads/bind/" target="_blank" rel="noopener">Bind</a>, <a href="http://www.thekelleys.org.uk/dnsmasq/doc.html" target="_blank" rel="noopener">dnsmasq</a> 和 <a href="http://unbound.net/" target="_blank" rel="noopener">unbound</a></li>
+</ul>
+<p>不论是哪个方案，看起来似乎都很简单，只是安装并初始化即可。但问题是，我们怎么来验证它们真实有效？由于我本地的开发机操作系统环境是win7 64bit，所以上文提到的操作系统级别的方案我无法测试。那我们就来看一下应用级别方案到底是否有效吧~~</p>
+<p>首先，我们需要让win能追踪dns请求，这里我找到了一个<a href="http://www.nirsoft.net/utils/dns_query_sniffer.html" target="_blank" rel="noopener">软件</a>，下载后不需要安装直接运行即可。然后，我们还需要一个清除缓存的方法，可以看<a href="http://www.nenew.net/windows-dns-cache-clean.html" target="_blank" rel="noopener">这里</a>，简单说就是在终端中执行：</p>
+<blockquote>
+<p>ipconfig /flushdns</p>
+</blockquote>
+<p>工具就准备完毕了，我们创建一个测试脚本：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">const</span> Request = <span class="built_in">require</span>(<span class="string">'request'</span>);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">fetch</span>(<span class="params">url, callback</span>)</span>&#123;</span><br><span class="line">	Request.head(&#123;</span><br><span class="line">		url: url,</span><br><span class="line">		timeout: <span class="number">10000</span>,</span><br><span class="line">		tunnel: <span class="literal">true</span>,</span><br><span class="line">		gzip: <span class="literal">true</span>,</span><br><span class="line">		proxy: <span class="literal">false</span>,</span><br><span class="line">		followRedirect: <span class="literal">false</span></span><br><span class="line">	&#125;, callback);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> now = <span class="built_in">Date</span>.now();</span><br><span class="line">fetch(<span class="string">'http://blog.kazaff.me'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">err, response, body</span>)</span>&#123;</span><br><span class="line">	<span class="built_in">console</span>.log(<span class="string">'lookup time without cache: '</span>, <span class="built_in">Date</span>.now() - now);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>好的，现在打开<code>DNSQuerySniffer</code>，然后先清理一下本地DNS缓存，一切就绪后执行我们的测试脚本<code>node test.js</code>。你会在<code>DNSQuerySniffer</code>中看到一次DNS请求及其相关信息。在一定的时间间隔内，反复运行我们的测试脚本你会发现并不会再次触发DNS请求，这说明什么？<strong>我的win7环境本身就自带操作系统级别的DNS缓存</strong>（只是缓存时间很短）。</p>
+<p>修改我们的测试脚本如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">const</span> dnscache = <span class="built_in">require</span>(<span class="string">'dnscache'</span>)(&#123;</span><br><span class="line">	<span class="string">"enable"</span>: <span class="literal">true</span></span><br><span class="line">&#125;);</span><br><span class="line"><span class="keyword">const</span> Request = <span class="built_in">require</span>(<span class="string">'request'</span>);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">fetch</span>(<span class="params">url, callback</span>)</span>&#123;</span><br><span class="line">	Request.head(&#123;</span><br><span class="line">		url: url,</span><br><span class="line">		timeout: <span class="number">10000</span>,</span><br><span class="line">		tunnel: <span class="literal">true</span>,</span><br><span class="line">		gzip: <span class="literal">true</span>,</span><br><span class="line">		proxy: <span class="literal">false</span>,</span><br><span class="line">		followRedirect: <span class="literal">false</span></span><br><span class="line">	&#125;, callback);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> now = <span class="built_in">Date</span>.now();</span><br><span class="line">fetch(<span class="string">'http://priceline.com'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">err, response, body</span>)</span>&#123;</span><br><span class="line">	<span class="built_in">console</span>.log(<span class="string">'lookup time without cache: '</span>, <span class="built_in">Date</span>.now() - now);</span><br><span class="line"></span><br><span class="line">	setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">			now = <span class="built_in">Date</span>.now();</span><br><span class="line">			fetch(<span class="string">'http://priceline.com'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">err, response, body</span>)</span>&#123;</span><br><span class="line">				<span class="built_in">console</span>.log(<span class="string">'lookup time with cache: '</span>, <span class="built_in">Date</span>.now() - now);</span><br><span class="line">			&#125;);</span><br><span class="line">	&#125;, <span class="number">2000</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>这次我们在执行测试脚本后，快速清空本地DNS缓存（如果你手速不快，可以适当延长setTimeout的触发间隔），你会发现，两秒后的http请求并没有重新查询DNS，这说明什么？很明显，<strong>我们的应用自己维护了DNS缓存</strong>，所以第二次请求根本就不会关心操作系统本地是否存在对应的DNS缓存记录。</p>
+<p>SO，我们如果不想让自己的程序依赖操作系统环境，那现在就可以自己来维护DNS解析记录了，哇啦~</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.382Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2016/11/15/nodejs下DNS缓存问题/" target="_blank" rel="external">https://blog.kazaff.me/2016/11/15/nodejs下DNS缓存问题/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dnscache/">dnscache</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/request/">request</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/window/">window</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2016/11/15/nodejs下DNS缓存问题/&title=《nodejs下DNS缓存问题》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2016/11/15/nodejs下DNS缓存问题/&title=《nodejs下DNS缓存问题》 — kazaff's blog&source=无意间看到一个文章，是关于nodejs下发送http请求不会缓存dns结果的。这意味着，如果你基于nodejs写了一个http采集程序，不提供dns缓存则..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2016/11/15/nodejs下DNS缓存问题/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《nodejs下DNS缓存问题》 — kazaff's blog&url=https://blog.kazaff.me/2016/11/15/nodejs下DNS缓存问题/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2016/11/15/nodejs下DNS缓存问题/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2016/12/11/去年的今天就是你的deadline/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">去年的今天就是你的Deadline</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2016/11/14/javascript项目单元测试小结/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Javascript项目单元测试小结</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2016/11/15/nodejs下DNS缓存问题/&title=《nodejs下DNS缓存问题》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2016/11/15/nodejs下DNS缓存问题/&title=《nodejs下DNS缓存问题》 — kazaff's blog&source=无意间看到一个文章，是关于nodejs下发送http请求不会缓存dns结果的。这意味着，如果你基于nodejs写了一个http采集程序，不提供dns缓存则..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2016/11/15/nodejs下DNS缓存问题/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《nodejs下DNS缓存问题》 — kazaff's blog&url=https://blog.kazaff.me/2016/11/15/nodejs下DNS缓存问题/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2016/11/15/nodejs下DNS缓存问题/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2016/11/15/nodejs下DNS缓存问题/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

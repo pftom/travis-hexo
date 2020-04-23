@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>dubbox新增的REST协议分析 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="rest,dubbo,dubbox,协议,RESTEasy,tomcat-embed">
+    <meta name="description" content="我们今天来看一下dubbox多出来的那个“x”都包含什么，当然一定会存在遗落，毕竟我是从一个第三方使用者的角度来总结的。之前也写了几篇关于dubbo的文章，虽然都加了dubbox的tag，但这一篇才是真正的只与dubbox相关的哟~">
+<meta name="keywords" content="rest,dubbo,dubbox,协议,RESTEasy,tomcat-embed">
+<meta property="og:type" content="article">
+<meta property="og:title" content="dubbox新增的REST协议分析">
+<meta property="og:url" content="https://blog.kazaff.me/2015/03/12/dubbox新增的REST协议分析/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="我们今天来看一下dubbox多出来的那个“x”都包含什么，当然一定会存在遗落，毕竟我是从一个第三方使用者的角度来总结的。之前也写了几篇关于dubbo的文章，虽然都加了dubbox的tag，但这一篇才是真正的只与dubbox相关的哟~">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/EvwMF0Rm/Br6Hp.png">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="dubbox新增的REST协议分析">
+<meta name="twitter:description" content="我们今天来看一下dubbox多出来的那个“x”都包含什么，当然一定会存在遗落，毕竟我是从一个第三方使用者的角度来总结的。之前也写了几篇关于dubbo的文章，虽然都加了dubbox的tag，但这一篇才是真正的只与dubbox相关的哟~">
+<meta name="twitter:image" content="http://pic.yupoo.com/kazaff/EvwMF0Rm/Br6Hp.png">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">dubbox新增的REST协议分析</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">dubbox新增的REST协议分析</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2015-03-12T15:54:30.000Z" itemprop="datePublished" class="page-time">
+  Mar 12 2015
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/j2ee/">j2ee</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#源码解析"><span class="post-toc-number">1.</span> <span class="post-toc-text">源码解析</span></a></li></ol>
+        </nav>
+    </aside>
+    
+<article id="post-dubbox新增的REST协议分析"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">dubbox新增的REST协议分析</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2015年03月12日 15:54" datetime="2015-03-12T15:54:30.000Z"  itemprop="datePublished">Mar 12 2015</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/j2ee/">j2ee</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>我们今天来看一下dubbox多出来的那个“x”都包含什么，当然一定会存在遗落，毕竟我是从一个第三方使用者的角度来总结的。之前也写了几篇关于dubbo的文章，虽然都加了<code>dubbox</code>的tag，但这一篇才是真正的只与dubbox相关的哟~<br><a id="more"></a><br>先从业务应用的角度来看，其实dangdang给dubbo嫁接的rest协议是基于RESTEasy的，并且增加了序列化的方式，还有额外的servlet容器。前两个新增是开发者需要非常熟悉的，毕竟是要常打交道的。servlet容器更多的是和运维人员有交集。</p>
+<p>RESTEasy不熟悉的童鞋（和我一样），不妨先看一些相关的技术文档，我这里粗糙的翻译了一篇，<a href="http://blog.kazaff.me/2015/03/10/%E7%9C%8B%E7%9C%8BRESTEasy/">尽请笑纳</a>。随着你对RESTEasy的熟悉，你会发现dubbox中很多的新增特性都是RESTEasy带来的，遵循JAX-RS规范。当然dangdang的大牛们也做了很多工作，后面我们一点一点分析。</p>
+<p>这里还要再次说一个关于RESTEasy的小<a href="https://github.com/dangdangdotcom/dubbox/issues/30" target="_blank" rel="noopener">问题</a>，这也是最终有这篇文章的原因。</p>
+<p>序列化部分，dangdang为dubbox新增了fst和kryo两种方式，使用方式和dubbo原有的保持一致，这一部分几乎是对业务透明的，之所以说是几乎，是因为不少大牛提到序列化这部分还是存在不少坑，这就需要我们在开发时进行比较全面的测试，由于我们目前还没正式投入使用，所以暂时就说这么多。</p>
+<p>关于新增的servlet容器，目前知道的就是tomcat-embed，另外如果使用REST协议，还可以使用Tjws容器，不过RESEasy官方推荐这个玩意儿还是建议在测试环境中使用。当然，我们也可以选择使用<code>server=&quot;servlet&quot;</code>来使用外部的servlet容器，例如和其他应用使用同一个tomcat。但是文档上也叮嘱，即便是打算使用外部tomcat，也<strong>尽可能不要和其他应用混合部署，而应该用单独的实例</strong>。</p>
+<p>其实上面说的这些，在dubbox提供的<a href="http://dangdangdotcom.github.io/dubbox/rest.html#show-last-Point" target="_blank" rel="noopener">指南</a>中都有详细的说明，多说只是重复。</p>
+<h2 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h2><p>我们接下来看一下新增的<code>RestProtocol</code>的具体实现。基于之前的分析结果，我们可以直接定位到核心的代码块（doExport）：</p>
+<pre><code>protected &lt;T&gt; Runnable doExport(T impl, Class&lt;T&gt; type, URL url) throws RpcException {
+    String addr = url.getIp() + &quot;:&quot; + url.getPort();
+
+    //这么处理其实是为了配合dubbo的延迟暴露机制，延迟暴露的原理是创建新线程，所以ServiceImplHolder靠ThreadLocal来记录对应的类信息，而不是靠公共变量，避免竞争问题
+    Class implClass = ServiceImplHolder.getInstance().popServiceImpl().getClass();
+
+    //根据url中的地址创建server容器，相同地址的服务使用相同的容器
+    RestServer server = servers.get(addr);
+    if (server == null) {
+        server = serverFactory.createServer(url.getParameter(Constants.SERVER_KEY, &quot;jetty&quot;));   //默认使用jetty，当当推荐使用tomcat
+        server.start(url);
+        servers.put(addr, server);
+    }
+
+    //查看implClass是否包含jax-rs注解
+    final Class resourceDef = GetRestful.getRootResourceClass(implClass) != null ? implClass : type;
+    server.deploy(resourceDef, impl, getContextPath(url));  //在server中部署指定服务
+
+    final RestServer s = server;    //注意这样的写法，java要求线程中只能使用外部final变量
+    return new Runnable() {
+        public void run() {
+            // TODO due to dubbo&apos;s current architecture,
+            // it will be called from registry protocol in the shutdown process and won&apos;t appear in logs
+            s.undeploy(resourceDef);
+        }
+    };
+}
+</code></pre><p>该方法是继承自dubbo原有的<code>AbstractProxyProtocol</code>类：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/EvwMF0Rm/Br6Hp.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p>按照dubbo的逻辑，注意该方法最终返回的是一个可异步执行的callback类，完成的逻辑也很简单，就是从对应的server中把指定资源服务给“卸载”掉。</p>
+<p>我们再来关注一下关于<code>server</code>的逻辑，这部分其实很简单，根据你的配置直接创建对应的server：</p>
+<pre><code>public class RestServerFactory {
+
+    private HttpBinder httpBinder;  //提供http服务的容器
+
+    //该方法为SPI注入时调用，会注入一个httpBinder自适应扩展实例
+    public void setHttpBinder(HttpBinder httpBinder) {
+        this.httpBinder = httpBinder;
+    }
+
+    public RestServer createServer(String name) {
+        // TODO move names to Constants
+        if (&quot;servlet&quot;.equalsIgnoreCase(name) || &quot;jetty&quot;.equalsIgnoreCase(name) || &quot;tomcat&quot;.equalsIgnoreCase(name)) {
+            return new DubboHttpServer(httpBinder);
+    //        } else if (&quot;tjws&quot;.equalsIgnoreCase(name)) {
+    //            return new TjwsServer();
+        } else if (&quot;netty&quot;.equalsIgnoreCase(name)) {
+            return new NettyServer();
+        } else if (&quot;sunhttp&quot;.equalsIgnoreCase(name)) {
+            return new SunHttpServer();
+        } else {
+            throw new IllegalArgumentException(&quot;Unrecognized server name: &quot; + name);
+        }
+    }
+}
+</code></pre><p><code>DubboHttpServer</code>类主要贡酒是完成了RESTEasy和servlet容器的绑定，上面代码的<code>httpBinder</code>代表的就是你要使用的容器，例如tomcat。这部分逻辑你需要结合RESTEasy的初始化步骤来理解，我就不多说了。</p>
+<p>tomcat-embed的使用方式，也非常的直观，结合官方提供的例子即可，也不多说了。</p>
+<p>总之，这篇文章还是很水的，不管怎么说，这就是我这几天来的工作内容。更多内容，敬请期待~~</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.382Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2015/03/12/dubbox新增的REST协议分析/" target="_blank" rel="external">https://blog.kazaff.me/2015/03/12/dubbox新增的REST协议分析/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/RESTEasy/">RESTEasy</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dubbo/">dubbo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dubbox/">dubbox</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rest/">rest</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tomcat-embed/">tomcat-embed</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/协议/">协议</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/03/12/dubbox新增的REST协议分析/&title=《dubbox新增的REST协议分析》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/03/12/dubbox新增的REST协议分析/&title=《dubbox新增的REST协议分析》 — kazaff's blog&source=我们今天来看一下dubbox多出来的那个“x”都包含什么，当然一定会存在遗落，毕竟我是从一个第三方使用者的角度来总结的。之前也写了几篇关于dubbo的文章..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/03/12/dubbox新增的REST协议分析/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《dubbox新增的REST协议分析》 — kazaff's blog&url=https://blog.kazaff.me/2015/03/12/dubbox新增的REST协议分析/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/03/12/dubbox新增的REST协议分析/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2015/03/13/dubbo的缓存实现/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Dubbo的缓存分析</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2015/03/10/看看RESTEasy/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">RESTEasy指南</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/03/12/dubbox新增的REST协议分析/&title=《dubbox新增的REST协议分析》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/03/12/dubbox新增的REST协议分析/&title=《dubbox新增的REST协议分析》 — kazaff's blog&source=我们今天来看一下dubbox多出来的那个“x”都包含什么，当然一定会存在遗落，毕竟我是从一个第三方使用者的角度来总结的。之前也写了几篇关于dubbo的文章..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/03/12/dubbox新增的REST协议分析/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《dubbox新增的REST协议分析》 — kazaff's blog&url=https://blog.kazaff.me/2015/03/12/dubbox新增的REST协议分析/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/03/12/dubbox新增的REST协议分析/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2015/03/12/dubbox新增的REST协议分析/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

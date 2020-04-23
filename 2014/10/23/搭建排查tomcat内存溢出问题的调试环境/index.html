@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>搭建排查Tomcat内存溢出问题的调试环境 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="jvm,jconsole,jprofiler,内存溢出">
+    <meta name="description" content="上个月赶工上线的门户网站，由于种种原因导致部署到线上服务器后每隔一段时间后就会导致tomcat内存溢出，今天我就要来直面这个棘手的问题。">
+<meta name="keywords" content="jvm,jconsole,jprofiler,内存溢出">
+<meta property="og:type" content="article">
+<meta property="og:title" content="搭建排查Tomcat内存溢出问题的调试环境">
+<meta property="og:url" content="https://blog.kazaff.me/2014/10/23/搭建排查tomcat内存溢出问题的调试环境/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="上个月赶工上线的门户网站，由于种种原因导致部署到线上服务器后每隔一段时间后就会导致tomcat内存溢出，今天我就要来直面这个棘手的问题。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff_v/E8qo6nio/W5piy.png">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff_v/E8rChOsQ/FN83O.png">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.386Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="搭建排查Tomcat内存溢出问题的调试环境">
+<meta name="twitter:description" content="上个月赶工上线的门户网站，由于种种原因导致部署到线上服务器后每隔一段时间后就会导致tomcat内存溢出，今天我就要来直面这个棘手的问题。">
+<meta name="twitter:image" content="http://pic.yupoo.com/kazaff_v/E8qo6nio/W5piy.png">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">搭建排查Tomcat内存溢出问题的调试环境</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">搭建排查Tomcat内存溢出问题的调试环境</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2014-10-23T09:37:12.000Z" itemprop="datePublished" class="page-time">
+  Oct 23 2014
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/j2ee/">j2ee</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#jconsole"><span class="post-toc-number">1.</span> <span class="post-toc-text">jconsole</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#JProfiler"><span class="post-toc-number">2.</span> <span class="post-toc-text">JProfiler</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#测试代码"><span class="post-toc-number">3.</span> <span class="post-toc-text">测试代码</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#关于内存溢出"><span class="post-toc-number">4.</span> <span class="post-toc-text">关于内存溢出</span></a></li></ol>
+        </nav>
+    </aside>
+    
+<article id="post-搭建排查tomcat内存溢出问题的调试环境"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">搭建排查Tomcat内存溢出问题的调试环境</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2014年10月23日 9:37" datetime="2014-10-23T09:37:12.000Z"  itemprop="datePublished">Oct 23 2014</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/j2ee/">j2ee</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>上个月赶工上线的门户网站，由于种种原因导致部署到线上服务器后每隔一段时间后就会导致tomcat内存溢出，今天我就要来直面这个棘手的问题。</p>
+<a id="more"></a>
+<p>要解决的问题对我来说还是有点难度的，原因有二：</p>
+<ol>
+<li>代码不是我写的；</li>
+<li>我对java并不熟悉。</li>
+</ol>
+<p>废话不多说，就由我这个小白依靠GG带领大家来启程吧！</p>
+<p>凭借我多年的编程经验，我认为首先要找到趁手的工具，那么，问题就来了，挖掘机技术到底哪家强？……</p>
+<p>好吧，GG一下，可以很容易查到很多用来监控jvm实时状态的工具，我们以jconsole为第一款尝试的工具吧。</p>
+<h2 id="jconsole"><a href="#jconsole" class="headerlink" title="jconsole"></a>jconsole</h2><p>这里要说明的是，我们需要搭建的监控环境是在win桌面机上远程监控一台centos服务器。按照网上说的，搭建起这么一个环境没有多大难度，大家可以参考这里：<a href="http://zhumeng8337797.blog.163.com/blog/static/100768914201282833448384/" target="_blank" rel="noopener">传送门</a>。</p>
+<p>如果你像我一样碰到了timeout提示，那多半就是centos防火墙拦截导致的，可以暂时关闭防火墙再尝试一下：</p>
+<pre><code>/etc/init.d/iptables stop
+</code></pre><p>好的，终于有了一个监控界面了，是不是感觉心里敞亮了不少呢？不过我感觉还是太笼统了，只能大概知道jvm的状况，而对于我们要排查代码导致的内存泄露问题似乎并没有帮到太大的忙~~</p>
+<p>不过可以通过提供的一些信息来判断是否配置了比较合理的参数，比方说可以通过<code>GC时间</code>看出是否给tomcat分配了适当的内存大小，尽可能的设置一个合理的内存来减少gc的次数和耗时。</p>
+<p>那我们接下来换哪个工具呢？</p>
+<h2 id="JProfiler"><a href="#JProfiler" class="headerlink" title="JProfiler"></a>JProfiler</h2><p>好吧，上大杀器！无需我多讲，我相信没有人会对我的选择有质疑吧？哇哈哈哈哈哈~~不过JProfiler是个商用产品，钱花到位才能享受生活，这一点儿错都没有。</p>
+<p>大家可以参考下面这些链接，相信你们很快就能搭建成功：</p>
+<p><a href="http://www.flybi.net/article/101" target="_blank" rel="noopener">传送门1</a>,<a href="http://sgq0085.iteye.com/blog/1947526" target="_blank" rel="noopener">传送门2</a>,<a href="http://blog.csdn.net/attilax/article/details/17077857" target="_blank" rel="noopener">传送门3</a></p>
+<p>按照上面提供的信息，我相信你很顺利就能安装部署完毕jprofiler（毕竟是商用产品嘛，肯定做的足够简单），但如果你和我一样是第一次用这个玩意儿，肯定会被它的默认界面震出翔！</p>
+<p>不要pia，先阅读一下这篇文章： <a href="http://www.cnblogs.com/jayzee/p/3184087.html" target="_blank" rel="noopener">传送门</a>。</p>
+<p>这里要提到的一点是，可能是软件版本的原因，按照上面前辈说的方法我却死活查不到方法调用Tree，查了一下GG才发现是需要调整配置选项，如下图：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff_v/E8qo6nio/W5piy.png" alt="查看调用轨迹" title>
+                </div>
+                <div class="image-caption">查看调用轨迹</div>
+            </figure>
+<p>我这属于暴力解决吧，毕竟我把能开启的选项都选中了，不过想得到的问题也就是速度慢点，对于远程连接方式来说带宽占用多一些而已吧~~</p>
+<h2 id="测试代码"><a href="#测试代码" class="headerlink" title="测试代码"></a>测试代码</h2><p>找到了趁手的兵器，下一步就是要挖的坑了！哦，no，是一段会造成内存溢出的测试代码，我简单地修改了一下tomcat提供的例子中的<code>HelloWorldExample.java</code>：</p>
+<pre><code>import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ResourceBundle;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import java.util.ArrayList;
+
+public class HelloWorldExample extends HttpServlet {
+
+    private static final long serialVersionUID = 1L;
+
+    private static ArrayList list = new ArrayList();
+
+    @Override
+    public void doGet(HttpServletRequest request,
+                      HttpServletResponse response)
+        throws IOException, ServletException
+    {
+        ResourceBundle rb =
+            ResourceBundle.getBundle(&quot;LocalStrings&quot;,request.getLocale());
+        response.setContentType(&quot;text/html&quot;);
+        PrintWriter out = response.getWriter();
+
+        out.println(&quot;&lt;html&gt;&quot;);
+        out.println(&quot;&lt;head&gt;&quot;);
+        out.println(&quot;&lt;/head&gt;&quot;);
+        out.println(&quot;&lt;body bgcolor=\&quot;white\&quot;&gt;&quot;);
+
+
+    for(int i=0; i &lt; 1000; i++){
+        //Object o = new String(&quot;by kazaff, index is :&quot; + i);
+        HelloWorldExample.list.add(new kazaffBean());
+        //o = null;    
+    }    
+
+    out.println(&quot;&lt;div&gt;kazaff in here!!!!!!!&lt;/div&gt;&quot;);    
+
+    out.println(&quot;&lt;/body&gt;&quot;);
+        out.println(&quot;&lt;/html&gt;&quot;);
+
+    }
+}
+
+class kazaffBean {
+    String name= &quot;&quot;;
+}
+</code></pre><p>然后我们还要手动编译修改后的java代码，进入到<code>/usr/local/apache-tomcat-7.0.53/webapps/examples/WEB-INF/classes/HelloWorldExample.java</code>所在的文件夹中，执行下面的命令：</p>
+<pre><code>javac HelloWorldExample.java -cp /usr/local/apache-tomcat-7.0.53/lib/servlet-api.jar 
+</code></pre><p>当然，你的tomcat路径和我的很可能不同，酌情修改即可~~</p>
+<p>然后我们重启tomcat，对了，重启之前最好改一下分配给tomcat的内存上限，改小一些，有助于问题快速的暴露：</p>
+<pre><code>-Xms20m -Xmx20m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/www/java-OOM/
+</code></pre><p>后面的两个<code>-XX</code>参数是用来让jvm在出现OOM后自动保存内存堆栈快照信息用的，方便我们排查问题。</p>
+<p>重启吧，然后为了加速内存溢出，我们可以使用apache自带的<code>ab</code>做压力测试：</p>
+<pre><code>ab -c 100 -n 10000 http://192.168.153.128:81/examples/jsp/
+</code></pre><p>执行上面的这条命令后，基本上tomcat肯定就已经挂掉了，注意，我说的是tomcat挂掉了！也就是说你在终端中执行<code>jps</code>命令，不再会看到<code>Bootstrap</code>这个进程了！我之所以强调这一点，是因为我在测试中发现直接导致<code>jconsole</code>断开连接，并且再也无法建立连接。</p>
+<p>而奇怪的是，<code>jprofiler</code>照常可以连接并获取到远程服务器上的jvm的监控数据，这种情况一度使我陷入深深的迷惘。因为我在tomcat的logs里死活找不到任何关于内存溢出或其他异常的记录，直到我的目光落在终端上：</p>
+<pre><code>Exception: java.lang.OutOfMemoryError thrown from the UncaughtExceptionHandler in thread &quot;http-bio-81-exec-13&quot;
+……
+java.lang.OutOfMemoryError: GC overhead limit exceeded
+……
+java.lang.OutOfMemoryError: Java heap space
+……
+Exception in thread &quot;RMI TCP Connection(idle)&quot; java.lang.OutOfMemoryError: Java heap space
+</code></pre><p>这才是乖孩子嘛，就应该是这样的才对嘛~~不过还有几个点想不明白：</p>
+<ul>
+<li>虽然<code>jps</code>已经查不到tomcat的进程，但是从jprofiler的线程监控中还是可以看到相关的线程，如下图：</li>
+</ul>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff_v/E8rChOsQ/FN83O.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<ul>
+<li>既然tomcat都已经挂了，为什么<code>jprofiler</code>没有像<code>jconsole</code>那样连接断开呢？</li>
+</ul>
+<p>我这种小白目前是搞不定这两个问题了，还是抛到社区给大牛们分析吧。我们继续往下走~</p>
+<h2 id="关于内存溢出"><a href="#关于内存溢出" class="headerlink" title="关于内存溢出"></a>关于内存溢出</h2><p>通过我上面列出的异常信息，已经是非常常见的了，对于一些java老鸟而言肯定是再熟悉不过的了！不过我还是找到了一篇排版不咋滴但是比较全面的文章： <a href="http://yanguz123.iteye.com/blog/2017335" target="_blank" rel="noopener">传送门</a>。</p>
+<p>到此为止，就算做好了一切准备，可以去真正的项目上搞了！</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.386Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2014/10/23/搭建排查tomcat内存溢出问题的调试环境/" target="_blank" rel="external">https://blog.kazaff.me/2014/10/23/搭建排查tomcat内存溢出问题的调试环境/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jconsole/">jconsole</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jprofiler/">jprofiler</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jvm/">jvm</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/内存溢出/">内存溢出</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2014/10/23/搭建排查tomcat内存溢出问题的调试环境/&title=《搭建排查Tomcat内存溢出问题的调试环境》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2014/10/23/搭建排查tomcat内存溢出问题的调试环境/&title=《搭建排查Tomcat内存溢出问题的调试环境》 — kazaff's blog&source=上个月赶工上线的门户网站，由于种种原因导致部署到线上服务器后每隔一段时间后就会导致tomcat内存溢出，今天我就要来直面这个棘手的问题。" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2014/10/23/搭建排查tomcat内存溢出问题的调试环境/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《搭建排查Tomcat内存溢出问题的调试环境》 — kazaff's blog&url=https://blog.kazaff.me/2014/10/23/搭建排查tomcat内存溢出问题的调试环境/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2014/10/23/搭建排查tomcat内存溢出问题的调试环境/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2014/10/24/java web中的session新手向/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Java Web中的session新手向</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2014/10/23/javaEE部署项目新手向/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">javaEE部署项目新手向</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2014/10/23/搭建排查tomcat内存溢出问题的调试环境/&title=《搭建排查Tomcat内存溢出问题的调试环境》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2014/10/23/搭建排查tomcat内存溢出问题的调试环境/&title=《搭建排查Tomcat内存溢出问题的调试环境》 — kazaff's blog&source=上个月赶工上线的门户网站，由于种种原因导致部署到线上服务器后每隔一段时间后就会导致tomcat内存溢出，今天我就要来直面这个棘手的问题。" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2014/10/23/搭建排查tomcat内存溢出问题的调试环境/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《搭建排查Tomcat内存溢出问题的调试环境》 — kazaff's blog&url=https://blog.kazaff.me/2014/10/23/搭建排查tomcat内存溢出问题的调试环境/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2014/10/23/搭建排查tomcat内存溢出问题的调试环境/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2014/10/23/搭建排查tomcat内存溢出问题的调试环境/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

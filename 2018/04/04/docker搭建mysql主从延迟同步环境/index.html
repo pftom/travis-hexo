@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>Docker搭建mysql主从延迟同步环境 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="dataloader,resolver">
+    <meta name="description" content="最近打算为项目的数据库进行优化，考虑读写分离。目前打算再搭建一个中间件Atlas，放在mysql服务器前面，这样数据库的读写分类就不会被项目业务代码感知到。当然，也不是完全感知不到，一些业务还是需要强制读主库的。 考虑到Atlas提供的/*master*/语法我不是百分百确定，因为项目用到各种语言的mysql库，我觉得有必要测试一下在所有语言下这个特性都能得到正确的执行。基于这个原因，我决定要手动">
+<meta name="keywords" content="dataloader,resolver">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker搭建mysql主从延迟同步环境">
+<meta property="og:url" content="https://blog.kazaff.me/2018/04/04/docker搭建mysql主从延迟同步环境/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="最近打算为项目的数据库进行优化，考虑读写分离。目前打算再搭建一个中间件Atlas，放在mysql服务器前面，这样数据库的读写分类就不会被项目业务代码感知到。当然，也不是完全感知不到，一些业务还是需要强制读主库的。 考虑到Atlas提供的/*master*/语法我不是百分百确定，因为项目用到各种语言的mysql库，我觉得有必要测试一下在所有语言下这个特性都能得到正确的执行。基于这个原因，我决定要手动">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Docker搭建mysql主从延迟同步环境">
+<meta name="twitter:description" content="最近打算为项目的数据库进行优化，考虑读写分离。目前打算再搭建一个中间件Atlas，放在mysql服务器前面，这样数据库的读写分类就不会被项目业务代码感知到。当然，也不是完全感知不到，一些业务还是需要强制读主库的。 考虑到Atlas提供的/*master*/语法我不是百分百确定，因为项目用到各种语言的mysql库，我觉得有必要测试一下在所有语言下这个特性都能得到正确的执行。基于这个原因，我决定要手动">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Docker搭建mysql主从延迟同步环境</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Docker搭建mysql主从延迟同步环境</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2018-04-04T10:37:12.000Z" itemprop="datePublished" class="page-time">
+  Apr 4 2018
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/运维/">运维</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+<article id="post-docker搭建mysql主从延迟同步环境"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Docker搭建mysql主从延迟同步环境</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2018年04月04日 10:37" datetime="2018-04-04T10:37:12.000Z"  itemprop="datePublished">Apr 4 2018</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/运维/">运维</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>最近打算为项目的数据库进行优化，考虑读写分离。目前打算再搭建一个中间件Atlas，放在mysql服务器前面，这样数据库的读写分类就不会被项目业务代码感知到。当然，也不是完全感知不到，一些业务还是需要强制读主库的。</p>
+<p>考虑到Atlas提供的<code>/*master*/</code>语法我不是百分百确定，因为项目用到各种语言的mysql库，我觉得有必要测试一下在所有语言下这个特性都能得到正确的执行。基于这个原因，我决定要手动搭建一个测试环境。</p>
+<p>这个测试环境主要是要模拟主从同步延迟，我们就靠这个延迟的时间窗口，来判断到底程序中的逻辑是与主库还是从库打交道。可能有其它的更便利的方案来完成这个判断，但我确实不知道，有知道的同学可以留言教教我。</p>
+<p>不过，搭建这个环境的过程中还是收获不少呢（坑真多）！下面就分享给大家~</p>
+<p>首先，我在自己的工作机上来模拟环境，意味着我要在window10系统中来搭建整个环境，为了便利，我会使用docker来分别安装主从mysql节点。GG了一下相关的文章，还是相当多的，我选择了mysql官方提供的<a href="https://hub.docker.com/_/mysql/" target="_blank" rel="noopener">docker镜像</a>，按照<a href="https://www.jianshu.com/p/ab20e835a73f" target="_blank" rel="noopener">简书的这篇分享</a>来完成主从设置。起初觉得一切都很顺利哟。然而一切都是tm的假象！</p>
+<p>由于我使用的是mysql官方镜像，它的设置mysql配置的方式和参考文章中的不太一致，我按照官方规范来自定义mysql配置文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --name mysql_master -v /d/atlas/master:/etc/mysql/conf.d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=123456 -d mysql:latest</span><br></pre></td></tr></table></figure>
+<p>由于我用的是window10下的docker，所以我无法像教程中那样自然的把本地文件(<code>/d/atlas/master</code>)映射到容器里，注意我这里故意写的不是 <strong>系统用户路径</strong>，如果你上来就使用的系统用户路径，那你可能会绕过这个坑哟~，但我觉得谁都不会把项目代码直接丢在系统用户目录下吧？！</p>
+<p>无法映射，意味着mysql容器无法自定义，GG了一下，发现是因为win环境下需要手动在虚拟主机上做一下文件共享设置，详细步骤可以看<a href="https://segmentfault.com/q/1010000009469821/a-1020000009484599" target="_blank" rel="noopener">segmentfault上的一个提问</a>。</p>
+<p>好了，第一个坑搞定了。</p>
+<p>别高兴太早哟，我继续按照教程启动mysql容器，一切正常，但发现在主节点上执行<code>show master status;</code>这个命令无法看到结果，登录到容器内部执行<code>service mysql status</code>命令发现报警告：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Warning: World-writable config file &apos;/etc/mysql/conf.d/config-file.cnf&apos; is ignored</span><br></pre></td></tr></table></figure>
+<p>原因是mysql的安全机制认为配置文件的权限分配的太大，直接将其忽略了。。。。继续GG，试了好几个方案都没有搞定。就在我决定切换到linux环境下从头再来的时候，在<a href="https://stackoverflow.com/questions/35367935/mysql-in-docker-on-windows-world-writable-files-ignored" target="_blank" rel="noopener">stackoverflow</a>看到了一个简单粗暴的解决方案：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">//启动容器</span><br><span class="line">$ docker run --name mysql_slave -v /c/Users/youyou/atlas/slave:/kazaff -p 3307:3306 -e MYSQL_ROOT_PASSWORD=123456 -d my</span><br><span class="line">sql:latest</span><br><span class="line"></span><br><span class="line">// 进入容器内部执行下面命令</span><br><span class="line">cp /kazaff/config-file.cnf /etc/mysql/conf.d/</span><br><span class="line">    &amp;&amp; chmod 644 /etc/mysql/conf.d/config-file.cnf</span><br></pre></td></tr></table></figure>
+<p>这样我们就曲线救国式的创建了一个满足mysql安全要求的配置文件。第二个坑搞定了。</p>
+<p>按照教程我执行<code>START SLAVE</code>命令，发现从库的状态始终是<code>Slave_IO_Running=NO</code>，查了一圈，网上各种解决方案，但我却不知道哪个适合我。我连上节点查看mysql的erro.log也没有看到对应的错误信息。最后竟然发现，执行<code>SHOW SLAVE STATUS</code>命令的结果里，其实包含了错误信息：<code>Last_IO_Error</code>，<code>Last_SQL_Error</code>。一看就明白了，原来我主从节点配置文件里的<code>server_id</code>写重复了（其实是因为从节点中错误导入了主节点的配置文件）。第三个坑搞定了。</p>
+<p>继续按照教程做，直至结束。我们就得到了一个实时同步的主从环境。</p>
+<p>接下来我们链接到从库上，执行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">STOP SLAVE;</span><br><span class="line">CHANGE MASTER TO MASTER_DELAY=30;</span><br><span class="line">START SLAVE;</span><br></pre></td></tr></table></figure>
+<p>我们目的达到了，现在主从节点之间同步数据会有个30秒的延迟时间窗口，接下来我们就可以来搭建Atlas节点了。放在下一篇文章继续吧~~嘿嘿嘿</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.382Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2018/04/04/docker搭建mysql主从延迟同步环境/" target="_blank" rel="external">https://blog.kazaff.me/2018/04/04/docker搭建mysql主从延迟同步环境/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dataloader/">dataloader</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/resolver/">resolver</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2018/04/04/docker搭建mysql主从延迟同步环境/&title=《Docker搭建mysql主从延迟同步环境》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2018/04/04/docker搭建mysql主从延迟同步环境/&title=《Docker搭建mysql主从延迟同步环境》 — kazaff's blog&source=develop,code,full-stack,architecture,deploy,database,test" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2018/04/04/docker搭建mysql主从延迟同步环境/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Docker搭建mysql主从延迟同步环境》 — kazaff's blog&url=https://blog.kazaff.me/2018/04/04/docker搭建mysql主从延迟同步环境/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2018/04/04/docker搭建mysql主从延迟同步环境/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2018/04/05/docker搭建360atlas环境/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Docker搭建360atlas环境</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2018/04/03/ali云ECS的一次迁移事故/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">ali云ECS的一次迁移事故</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2018/04/04/docker搭建mysql主从延迟同步环境/&title=《Docker搭建mysql主从延迟同步环境》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2018/04/04/docker搭建mysql主从延迟同步环境/&title=《Docker搭建mysql主从延迟同步环境》 — kazaff's blog&source=develop,code,full-stack,architecture,deploy,database,test" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2018/04/04/docker搭建mysql主从延迟同步环境/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Docker搭建mysql主从延迟同步环境》 — kazaff's blog&url=https://blog.kazaff.me/2018/04/04/docker搭建mysql主从延迟同步环境/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2018/04/04/docker搭建mysql主从延迟同步环境/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2018/04/04/docker搭建mysql主从延迟同步环境/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

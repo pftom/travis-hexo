@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>Dubbo的服务治理细节 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="dubbo,dubbox,soa,负载均衡,路由,集群">
+    <meta name="description" content="如果说单单只完成远程调用的话，dubbo还算不上是一个合格的SOA服务架构，而它之所以那么碉堡，是因为它还提供了服务治理的功能，今天就让我们来研究一下关于服务治理，dubbo都做了什么。">
+<meta name="keywords" content="dubbo,dubbox,soa,负载均衡,路由,集群">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Dubbo的服务治理细节">
+<meta property="og:url" content="https://blog.kazaff.me/2015/02/02/dubbo的服务治理细节/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="如果说单单只完成远程调用的话，dubbo还算不上是一个合格的SOA服务架构，而它之所以那么碉堡，是因为它还提供了服务治理的功能，今天就让我们来研究一下关于服务治理，dubbo都做了什么。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/EopVm33y/Rzbmx.jpg">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/EpluFFDn/KIoh9.png">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/EplGoQvX/HGn7S.png">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/EplGpS9R/s9XJ2.png">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/EplGqBu7/wFdrA.png">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/EplH3FBD/n5KTo.png">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/EplGCTY9/BtehS.png">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/Epl1KPlv/RI5VI.png">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Dubbo的服务治理细节">
+<meta name="twitter:description" content="如果说单单只完成远程调用的话，dubbo还算不上是一个合格的SOA服务架构，而它之所以那么碉堡，是因为它还提供了服务治理的功能，今天就让我们来研究一下关于服务治理，dubbo都做了什么。">
+<meta name="twitter:image" content="http://pic.yupoo.com/kazaff/EopVm33y/Rzbmx.jpg">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Dubbo的服务治理细节</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Dubbo的服务治理细节</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2015-02-02T15:54:30.000Z" itemprop="datePublished" class="page-time">
+  Feb 2 2015
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/j2ee/">j2ee</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#集群"><span class="post-toc-number">1.</span> <span class="post-toc-text">集群</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#路由和配置"><span class="post-toc-number">2.</span> <span class="post-toc-text">路由和配置</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#负载均衡"><span class="post-toc-number">3.</span> <span class="post-toc-text">负载均衡</span></a></li></ol>
+        </nav>
+    </aside>
+    
+<article id="post-dubbo的服务治理细节"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Dubbo的服务治理细节</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2015年02月02日 15:54" datetime="2015-02-02T15:54:30.000Z"  itemprop="datePublished">Feb 2 2015</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/j2ee/">j2ee</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>如果说单单只完成远程调用的话，dubbo还算不上是一个合格的SOA服务架构，而它之所以那么碉堡，是因为它还提供了服务治理的功能，今天就让我们来研究一下关于服务治理，dubbo都做了什么。<br><a id="more"></a><br>听起来服务治理挺高大上的，但其实做的都是一些非常琐碎的事儿，了解了dubbo的做法，你就会发觉其实一切并没有想的那么复杂。远程调用要解决的最本质的问题是通信，通信就好像人和人之间的互动，有效的沟通建立在双方彼此了解的基础上（我们团队在沟通上就有死穴），同样道理，服务提供方和消费方之间要相互了解对方的基本情况，才能做到更好的完成远程调用。这里面就要提到dubbo的做法：<strong>URL</strong>。</p>
+<p>前几篇中大量提到dubbo的分层之间是依靠什么纽带工作的：invoker，没错，比invoker更low的就是URL，这是dubbo带给我的另一个非常重要的经验。才疏学浅，并不知道dubbo是借鉴的哪里，但影响了全世界的WEB就是依赖URL机制建立了互联网帝国的！</p>
+<p>依赖URL机制，dubbo不仅打通了通信两端，而且还靠URL机制完成了服务治理的任务。我们可以先看一下这些内容：</p>
+<ul>
+<li><a href="http://alibaba.github.io/dubbo-doc-static/Router+Rule-zh.htm" target="_blank" rel="noopener">路由规则</a></li>
+<li><a href="http://alibaba.github.io/dubbo-doc-static/Configurator+Rule-zh.htm" target="_blank" rel="noopener">配置规则</a></li>
+<li><a href="http://alibaba.github.io/dubbo-doc-static/Service+Degradation-zh.htm" target="_blank" rel="noopener">服务降级</a></li>
+<li><a href="http://alibaba.github.io/dubbo-doc-static/Load+Balance-zh.htm" target="_blank" rel="noopener">负载均衡</a></li>
+</ul>
+<p>其实dubbo的路由和集群是在服务暴露，服务发现，服务引用中透明完成的，暴露给其他层的是同一个接口类型：Invoker。<a href="http://alibaba.github.io/dubbo-doc-static/Fault+Tolerance-zh.htm" target="_blank" rel="noopener">dubbo官方</a>提供了一张巨清晰无比的图：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/EopVm33y/Rzbmx.jpg" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p>这张图是站在服务消费方的视角来看的（<strong>dubbo的服务治理都是针对服务消费方的</strong>），当业务逻辑中需要调用一个服务时，你真正调用的其实是dubbo创建的一个proxy，该proxy会把调用转化成调用指定的invoker（cluster封装过的）。而在这一系列的委托调用的过程里就完成了服务治理的逻辑，最终完成调用。</p>
+<h2 id="集群"><a href="#集群" class="headerlink" title="集群"></a>集群</h2><p>当相同服务由多个提供方同时提供时，消费方就需要有个选择的步骤，就好比你去电商平台买一本书，你自然会看一下哪儿买的最便宜。同样，消费方也需要根据需求选择到底使用哪个提供方的服务，而集群的主要作用就是从<strong>容错</strong>的维度来帮我们选择合适的服务提供方。</p>
+<p>我们需要从<code>Protocol</code>接口的部分定义开始：</p>
+<pre><code>/**
+ * 引用远程服务：&lt;br&gt;
+ * 1. 当用户调用refer()所返回的Invoker对象的invoke()方法时，协议需相应执行同URL远端export()传入的Invoker对象的invoke()方法。&lt;br&gt;
+ * 2. refer()返回的Invoker由协议实现，协议通常需要在此Invoker中发送远程请求。&lt;br&gt;
+ * 3. 当url中有设置check=false时，连接失败不能抛出异常，并内部自动恢复。&lt;br&gt;
+ * 
+ * @param &lt;T&gt; 服务的类型
+ * @param type 服务的类型
+ * @param url 远程服务的URL地址
+ * @return invoker 服务的本地代理
+ * @throws RpcException 当连接服务提供方失败时抛出
+ */
+@Adaptive
+&lt;T&gt; Invoker&lt;T&gt; refer(Class&lt;T&gt; type, URL url) throws RpcException;
+</code></pre><p>注意这个方法的返回值，根据我们这一系列文章一直使用的场景（有注册中心），看一下<code>RegistryProtocol.doRefer</code>方法的最后一行：</p>
+<pre><code>return cluster.join(directory);
+</code></pre><p>之前的文章提到过这个<code>directory</code>，它在后面我们会再次提到，这里你只需要知道它不是我们需要的invoker类型，那么这个<code>cluster</code>对象又是什么呢？根据dubbo的SPI机制，我们知道，这里的cluster是动态创建的自适应扩展点：</p>
+<pre><code>package com.alibaba.dubbo.rpc.cluster;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+
+public class Cluster$Adpative implements com.alibaba.dubbo.rpc.cluster.Cluster {
+
+    public com.alibaba.dubbo.rpc.Invoker join(com.alibaba.dubbo.rpc.cluster.Directory arg0) throws com.alibaba.dubbo.rpc.cluster.Directory {
+
+        if (arg0 == null)
+            throw new IllegalArgumentException(&quot;com.alibaba.dubbo.rpc.cluster.Directory argument == null&quot;);
+
+        if (arg0.getUrl() == null)
+            throw new IllegalArgumentException(&quot;com.alibaba.dubbo.rpc.cluster.Directory argument getUrl() == null&quot;);
+
+        com.alibaba.dubbo.common.URL url = arg0.getUrl();
+        String extName = url.getParameter(&quot;cluster&quot;, &quot;failover&quot;);    //默认使用failover实现
+
+        if(extName == null)
+            throw new IllegalStateException(&quot;Fail to get extension(com.alibaba.dubbo.rpc.cluster.Cluster) name from url(&quot; + url.toString() + &quot;) use keys([cluster])&quot;);
+
+        com.alibaba.dubbo.rpc.cluster.Cluster extension = (com.alibaba.dubbo.rpc.cluster.Cluster)ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.rpc.cluster.Cluster.class).getExtension(extName);
+
+        return extension.join(arg0);
+    }
+}
+</code></pre><p>我们再来看一下默认使用的<code>FailoverCluster</code>定义：</p>
+<pre><code>/**
+ * 失败转移，当出现失败，重试其它服务器，通常用于读操作，但重试会带来更长延迟。 
+ * 
+ * &lt;a href=&quot;http://en.wikipedia.org/wiki/Failover&quot;&gt;Failover&lt;/a&gt;
+ * 
+ * @author william.liangf
+ */
+public class FailoverCluster implements Cluster {
+
+    public final static String NAME = &quot;failover&quot;;
+
+    public &lt;T&gt; Invoker&lt;T&gt; join(Directory&lt;T&gt; directory) throws RpcException {
+        return new FailoverClusterInvoker&lt;T&gt;(directory);
+    }
+}
+</code></pre><p>看到了吗，这就是一开始图上的所表明的，<strong>cluster把存有多个invoker的directory对象封装成了单个的invoker</strong>。我们在来看一下<code>FailoverClusterInvoker</code>类的UML图：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/EpluFFDn/KIoh9.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p>根据官方文档的说明，dubbo提供了多种集群容错方案供我们直接使用，至于各种集群容错模式算法可以交给大家自己阅读源码来消化了，后面只会以<code>FailoverClusterInvoker</code>为基准来讨论。</p>
+<h2 id="路由和配置"><a href="#路由和配置" class="headerlink" title="路由和配置"></a>路由和配置</h2><p>如果说集群帮我们以容错的维度来完成选择，那么路由和配置是在更细颗粒度的层面做的选择，具体有多细，可以从官方文档和dubbo-admin管理后台来了解，如下多图：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/EplGoQvX/HGn7S.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/EplGpS9R/s9XJ2.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/EplGqBu7/wFdrA.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/EplH3FBD/n5KTo.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/EplGCTY9/BtehS.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p>总之很细吧，这么多配置参数最终都会交给谁来管理呢？</p>
+<p>我们需要从<code>Directory</code>接口出发，你应该想到了该接口的一个实现类：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/Epl1KPlv/RI5VI.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p>没错，就是这个<code>RegistryDirectory</code>，它在服务引用时被创建，用于充当url与多invoer的代理（或者叫目录类更合适），从源码可以看出，当服务引用时，对应该服务的目录类实例会负责向注册中心（zookeeper）订阅该服务，第一次订阅会同步拿到当前服务节点的详细信息（也就是所有提供服务的提供方信息，包括：地址，配置，路由等），然后该目录实例会根据这些信息来为后续的服务调用提供支撑。</p>
+<p>根据描述我们可以锁定代码位置，<code>RegistryDirectory.notify</code>：</p>
+<pre><code>......
+// configurators 更新缓存的服务提供方动态配置规则
+if (configuratorUrls != null &amp;&amp; configuratorUrls.size() &gt;0 ){
+    this.configurators = toConfigurators(configuratorUrls);
+}
+// routers  更新缓存的路由配置规则
+if (routerUrls != null &amp;&amp; routerUrls.size() &gt;0 ){
+    List&lt;Router&gt; routers = toRouters(routerUrls);
+    if(routers != null){ // null - do nothing
+        setRouters(routers);
+    }
+}
+......
+</code></pre><p>这些配置在什么时候发挥作用呢？往下看~</p>
+<p>前面说到当调用invoker时，其实调用的是集群模块封装过的代理invoker，那么以我们的场景为例，最终会被调用的是<code>FailoverClusterInvoker.invoke</code>：</p>
+<pre><code>public Result invoke(final Invocation invocation) throws RpcException {
+
+    checkWheatherDestoried();
+
+    LoadBalance loadbalance;
+
+    //这里就是路由，配置等发挥作用地方，返回所有合法的invoker供集群做下一步的筛选        
+    List&lt;Invoker&lt;T&gt;&gt; invokers = list(invocation);
+
+    if (invokers != null &amp;&amp; invokers.size() &gt; 0) {
+        loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
+                .getMethodParameter(invocation.getMethodName(),Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
+    } else {
+        loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(Constants.DEFAULT_LOADBALANCE);
+    }
+    RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
+    return doInvoke(invocation, invokers, loadbalance);
+}
+</code></pre><p>再来看一下这个<code>list</code>方法的定义：</p>
+<pre><code>protected  List&lt;Invoker&lt;T&gt;&gt; list(Invocation invocation) throws RpcException {
+    List&lt;Invoker&lt;T&gt;&gt; invokers = directory.list(invocation);
+    return invokers;
+}
+</code></pre><p>很直接的把选择合法invoker的工作交给了我们的目录类实例，再来看一下directory是怎么list的：</p>
+<pre><code>public List&lt;Invoker&lt;T&gt;&gt; list(Invocation invocation) throws RpcException {
+    if (destroyed){
+        throw new RpcException(&quot;Directory already destroyed .url: &quot;+ getUrl());
+    }
+
+    //根据请求服务的相关参数（方法名等）返回对应的invoker列表
+    List&lt;Invoker&lt;T&gt;&gt; invokers = doList(invocation);
+
+    List&lt;Router&gt; localRouters = this.routers; // local reference
+    if (localRouters != null &amp;&amp; localRouters.size() &gt; 0) {
+        for (Router router: localRouters){
+            try {
+                //是否在每次调用时执行路由规则，否则只在提供者地址列表变更时预先执行并缓存结果，调用时直接从缓存中获取路由结果。
+                //如果用了参数路由，必须设为true，需要注意设置会影响调用的性能，可不填，缺省为flase。
+                if (router.getUrl() == null || router.getUrl().getParameter(Constants.RUNTIME_KEY, true)) {
+                    invokers = router.route(invokers, getConsumerUrl(), invocation);
+                }
+            } catch (Throwable t) {
+                logger.error(&quot;Failed to execute router: &quot; + getUrl() + &quot;, cause: &quot; + t.getMessage(), t);
+            }
+        }
+    }
+
+    return invokers;
+}
+</code></pre><p>到这里我们就已经把路由和配置的相关流程介绍完了，至于路由和配置的具体参数是如何发挥效果的，这个大家可以结合文档提供的实例直接阅读源码即可。</p>
+<h2 id="负载均衡"><a href="#负载均衡" class="headerlink" title="负载均衡"></a>负载均衡</h2><p>到了负载均衡环节，维度就成了<strong>性能</strong>，这个词你可以从gg里搜索大量的相关文献，我就不在这里卖弄了。把焦点拉回到<code>FailoverClusterInvoker.invoke</code>方法：</p>
+<pre><code>......
+if (invokers != null &amp;&amp; invokers.size() &gt; 0) {
+    loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
+            .getMethodParameter(invocation.getMethodName(),Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
+} else {    
+    //todo 如果invokers为空，还有必要往下走么？
+    loadbalance = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(Constants.DEFAULT_LOADBALANCE);
+}
+
+RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
+
+return doInvoke(invocation, invokers, loadbalance);
+......
+</code></pre><p>可以看到，这里就创建了要使用的负载均衡算法，我们接下来看一下到底是怎么使用这个<code>loadbalance</code>对象的，一路跟踪到<code>AbstractClusterInvoker.doselect</code>方法：</p>
+<pre><code>......
+Invoker&lt;T&gt; invoker = loadbalance.select(invokers, getUrl(), invocation);
+......
+</code></pre><p>（其实本人并不喜欢这样截取部分代码展示，因为会让读者很窘迫，不过请相信我，这里这么做可以很好的排除干扰。）可见，最终是依靠负载均衡这最后一道关卡我们总算拿到了要调用的invoker。我们依然不去过多在意算法细节，到目前为止，负载均衡的流程也介绍完了。</p>
+<hr>
+<p>其实dubbo服务治理相关的内容还有很多，官方文档也提供了详细的<a href="http://alibaba.github.io/dubbo-doc-static/User+Guide-zh.htm#UserGuide-zh-%E7%A4%BA%E4%BE%8B" target="_blank" rel="noopener">说明</a>，希望大家都能成为dubbo大牛，bye~</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.382Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2015/02/02/dubbo的服务治理细节/" target="_blank" rel="external">https://blog.kazaff.me/2015/02/02/dubbo的服务治理细节/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dubbo/">dubbo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dubbox/">dubbox</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/soa/">soa</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/负载均衡/">负载均衡</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/路由/">路由</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/集群/">集群</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/02/02/dubbo的服务治理细节/&title=《Dubbo的服务治理细节》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/02/02/dubbo的服务治理细节/&title=《Dubbo的服务治理细节》 — kazaff's blog&source=如果说单单只完成远程调用的话，dubbo还算不上是一个合格的SOA服务架构，而它之所以那么碉堡，是因为它还提供了服务治理的功能，今天就让我们来研究一下关于..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/02/02/dubbo的服务治理细节/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Dubbo的服务治理细节》 — kazaff's blog&url=https://blog.kazaff.me/2015/02/02/dubbo的服务治理细节/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/02/02/dubbo的服务治理细节/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2015/02/06/dubbo的拦截器和监听器/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Dubbo的拦截器和监听器</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2015/01/31/dubbo的服务发现细节/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Dubbo的服务发现细节</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/02/02/dubbo的服务治理细节/&title=《Dubbo的服务治理细节》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/02/02/dubbo的服务治理细节/&title=《Dubbo的服务治理细节》 — kazaff's blog&source=如果说单单只完成远程调用的话，dubbo还算不上是一个合格的SOA服务架构，而它之所以那么碉堡，是因为它还提供了服务治理的功能，今天就让我们来研究一下关于..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/02/02/dubbo的服务治理细节/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Dubbo的服务治理细节》 — kazaff's blog&url=https://blog.kazaff.me/2015/02/02/dubbo的服务治理细节/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/02/02/dubbo的服务治理细节/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2015/02/02/dubbo的服务治理细节/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>传统Web项目代码变更引起的浏览器缓存问题和解决思路 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="webpack,SPA,多入口">
+    <meta name="description" content="不确定文章的标题描述的是否已经足够明了，至少用类似的描述在gg中并没有定位到相关的文章。讨论这个话题的更多是围绕这前端工程化套件的用法的（例如webpack、grunt、gulp等），而这些工具对单入口页面SPA应用支持度非常的好。但现实往往不尽如意，面对传统的多入口web项目，前端又应该如何解决浏览器缓存旧版本代码的问题呢？">
+<meta name="keywords" content="webpack,SPA,多入口">
+<meta property="og:type" content="article">
+<meta property="og:title" content="传统Web项目代码变更引起的浏览器缓存问题和解决思路">
+<meta property="og:url" content="https://blog.kazaff.me/2016/07/26/传统web项目代码变更引起的浏览器缓存问题和解决思路/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="不确定文章的标题描述的是否已经足够明了，至少用类似的描述在gg中并没有定位到相关的文章。讨论这个话题的更多是围绕这前端工程化套件的用法的（例如webpack、grunt、gulp等），而这些工具对单入口页面SPA应用支持度非常的好。但现实往往不尽如意，面对传统的多入口web项目，前端又应该如何解决浏览器缓存旧版本代码的问题呢？">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="传统Web项目代码变更引起的浏览器缓存问题和解决思路">
+<meta name="twitter:description" content="不确定文章的标题描述的是否已经足够明了，至少用类似的描述在gg中并没有定位到相关的文章。讨论这个话题的更多是围绕这前端工程化套件的用法的（例如webpack、grunt、gulp等），而这些工具对单入口页面SPA应用支持度非常的好。但现实往往不尽如意，面对传统的多入口web项目，前端又应该如何解决浏览器缓存旧版本代码的问题呢？">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">传统Web项目代码变更引起的浏览器缓存问题和解决思路</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">传统Web项目代码变更引起的浏览器缓存问题和解决思路</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2016-07-26T16:37:12.000Z" itemprop="datePublished" class="page-time">
+  Jul 26 2016
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/前端/">前端</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+<article id="post-传统web项目代码变更引起的浏览器缓存问题和解决思路"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">传统Web项目代码变更引起的浏览器缓存问题和解决思路</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2016年07月26日 16:37" datetime="2016-07-26T16:37:12.000Z"  itemprop="datePublished">Jul 26 2016</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/前端/">前端</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>不确定文章的标题描述的是否已经足够明了，至少用类似的描述在gg中并没有定位到相关的文章。讨论这个话题的更多是围绕这前端工程化套件的用法的（例如webpack、grunt、gulp等），而这些工具对单入口页面SPA应用支持度非常的好。但现实往往不尽如意，面对传统的多入口web项目，前端又应该如何解决浏览器缓存旧版本代码的问题呢？<br><a id="more"></a><br>让我们先来详细描述一下问题的环境域：</p>
+<ul>
+<li>多入口项目，意味着包含非常多的html页面</li>
+<li>大量的内嵌js和css</li>
+</ul>
+<p>我们的关注点不在加载性能上，本次我们仅关注：<strong>如何实时影响浏览器端及时访问更新后的代码版本</strong>。这应该属于工程问题，而非开发问题。意味着我们不应该试图让开发人员来解决这个问题，而应该在工具上来寻找突破口。毕竟，开发人员来解决的话，他们会简单粗暴的靠代码来禁用浏览器缓存，这虽然确实“治本”，但杀伤力太大，朕很不喜欢。那么到底应该怎么来做才完美呢？</p>
+<p>首先我们来看看到底有哪些内容被缓存了：</p>
+<ul>
+<li>html，以及内嵌其中的js和css</li>
+<li>外联的js和css</li>
+<li>其它静态资源文件，如图片等</li>
+</ul>
+<p>回忆之前写的spa项目，不存在内嵌js，所有项目的前端应用js脚本都会最终编译打包成一个独立的文件，并且会根据合并后的内容做签名，有效的避免了浏览器使用旧版本缓存的问题。而html这部分也都会使用js模版方案，最终也是会编译成js打包起来的。css也会合并成一个带内容签名的独立文件的。换句话说，SPA项目已经有了成熟的解决方案和工具来帮我们解决旧代码版本的浏览器缓存问题。</p>
+<p>但，传统的多html文件入口的web项目呢？就没有人管它们的死活了吗？好像真的是啊！唉~至少我在google上找了一圈，都没有相关资料啊（baidu就不试了）。看来只能挽起袖子自己动手丰衣足食了啊！</p>
+<p>其实也并不需要从零做起，依然是可以根据现有工具来实现我们所需的功能的。这里我打算基于webpack来完成这个挑战。不过在具体动手之前，得先仔细分析一下要解决的问题范围：</p>
+<ul>
+<li>html的新旧版本问题</li>
+<li>外联js和css的新旧版本问题</li>
+</ul>
+<p>第二个问题其实webpack已经可以解决的很好了。关键是第一个问题很难搞，为什么呢？如果我们参照js文件的处理方式来修改html文件的名字来依靠签名做版本控制，这会导致我们还需要同步维护应用逻辑中所有的跳转链接，让其自动的可以绑定最新的文件名。</p>
+<p>如果我们的前端项目中要求所有使用链接的地方都调用一个特定的函数来获取目标链接，这是可以让我们有机会在前端脚本执行时根据额外的一个路由表来动态绑定正确的链接。但这个方案的问题是，要求代码修改量较大，且会导致用户的历史收藏夹保存的链接失效。</p>
+<p>再考虑考虑，如果我们不修改html的文件名本身，而是在后面增加请求参数呢？例如：</p>
+<blockquote>
+<p>test.html?v=1&amp;</p>
+</blockquote>
+<p>经测试，完美。那我们可以保证html版本的更新不会导致用户历史收藏夹失效，但依然需要大量的人为修改代码的工作，有没有进阶的办法呢？其实可以将这部分的人工操作自动化处理。只需要匹配出html中所有的链接，并根据生成的路由表来自动替换即可。</p>
+<p>注意上面例子中结束的”&amp;”，这样若项目需要其它的地址栏参数，则可以直接拼接。</p>
+<p>目前能想到的需要匹配出的链接上下文场景有：</p>
+<ul>
+<li>html中a标签的href属性</li>
+<li>内嵌js脚本的相关跳转地址</li>
+<li>可能还会有form标签的action属性</li>
+<li>外联js脚本的相关跳转地址</li>
+</ul>
+<p>注意一个细节，由于我们是先根据文件内容创建出路由表，再去替换文件内容中的链接地址，这会再触发一次内容变更。目前我不确定这是否会成为一个问题，不过先标注出来吧。</p>
+<p>思路大致有了，感觉也不是太复杂。剩下的就是看看如何使用webpack来完成了。</p>
+<hr>
+<p>###补充</p>
+<p>由于我们当前的项目是基于<a href="http://blog.kazaff.me/2016/03/30/%E5%89%8D%E7%AB%AF%E5%A4%9A%E5%85%A5%E5%8F%A3%E9%A1%B9%E7%9B%AE%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E6%A0%B9%E6%8D%AE%E7%94%A8%E6%88%B7%E6%9D%83%E9%99%90%E9%85%8D%E7%BD%AE%E6%98%BE%E7%A4%BA%E8%8F%9C%E5%8D%95/">这个框架</a>来组织代码的，所以前面提到的那个会导致手工修改工作量的问题在当前项目中其实不存在。而且，我们的思路中提到的路由表甚至都不需要生成，因为本身这个框架中就提供了每个模块的配置文件，我们只需要修改配置文件中对应项即可完成目标，简直了！</p>
+<p>根据具体情况，我在原有编译流程中增加了<a href="https://github.com/kazaff/menuIfShow/blob/master/webpack.config.js#L77-L100" target="_blank" rel="noopener">这些逻辑</a>，轻松完成需求。</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.382Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2016/07/26/传统web项目代码变更引起的浏览器缓存问题和解决思路/" target="_blank" rel="external">https://blog.kazaff.me/2016/07/26/传统web项目代码变更引起的浏览器缓存问题和解决思路/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SPA/">SPA</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/webpack/">webpack</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/多入口/">多入口</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2016/07/26/传统web项目代码变更引起的浏览器缓存问题和解决思路/&title=《传统Web项目代码变更引起的浏览器缓存问题和解决思路》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2016/07/26/传统web项目代码变更引起的浏览器缓存问题和解决思路/&title=《传统Web项目代码变更引起的浏览器缓存问题和解决思路》 — kazaff's blog&source=不确定文章的标题描述的是否已经足够明了，至少用类似的描述在gg中并没有定位到相关的文章。讨论这个话题的更多是围绕这前端工程化套件的用法的（例如webpac..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2016/07/26/传统web项目代码变更引起的浏览器缓存问题和解决思路/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《传统Web项目代码变更引起的浏览器缓存问题和解决思路》 — kazaff's blog&url=https://blog.kazaff.me/2016/07/26/传统web项目代码变更引起的浏览器缓存问题和解决思路/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2016/07/26/传统web项目代码变更引起的浏览器缓存问题和解决思路/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2016/08/01/RedHat7的apache+php-fpm环境搭建小结/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">RedHat7的apache+php-Fpm环境搭建小结</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2016/07/20/jquery的ajax下载blob文件/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Jquery的ajax下载blob文件</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2016/07/26/传统web项目代码变更引起的浏览器缓存问题和解决思路/&title=《传统Web项目代码变更引起的浏览器缓存问题和解决思路》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2016/07/26/传统web项目代码变更引起的浏览器缓存问题和解决思路/&title=《传统Web项目代码变更引起的浏览器缓存问题和解决思路》 — kazaff's blog&source=不确定文章的标题描述的是否已经足够明了，至少用类似的描述在gg中并没有定位到相关的文章。讨论这个话题的更多是围绕这前端工程化套件的用法的（例如webpac..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2016/07/26/传统web项目代码变更引起的浏览器缓存问题和解决思路/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《传统Web项目代码变更引起的浏览器缓存问题和解决思路》 — kazaff's blog&url=https://blog.kazaff.me/2016/07/26/传统web项目代码变更引起的浏览器缓存问题和解决思路/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2016/07/26/传统web项目代码变更引起的浏览器缓存问题和解决思路/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2016/07/26/传统web项目代码变更引起的浏览器缓存问题和解决思路/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

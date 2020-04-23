@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>casperjs+mocha+chai搭建E2E测试环境 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="端到端测试,casperjs,mocha,chai">
+    <meta name="description" content="紧接着上一篇《小团队玩不转的测试》文章，我们继续来看看如何搭建一个端到端测试环境。 废话不多说，直接开始动手，省的你说没干货:-)">
+<meta name="keywords" content="端到端测试,casperjs,mocha,chai">
+<meta property="og:type" content="article">
+<meta property="og:title" content="casperjs+mocha+chai搭建E2E测试环境">
+<meta property="og:url" content="https://blog.kazaff.me/2016/08/24/casperjs+mocha+chai搭建E2E测试环境/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="紧接着上一篇《小团队玩不转的测试》文章，我们继续来看看如何搭建一个端到端测试环境。 废话不多说，直接开始动手，省的你说没干货:-)">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/FOXhai4h/QcXZm.png">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.378Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="casperjs+mocha+chai搭建E2E测试环境">
+<meta name="twitter:description" content="紧接着上一篇《小团队玩不转的测试》文章，我们继续来看看如何搭建一个端到端测试环境。 废话不多说，直接开始动手，省的你说没干货:-)">
+<meta name="twitter:image" content="http://pic.yupoo.com/kazaff/FOXhai4h/QcXZm.png">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">casperjs+mocha+chai搭建E2E测试环境</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">casperjs+mocha+chai搭建E2E测试环境</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2016-08-24T09:37:12.000Z" itemprop="datePublished" class="page-time">
+  Aug 24 2016
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/前端/">前端</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#mocha-casperjs"><span class="post-toc-number">1.</span> <span class="post-toc-text">mocha-casperjs</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#casper-chai"><span class="post-toc-number">2.</span> <span class="post-toc-text">casper-chai</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#测试用例"><span class="post-toc-number">3.</span> <span class="post-toc-text">测试用例</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#表单页面"><span class="post-toc-number">3.1.</span> <span class="post-toc-text">表单页面</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-5"><a class="post-toc-link" href="#登录表单"><span class="post-toc-number">3.1.0.1.</span> <span class="post-toc-text">登录表单</span></a></li><li class="post-toc-item post-toc-level-5"><a class="post-toc-link" href="#复杂表单"><span class="post-toc-number">3.1.0.2.</span> <span class="post-toc-text">复杂表单</span></a></li></ol></li></ol></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#列表页面"><span class="post-toc-number">3.2.</span> <span class="post-toc-text">列表页面</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#拖拽功能页面"><span class="post-toc-number">3.3.</span> <span class="post-toc-text">拖拽功能页面</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#截图"><span class="post-toc-number">3.4.</span> <span class="post-toc-text">截图</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#坑"><span class="post-toc-number">4.</span> <span class="post-toc-text">坑</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#页面的逻辑js没有被执行"><span class="post-toc-number">4.1.</span> <span class="post-toc-text">页面的逻辑js没有被执行</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#页面默认是手机尺寸"><span class="post-toc-number">4.2.</span> <span class="post-toc-text">页面默认是手机尺寸</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#提示”0-passing”"><span class="post-toc-number">4.3.</span> <span class="post-toc-text">提示”0 passing”</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#灵异问题"><span class="post-toc-number">4.4.</span> <span class="post-toc-text">灵异问题</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#心得总结"><span class="post-toc-number">5.</span> <span class="post-toc-text">心得总结</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#参考手册"><span class="post-toc-number">6.</span> <span class="post-toc-text">参考手册</span></a></li></ol>
+        </nav>
+    </aside>
+    
+<article id="post-casperjs+mocha+chai搭建E2E测试环境"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">casperjs+mocha+chai搭建E2E测试环境</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2016年08月24日 9:37" datetime="2016-08-24T09:37:12.000Z"  itemprop="datePublished">Aug 24 2016</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/前端/">前端</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>紧接着上一篇<a href="http://blog.kazaff.me/2016/08/18/%E5%B0%8F%E5%9B%A2%E9%98%9F%E7%8E%A9%E4%B8%8D%E8%BD%AC%E7%9A%84%E6%B5%8B%E8%AF%95/">《小团队玩不转的测试》</a>文章，我们继续来看看如何搭建一个端到端测试环境。</p>
+<p>废话不多说，直接开始动手，省的你说没干货:-)<br><a id="more"></a></p>
+<h2 id="mocha-casperjs"><a href="#mocha-casperjs" class="headerlink" title="mocha-casperjs"></a>mocha-casperjs</h2><p>前一篇文章分别介绍过每个用到的插件，而此刻提到的这个组合，也是有前辈整合好了能开箱即用的：<a href="https://github.com/nathanboktae/mocha-casperjs" target="_blank" rel="noopener">mocha-casperjs</a>。</p>
+<p>这里需要注意的是，根据官方提供的安装方法，推荐所有使用到的组件都使用<code>-g</code>全局安装，这样方便日后在任何项目中跑测试，而且如果有的采用全局安装有的采用非全局的话是跑不起来的，这一点官方也有说明：</p>
+<blockquote>
+<p>Note that mocha-casperjs has peer dependencies on casper and mocha, and will be installed ajacent to where you are installing mocha-casperjs (e.g. if you install mocha-casperjs globally, you’ll have mocha and casperjs also installed globally).</p>
+</blockquote>
+<p>如果你和我一样使用的是window开发环境，那你可能还需要自己手动安装<code>phantomjs</code>，并将其添加到系统环境变量中，否则会被<code>casperjs</code>提示缺少依赖。</p>
+<p>还有就是，win自带的终端对中文编码支持不够好，所以我推荐使用<code>Git Bash</code>，前提是你机器上安装了git环境，其实就是一个<code>MINGW</code>环境。这样就能方便的使用大部分shell命令了。</p>
+<p>对了，如果你win环境下没有python也不行，所以安装一个吧，并且将其加到系统环境变量中，一切就绪就可以运行官方提供的测试代码了：</p>
+<blockquote>
+<p>mocha-casperjs</p>
+</blockquote>
+<p>在你的测试项目路径下执行上面的这个命令，会自动查找test或tests文件夹下所有的测试脚本并自动执行，最终的测试报告默认会直接打印在终端中~</p>
+<h2 id="casper-chai"><a href="#casper-chai" class="headerlink" title="casper-chai"></a>casper-chai</h2><p>看了官方提供的测试例子，是不是蒙圈了？我对比了一下chai的文档，其实大多数chai提供的api都没有用到，毕竟都是针对单元测试的。而这个组件将casper的一些测试api用chai的方式提供给我们，感觉写起来更舒服一些。</p>
+<p>所以推荐你先来看一下<a href="https://github.com/brianmhunt/casper-chai/blob/master/docs/casper-chai.md" target="_blank" rel="noopener">官方手册</a>，看看都有哪些断言api可以用来写测试项。</p>
+<p>除此之外，你还应该看一下casperjs的<a href="http://docs.casperjs.org/en/latest/modules/index.html" target="_blank" rel="noopener">api文档</a>，这样才能玩得转端到端测试的各种场景。</p>
+<h2 id="测试用例"><a href="#测试用例" class="headerlink" title="测试用例"></a>测试用例</h2><p>接下来的内容我们就来尝试对一些有代表性的页面编写端到端测试用例。下面的测试项目中，<code>json</code>文件用来模拟接口响应，这里只是为了演示方便，正常情况下端到端测试应该是在公司内部测试服务器上进行的，要求测试服务器上的项目版本必须和线上完全一致，包括初始化数据在内。</p>
+<h3 id="表单页面"><a href="#表单页面" class="headerlink" title="表单页面"></a>表单页面</h3><h5 id="登录表单"><a href="#登录表单" class="headerlink" title="登录表单"></a>登录表单</h5><p>该页面的特点是：</p>
+<ul>
+<li>表单验证</li>
+<li>登录后跳转</li>
+<li>会话数据</li>
+</ul>
+<h5 id="复杂表单"><a href="#复杂表单" class="headerlink" title="复杂表单"></a>复杂表单</h5><p>该页面的特点是：</p>
+<ul>
+<li>ajax输入校验</li>
+<li>头像上传</li>
+<li>复杂的输入类型</li>
+</ul>
+<h3 id="列表页面"><a href="#列表页面" class="headerlink" title="列表页面"></a>列表页面</h3><p>该类型页面的特点是：</p>
+<ul>
+<li>弹窗表单</li>
+<li>翻页</li>
+<li>自动完成、日历等特殊功能输入框</li>
+</ul>
+<p>测试链接如下：</p>
+<blockquote>
+<p>　<a href="http://localhost/E2ETestDemo/pages/list/list.html?page=1" target="_blank" rel="noopener">http://localhost/E2ETestDemo/pages/list/list.html?page=1</a></p>
+</blockquote>
+<p>注意，这里之所以要提一下访问链接格式，是因为现有前端逻辑需要依赖地址栏中的<code>?page=1</code>参数。这一点正是我想说的，我们在写测试项时，必须要完全理解代码的含义和场景所需要的输入输出数据结构。有时候可能是因为我们模拟的测试环境丢失了一些数据导致测试不通过，而在线上产品中并没有重现该bug，这是最头疼，也是最无奈的。</p>
+<h3 id="拖拽功能页面"><a href="#拖拽功能页面" class="headerlink" title="拖拽功能页面"></a>拖拽功能页面</h3><p>该类型页面的特点是：</p>
+<ul>
+<li>可拖拽区块</li>
+<li>拖拽区限制</li>
+</ul>
+<hr>
+<p>上面的各个被测场景我已经放在<a href="https://github.com/kazaff/E2ETestDemo" target="_blank" rel="noopener">github</a>了，大家可以部署在自己本机的web环境里看一下页面的模样。对应页面的测试用例放在<code>tests</code>中，端到端测试用例脚本推荐以<code>e2e.js</code>结尾，这样未来当你还有单元测试等其他类型的测试脚本时容易区分。同时建议每个测试脚本对应一个页面，这样日后对应页面产生修改后也可以快速定位需要同步修改的测试脚本。</p>
+<h3 id="截图"><a href="#截图" class="headerlink" title="截图"></a>截图</h3><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/FOXhai4h/QcXZm.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<h2 id="坑"><a href="#坑" class="headerlink" title="坑"></a>坑</h2><h3 id="页面的逻辑js没有被执行"><a href="#页面的逻辑js没有被执行" class="headerlink" title="页面的逻辑js没有被执行"></a>页面的逻辑js没有被执行</h3><p>这个坑是真的坑爹，坑的我差点崩溃！从表象上来看，你会发现你根据官方提供的接口无论如何都无法触发目标页面的js执行，拿我们上面那个登录页面来说，你会发现不论是使用<code>sendKeys</code>，还是<code>evaluate</code>里使用<code>__utils__</code>都无济于事！你可以通过<code>capture</code>生成截屏来验证！</p>
+<p>哥哥我当时就蒙圈了，说好的幸福呢？这尼玛让我如何完成对领导的承诺？！就在我万念俱灰准备离职之际，突然看到了一个歪果仁的解答：</p>
+<blockquote>
+<p>I find that this happens when casperJS is too fast for the browser and a casper.wait() will solve the issue.</p>
+</blockquote>
+<p>突然就醍醐灌顶了，一下子就好像打通了任督二脉！回味一下确实如此，内置的浏览器加载html所依赖的资源需要时间，而我们的测试脚本在html加载完毕后就会立即执行，所以就给我们感觉仿佛世界观崩塌了！</p>
+<p>解决方案很简单，只需要让测试脚本执行前<code>wait</code>几秒钟即可。</p>
+<h3 id="页面默认是手机尺寸"><a href="#页面默认是手机尺寸" class="headerlink" title="页面默认是手机尺寸"></a>页面默认是手机尺寸</h3><p>如果你的被测网站是响应式的，你会发现<code>capture</code>生成截屏默认是适配的手机样式。我起初以为和<code>UserAgent</code>有关：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">casper.userAgent(&apos;Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36&apos;);</span><br></pre></td></tr></table></figure>
+<p>事实证明没鸟用，后来我又试图修改截图的尺寸，结果也是毫无意义。后来才发现官方提供了<code>viewport</code>接口，而且也明确表明，默认<code>phantomjs</code>采用的是<code>400 X 300</code>的设置。</p>
+<p>坑爹！</p>
+<h3 id="提示”0-passing”"><a href="#提示”0-passing”" class="headerlink" title="提示”0 passing”"></a>提示”0 passing”</h3><p>不知道为何，当我们的测试脚本存在语法错误时，执行测试命令后就会看到<code>0 passing</code>提示，这对我们调试造成了非常大的困难，尤其是当测试脚本行数非常大时！</p>
+<h3 id="灵异问题"><a href="#灵异问题" class="headerlink" title="灵异问题"></a>灵异问题</h3><p>在实际使用时，由于ui所使用的一些js组件，或其他一些不明真相的原因，会导致你写不出正确的测试用例，我在demo中有注解，仔细看的话会发现不少小问题，虽然都最终解决了，但不知道为何如此，不甘心啊~</p>
+<h2 id="心得总结"><a href="#心得总结" class="headerlink" title="心得总结"></a>心得总结</h2><p>经历了上述的几种常见场景，我觉得基本上只要有足够精力和时间，大部分项目都可以完成端到端测试。不过再次提醒，维护测试脚本也是要花时间和精力的，建议针对项目中相对稳定的界面和功能进行端到端测试，而处于待定阶段的页面还是人肉先行吧。</p>
+<p>测试用例之间最好不要有顺序上的依赖，除非你能保证日后该流程会被整体执行，否则当你想单独执行某个子测试用例时会非常尴尬！还有就是，你的项目一定会使用很多第三方成熟的ui组件，而针对这些组件你不需要写太多测试用例，你的测试关注点应该更多的集中在自己实现的逻辑中。</p>
+<p>推荐优先使用<code>thenClick</code>而非<code>click</code>接口，因为如果你连续调用（和两次调用代码位置无关），很可能会造成casperjs执行太快而导致早于你的业务逻辑js代码的执行，截屏上会让你感觉你的click调用未生效，但其实是太快了~~~</p>
+<p>最终，想要写出好的测试用例，排除测试代码自身质量因素外，还需要编写者对被测页面有足够的了解，不仅仅是页面上的显示元素，还包括该页面的加载细节（最头疼的<strong>网络延迟</strong>问题，不过可以使用casper.waitXXX相关api来优雅的解决这个问题），初始化细节等等。这样看来，其实最合适写测试用例的还是这个页面的实现者本尊，但同时这就要求你必须同时掌握测试相关的背景知识。现在来看，“测试先行”就显得非常合理了，根据设计书，开发人员完全可以先完成测试项（这里指的并非测试脚本，因为端到端测试不同于单元测试，它重度依赖UI，所以提前写端到端测试脚本不太现实，我这里指的测试项指的是<strong>文字描述的测试条目</strong>，有助于开发人员更好的分析页面逻辑），只不过这种做法的效率目前没办法评估，还要扭转开发人员现有的思维模式，是一个不小的挑战！</p>
+<p>这里我们也回避了一个较为重要的问题：到底一个页面需要多少个测试项才合理？前一篇文章和其参考文献中也有对该问题的相关描述，在考虑到诸多因素后如何权衡才能取得到一个平衡点，这是一门科学，等我日后有感悟了再回来表。</p>
+<p>这篇比上一篇干货要多不少吧，希望大家满意:-)</p>
+<h2 id="参考手册"><a href="#参考手册" class="headerlink" title="参考手册"></a>参考手册</h2><p><a href="http://docs.casperjs.org/en/latest/modules/index.html" target="_blank" rel="noopener">http://docs.casperjs.org/en/latest/modules/index.html</a></p>
+<p><a href="https://github.com/brianmhunt/casper-chai/blob/master/docs/casper-chai.md" target="_blank" rel="noopener">https://github.com/brianmhunt/casper-chai/blob/master/docs/casper-chai.md</a></p>
+<p><a href="http://chaijs.com/api/bdd/" target="_blank" rel="noopener">http://chaijs.com/api/bdd/</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.378Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2016/08/24/casperjs+mocha+chai搭建E2E测试环境/" target="_blank" rel="external">https://blog.kazaff.me/2016/08/24/casperjs+mocha+chai搭建E2E测试环境/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/casperjs/">casperjs</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/chai/">chai</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mocha/">mocha</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/端到端测试/">端到端测试</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2016/08/24/casperjs+mocha+chai搭建E2E测试环境/&title=《casperjs+mocha+chai搭建E2E测试环境》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2016/08/24/casperjs+mocha+chai搭建E2E测试环境/&title=《casperjs+mocha+chai搭建E2E测试环境》 — kazaff's blog&source=紧接着上一篇《小团队玩不转的测试》文章，我们继续来看看如何搭建一个端到端测试环境。
+废话不多说，直接开始动手，省的你说没干货:-)" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2016/08/24/casperjs+mocha+chai搭建E2E测试环境/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《casperjs+mocha+chai搭建E2E测试环境》 — kazaff's blog&url=https://blog.kazaff.me/2016/08/24/casperjs+mocha+chai搭建E2E测试环境/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2016/08/24/casperjs+mocha+chai搭建E2E测试环境/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2016/09/09/译-在多个标签页之间共享sessionStorage/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">译-在多个标签页之间共享sessionStorage</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2016/08/18/小团队玩不转的测试/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">小团队玩不转的测试</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2016/08/24/casperjs+mocha+chai搭建E2E测试环境/&title=《casperjs+mocha+chai搭建E2E测试环境》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2016/08/24/casperjs+mocha+chai搭建E2E测试环境/&title=《casperjs+mocha+chai搭建E2E测试环境》 — kazaff's blog&source=紧接着上一篇《小团队玩不转的测试》文章，我们继续来看看如何搭建一个端到端测试环境。
+废话不多说，直接开始动手，省的你说没干货:-)" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2016/08/24/casperjs+mocha+chai搭建E2E测试环境/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《casperjs+mocha+chai搭建E2E测试环境》 — kazaff's blog&url=https://blog.kazaff.me/2016/08/24/casperjs+mocha+chai搭建E2E测试环境/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2016/08/24/casperjs+mocha+chai搭建E2E测试环境/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2016/08/24/casperjs+mocha+chai搭建E2E测试环境/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

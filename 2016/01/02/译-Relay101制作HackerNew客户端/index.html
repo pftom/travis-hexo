@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>［译］Relay101制作HackerNew客户端 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="GraphQL,react,Relay">
+    <meta name="description" content="原文地址：https://medium.com/@clayallsopp/relay-101-building-a-hacker-news-client-bb8b2bdc76e6 React让我们可以使用javascrip创建用户界面组件；Relay则可以让我们很容易的打通react组件和远程服务器的数据通信。为了实现这个目标Relay需要一个条件–它假设客户端和服务器端必须满足某种要求，这可能增">
+<meta name="keywords" content="GraphQL,react,Relay">
+<meta property="og:type" content="article">
+<meta property="og:title" content="［译］Relay101制作HackerNew客户端">
+<meta property="og:url" content="https://blog.kazaff.me/2016/01/02/译-Relay101制作HackerNew客户端/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="原文地址：https://medium.com/@clayallsopp/relay-101-building-a-hacker-news-client-bb8b2bdc76e6 React让我们可以使用javascrip创建用户界面组件；Relay则可以让我们很容易的打通react组件和远程服务器的数据通信。为了实现这个目标Relay需要一个条件–它假设客户端和服务器端必须满足某种要求，这可能增">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://cdn-images-1.medium.com/max/800/1*z-akwOi3BMk-NBVGT7pmag.png">
+<meta property="og:image" content="https://cdn-images-1.medium.com/max/800/1*S4ZZYS8uOoXxm6LgJhKt8w.png">
+<meta property="og:image" content="https://cdn-images-1.medium.com/max/800/1*GOT3SozMFQCo3RcSiTMmcA.png">
+<meta property="og:image" content="https://cdn-images-1.medium.com/max/800/1*5r4OXLb20RzSJppF6zZVqg.png">
+<meta property="og:image" content="https://cdn-images-1.medium.com/max/800/1*eTObnmhvdB4lFI7CPU3GQQ.png">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.386Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="［译］Relay101制作HackerNew客户端">
+<meta name="twitter:description" content="原文地址：https://medium.com/@clayallsopp/relay-101-building-a-hacker-news-client-bb8b2bdc76e6 React让我们可以使用javascrip创建用户界面组件；Relay则可以让我们很容易的打通react组件和远程服务器的数据通信。为了实现这个目标Relay需要一个条件–它假设客户端和服务器端必须满足某种要求，这可能增">
+<meta name="twitter:image" content="https://cdn-images-1.medium.com/max/800/1*z-akwOi3BMk-NBVGT7pmag.png">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">［译］Relay101制作HackerNew客户端</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">［译］Relay101制作HackerNew客户端</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2016-01-02T09:37:00.000Z" itemprop="datePublished" class="page-time">
+  Jan 2 2016
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/前端/">前端</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+<article id="post-译-Relay101制作HackerNew客户端"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">［译］Relay101制作HackerNew客户端</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2016年01月02日 9:37" datetime="2016-01-02T09:37:00.000Z"  itemprop="datePublished">Jan 2 2016</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/前端/">前端</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>原文地址：<a href="https://medium.com/@clayallsopp/relay-101-building-a-hacker-news-client-bb8b2bdc76e6" target="_blank" rel="noopener">https://medium.com/@clayallsopp/relay-101-building-a-hacker-news-client-bb8b2bdc76e6</a></p>
+<p><a href="https://facebook.github.io/react/" target="_blank" rel="noopener">React</a>让我们可以使用javascrip创建用户界面组件；<a href="https://facebook.github.io/relay/" target="_blank" rel="noopener">Relay</a>则可以让我们很容易的打通react组件和远程服务器的数据通信。为了实现这个目标Relay需要一个条件–它假设客户端和服务器端必须满足某种要求，这可能增加了使用它的门槛，但对于一些项目来说这是非常值得的！<br><a id="more"></a><br>没有Relay的日子，你需要自己实现数据的下载，传输，缓存。像Flux和Redux这类工具帮你避免了在这过程中的一些bug，但当大量数据来往于应用与服务器之间时还是有非常多的人为性错误存在的可能。Relay会减少非常多的通用样板代码，让客户端开发人员可以更简洁安全的获取他们想要的数据。</p>
+<p>按照之前Rails的十五分钟搭建blog的传统，我们这里将快速使用Relay搭建一个HAcker News客户端。教程假设你了解Node，NPM和react，没有其他要求了～</p>
+<p>###Getting GraphQL</p>
+<p>目前Relay需要你的服务器提供<a href="https://facebook.github.io/graphql/" target="_blank" rel="noopener">GraphQL</a>接口。GraphQL非常优雅，但除非你是facebook的工程师，否则你可能并没有这么一个服务接口。</p>
+<p>为了避免我们自己搭建GRaphQL服务接口，我们这里将会使用<a href="http://www.graphqlhub.com/" target="_blank" rel="noopener">GraphQLHub</a>。GraphQLHub是一个发展迅速的GraphQL现有API翻译的仓库，和HackerNews和Reddit很像，我会一直维护它:)</p>
+<p>本篇指南会带领你快速了解GraphQL基础语法，所以你并不需要提前学习它的内容。如果你对GraphQL很感兴趣，你可以阅读<a href="https://medium.com/@clayallsopp/your-first-graphql-server-3c766ab4f0a2" target="_blank" rel="noopener">Your First GraphQL Server</a>（译：我已经翻译过了，可以在本博客查找）。</p>
+<p>###Setting Up The Project</p>
+<p>在2015年，有大量的工具帮助你创建浏览器端javascript应用。我们选择使用<a href="https://webpack.github.io/" target="_blank" rel="noopener">Webpack</a>来打包我们的代码供浏览器解析，并使用<a href="https://babeljs.io/" target="_blank" rel="noopener">Babel</a>来编译我们的React和Relay代码。这些工具都是Relay小组推荐使用的，但你也可以选择使用其它的。</p>
+<p>我们不会关注太多Webpack和Babel的内容，毕竟我们的关注点在Relay。</p>
+<p>让我们创建一个新的项目：</p>
+<pre><code>$ mkdir relay-101 &amp;&amp; cd ./relay-101
+$ npm init
+# you can hit Enter a bunch of times
+</code></pre><p>这将会在你的文件夹中创建package.json文件，然后我们安装一些包：</p>
+<pre><code>$ npm install webpack@1.12.2 webpack-dev-server@1.11.0 babel-core@5.8.25 babel-loader@5.3.2 --save
+</code></pre><p>Webpack会查找”webpack.config.js”文件，所以我们需要在当前目录下创建它：</p>
+<pre><code>$ touch webpack.config.js
+</code></pre><p>并把下面的内容复制粘贴进去：</p>
+<pre><code>var path = require(&apos;path&apos;);
+
+module.exports = {
+      entry: path.resolve(__dirname, &apos;index.js&apos;),
+      module: {
+        loaders: [
+              {
+                test: /\.js$/,
+                loader: &apos;babel&apos;,
+                query: {stage: 0}
+              }
+        ]
+      },
+      output: {filename: &apos;index.bundle.js&apos;, path: &apos;./&apos;}
+};
+</code></pre><p>你可能注意到了我们这里提到了一个index.js文件。目前我们创建一个简单的实现：</p>
+<pre><code>$ echo &apos;alert(&quot;hello relay!&quot;);&apos; &gt; index.js
+</code></pre><p>所有客户端的代码都会放在这个文件里，所以建议你在你的编辑器中保持打开它。</p>
+<p>我们还需要在package.json文件中加入“start”入口设定：</p>
+<pre><code>{
+      // ...
+      &quot;scripts&quot;: {
+        &quot;start&quot;: &quot;./node_modules/.bin/webpack-dev-server&quot;,
+        &quot;test&quot;: &quot;echo \&quot;Error: no test specified\&quot; &amp;&amp; exit 1&quot;
+      },
+}
+</code></pre><p>这么做是为了允许我们直接使用“npm start”来运行我们之前安装的webpack development server的。我们可以在我们的终端中瞄一眼：</p>
+<pre><code>$ npm start
+&gt; relay-101-test@1.0.0 start ~/relay-101
+&gt; webpack-dev-server
+
+http://localhost:8080/webpack-dev-server/
+webpack result is served from /
+</code></pre><p>浏览器中打开<a href="http://localhost:8080/webpack-dev-server" target="_blank" rel="noopener">http://localhost:8080/webpack-dev-server</a>，你会看到文件列表！这很好，但我们需要的是我们客户端的html页面。回到我们的项目文件夹，创建一个index.html并输入下面的内容：</p>
+<pre><code>$ touch index.html
+
+# paste this inside of index.html
+&lt;html&gt;
+&lt;head&gt;&lt;/head&gt;
+&lt;body&gt;
+      &lt;div id=&apos;container&apos;&gt;
+      &lt;/div&gt;
+      &lt;script src=&quot;/index.bundle.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre><p>刷新我们的开发服务器，将会看到一个期望的弹窗：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://cdn-images-1.medium.com/max/800/1*z-akwOi3BMk-NBVGT7pmag.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p>现在我们就可以开始做一些好玩的事儿了。</p>
+<p>###Building A Static Component</p>
+<p>我们的小app将会模仿<a href="https://news.ycombinator.com/" target="_blank" rel="noopener">Hacker News</a>界面。开始之前，我们需要安装React和React-DOM包：</p>
+<pre><code>$ npm install react@0.14.0-rc1 react-dom@0.14.0-rc1 --save
+</code></pre><p>注意我们这里指定了明确的版本号（如果将来你发现接口变更，请通知我）。回到index.js，删除我们原先的alert代码，开始实现我们的Item组件：</p>
+<pre><code>// inside index.js
+
+let React    = require(&apos;react&apos;);
+let ReactDOM = require(&apos;react-dom&apos;);
+
+class Item extends React.Component {
+      render() {
+        let item = this.props.store.item;
+
+        return (
+              &lt;div&gt;
+                &lt;h1&gt;&lt;a href={item.url}&gt;{item.title}&lt;/a&gt;&lt;/h1&gt;
+                &lt;h2&gt;{item.score} - {item.by.id}&lt;/h2&gt;
+                &lt;hr /&gt;
+              &lt;/div&gt;
+        );
+      }
+};
+</code></pre><p>注意，我们所有的数据都来自于“store”属性–稍后我们会解释～</p>
+<p>让我们先在屏幕上伪造一些item：</p>
+<pre><code>// at the bottom of index.js
+
+let mountNode = document.getElementById(&apos;container&apos;);
+let item = {
+      id  : &apos;1337&apos;,
+      url : &apos;http://google.com&apos;,
+      title : &apos;Google&apos;,
+      score : 100,
+      by : { id : &apos;clay &apos;}
+};
+let store = { item };
+let rootComponent = &lt;Item store={store} /&gt;;
+ReactDOM.render(rootComponent, mountNode);
+</code></pre><p>刷新我们的开发服务器，你将会看到：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://cdn-images-1.medium.com/max/800/1*S4ZZYS8uOoXxm6LgJhKt8w.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p>###Data From The Server</p>
+<p>是时候来加点Relay了。我们将会从GraphQLHub上根据ID获取一些itme数据来代替我们的静态数据。我们先来安装一些Relay包：</p>
+<pre><code>$ npm install react-relay@0.3.2 babel-relay-plugin@0.2.5 sync-request@2.0.1 graphql@0.4.4 --save
+</code></pre><p>为什么我们安装了这么多东西而不仅仅是react-relay？好吧，目前Relay要求我们做的确实有点多–特别是，我们需要“babel-relay-plugin”来结合Babel。这个plugin会去GraphQLHub获取更多的Relay的配置。</p>
+<p>为了连接plugin，我们需要修改一下webpack.config.js中“query”选项：</p>
+<pre><code>module.exports = {
+      // ...
+      module: {
+        loaders: [
+              {
+                // ...,
+                // note that this is different!
+                query: {stage: 0, plugins: [&apos;./babelRelayPlugin&apos;]}
+              }
+        ]
+      }
+      // ...
+};
+</code></pre><p>这么做将会告诉Babel去加载一个叫babelRelayPlugin.js的文件。创建这个文件并放入下面的内容：</p>
+<pre><code>$ touch babelRelayPlugin.js
+
+// inside that file
+var babelRelayPlugin   = require(&apos;babel-relay-plugin&apos;);
+var introspectionQuery = require(&apos;graphql/utilities&apos;).introspectionQuery;
+var request            = require(&apos;sync-request&apos;);
+
+var graphqlHubUrl = &apos;http://www.GraphQLHub.com/graphql&apos;;
+var response = request(&apos;GET&apos;, graphqlHubUrl, {
+      qs: {
+        query: introspectionQuery
+      }
+});
+
+var schema = JSON.parse(response.body.toString(&apos;utf-8&apos;));
+
+module.exports = babelRelayPlugin(schema.data, {
+      abortOnError: true,
+});
+</code></pre><p>Cool–现在杀掉你的“npm start”进程并重启它。现在每次你重新打包你的app，它都会去GraphQLHub服务器（使用GraphQL优雅的自解释API）询问和预处理我们的Relay代码。</p>
+<p>回到index.js，是时候导入Relay啦：</p>
+<pre><code>let React    = require(&apos;react&apos;);
+let ReactDOM = require(&apos;react-dom&apos;);
+let Relay    = require(&apos;react-relay&apos;);
+</code></pre><p>接下来该做甚？我们将把我们的Item组件用<a href="https://medium.com/@dan_abramov/mixins-are-dead-long-live-higher-order-components-94a0d2f9e750#fd19" target="_blank" rel="noopener">higher-order</a>包装一下。这个新的组件将被Relay管理，这就是黑科技的地方：</p>
+<pre><code>class Item extends React.Component {
+      ...
+}
+Item = Relay.createContainer(Item, {
+      fragments: {
+        store: () =&gt; Relay.QL`
+              fragment on HackerNewsAPI {
+                item(id: 8863) {
+                      title,
+                      score,
+                      url
+                      by {
+                        id
+                      }
+                }
+              }
+        `,
+      },
+});
+</code></pre><p>哒啦，搞定。翻译成大白话，上面的写法解释为：</p>
+<ol>
+<li><p>嘿 Relay，我将把我的item组件作为原件放到新的组件容器中。</p>
+</li>
+<li><p>对于组件的“store”属性，我需要数据已经用GraphQL片段描述了。</p>
+</li>
+<li><p>我知道这些数据在<a href="http://graphqlhub.com/playground/hn的“HackerNewsAPI”对象中。" target="_blank" rel="noopener">http://graphqlhub.com/playground/hn的“HackerNewsAPI”对象中。</a></p>
+</li>
+</ol>
+<p>注意这里我们只是描述了一个GraphQL片段（片段的概念很类似于查询中的别名），并不是最终获取所有数据的完整query。这是Relay的一个优点–组件只需要声明它需要的数据，而不用管如何获取数据。</p>
+<p>有些时候我们确实需要一个完整的GraphQL query，这就是Relay Routes的主场了。Relay.Route跟浏览器里的history或URLs半毛钱关系都木有–它是用来创建引导我们数据获取请求的“root query”的。</p>
+<p>嗖，让我们来搞一个Relay Route。在我们的Itme定义下面加入：</p>
+<pre><code>Item = // ...;
+
+class HackerNewsRoute extends Relay.Route {
+      static routeName = &apos;HackerNewsRoute&apos;;
+      static queries = {
+        store: ((Component) =&gt; {
+              // 这里Component就是我们的Item组件
+              return Relay.QL`
+                  query root {
+                    hn { ${Component.getFragment(&apos;store&apos;)} },
+                  }
+            `}),
+      };
+}
+</code></pre><p>现在我们的GraphQL补全了root query。Relay允许我们使用ES6的字符串解析特性注入我们的片段，这就完成了组件分享（不同于复制）它的数据需求给父组件的过程。</p>
+<p>是时候展示点数据到屏幕上了！修改我们之前的代码如下：</p>
+<pre><code>class HackerNewsRoute {
+     // ...
+}
+
+Relay.injectNetworkLayer(
+      new Relay.DefaultNetworkLayer(&apos;http://www.GraphQLHub.com/graphql&apos;)
+);
+
+let mountNode = document.getElementById(&apos;container&apos;);
+let rootComponent = &lt;Relay.RootContainer
+      Component={Item}
+      route={new HackerNewsRoute()} /&gt;;
+ReactDOM.render(rootComponent, mountNode);
+</code></pre><p>这里Relay.RootContainer是顶级组件，它构建了一个组件层级的query。我们还做了一些网络配置，最终渲染新的组件到DOM。你会在浏览器中看到下面的景象：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://cdn-images-1.medium.com/max/800/1*GOT3SozMFQCo3RcSiTMmcA.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p>###A List Of Components</p>
+<p>我们下面开始做一个类似Hacker News首页的页面。相比硬编码一个特定的item，我们需要展示一个item列表。用Relay的话说，这需要我们创建一个新的list组件，其中嵌套多个独立的item组件（每个都请求自己的数据）。</p>
+<p>回到代码，我们开始创建我们的TopItems组件：</p>
+<pre><code>class TopItems extends React.Component {
+      render() {
+        let items = this.props.store.topStories.map(
+              (store, idx) =&gt; &lt;Item store={store} key={idx} /&gt;
+        );
+        return &lt;div&gt;
+              { items }
+        &lt;/div&gt;;
+      }
+}
+</code></pre><p>我们就不再想刚才那样先“创建伪造数据”了，而是直接动真格的，用Relay封装TopItems：</p>
+<pre><code>TopItems = Relay.createContainer(TopItems, {
+      fragments: {
+        store: () =&gt; Relay.QL`
+              fragment on HackerNewsAPI {
+                topStories { ${Item.getFragment(&apos;store&apos;)} },
+              }
+        `,
+      },
+});
+</code></pre><p>相比之前的单独item，现在我们需要请求“topStories”。针对每个item，GraphQL会根据声明的片段请求对应的数据，所以我们将只请求我们需要的数据。</p>
+<p>但是稍等–目前我们的item片段定义了一个特定的id（<a href="https://news.ycombinator.com/item?id=8863" target="_blank" rel="noopener">#8863</a>）。我们需要修改我们的query：</p>
+<pre><code>Item = Relay.createContainer(Item, {
+      fragments: {
+        store: () =&gt; Relay.QL`
+              fragment on HackerNewsItem {
+                id
+                title,
+                score,
+                url
+                by {
+                      id
+                }
+              }
+        `,
+      },
+});
+</code></pre><p>由于我们不再请求一个特定的item片段，所以我们需要修改在render函数中存取prop的方式：</p>
+<pre><code>class Item extends React.Component {
+      render() {
+        let item = this.props.store;
+        // ...
+      }
+}
+</code></pre><p>最后，我们需要更新Relay RootContainer来使用我们的TopItems组件：</p>
+<pre><code>let rootComponent = &lt;Relay.RootContainer
+      Component={TopItems}
+      route={new HackerNewsRoute()} /&gt;;
+</code></pre><p>瞧：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://cdn-images-1.medium.com/max/800/1*5r4OXLb20RzSJppF6zZVqg.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p>###Variables in Queries</p>
+<p>现在我们对创建一个Relay app有了最基础的了解，但我希望展现Relay另一个特性：variables。</p>
+<p>在多数挨派派里，查询并不是一成不变的，我们经常需要请求不同的数据。Relay允许我们在GraphQL query中注入变量来达到这个目的。在我们这个小挨派派里，我们将添加一个开关来切换我们需要的数据类型（按照热度或时间等排序）。</p>
+<p>开始之前，我们需要修改我们的TopItems的query：</p>
+<pre><code>TopItems = Relay.createContainer(TopItems, {
+      initialVariables: {
+        storyType: &quot;top&quot;
+      },
+      fragments: {
+        store: () =&gt; Relay.QL`
+              fragment on HackerNewsAPI {
+                stories(storyType: $storyType) { 
+                    ${Item.getFragment(&apos;store&apos;)} 
+                },
+              }
+        `,
+      },
+});
+</code></pre><p>“$storyType”代表一个GraphQL变量（这并不是ES6的字符串解析语法）。我们通过initialVariables配置给它设置了一个初始默认值“top”。</p>
+<p>这只是Relay层面我们需要做的简单修改。我们并不需要对具体的组件做任何渲染或数据获取的修改–完全解耦了。</p>
+<p>现在我们需要编辑我们的TopItems组件来使用开关类型。更新render函数如下：</p>
+<pre><code>class TopItems extends React.Component {
+      render() {
+        let items = this.props.store.stories.map(
+              (store, idx) =&gt; &lt;Item store={store} key={idx} /&gt;
+        );
+        let variables = this.props.relay.variables;
+
+        // To reduce the perceived lag
+        // There are less crude ways of doing this, but this works for now
+        let currentStoryType = (this.state &amp;&amp; this.state.storyType) || variables.storyType;
+
+        return &lt;div&gt;
+              &lt;select onChange={this._onChange.bind(this)} value={currentStoryType}&gt;
+                &lt;option value=&quot;top&quot;&gt;Top&lt;/option&gt;
+                &lt;option value=&quot;new&quot;&gt;New&lt;/option&gt;
+                &lt;option value=&quot;ask&quot;&gt;Ask HN&lt;/option&gt;
+                &lt;option value=&quot;show&quot;&gt;Show HN&lt;/option&gt;
+              &lt;/select&gt;
+              { items }
+        &lt;/div&gt;;
+      }
+
+  // to be continued
+</code></pre><p>这里有些新的知识点！我们使用了“Relay”prop，它包含一些特定的属性。任何使用Relay封装的组件都会被注入这个prop–如果我们想对我们的TopItems组件进行单元测试，我们需要自己注入一个伪造的对象。</p>
+<p>除此Relay变量之外，其它都是普通的React–我们创建一个下拉菜单，并给它一个默认值，并监听它的修改。当改变下拉菜单的选项，我们会告诉Relay去使用新的变量值，如下：</p>
+<pre><code>class TopItems extends React.Component {
+      render() {
+        // ...
+      }
+
+      _onChange(ev) {
+        let storyType = ev.target.value;
+        this.setState({ storyType });
+        this.props.relay.setVariables({
+              storyType
+        });
+      }
+}
+</code></pre><p>一切都很简答–Relay会察觉query的一部分发生了变化，并且根据需要重新去获取数据。为了简单，我们设置了组件的内部状态，</p>
+<p>刷新你的浏览器并且切换不同的下拉选项。你会发现，Relay并不会重复获取已经加载了的数据类型。</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="https://cdn-images-1.medium.com/max/800/1*eTObnmhvdB4lFI7CPU3GQQ.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p>###Relay 102</p>
+<p>SO，以上就是关于Relay的简单介绍。我们还没有涉及到mutations（用来完成更新服务端数据）和在获取数据时显示加载提醒。Relay非常的灵活，但代价是需要比我们这里提到的更多<br>的配置。</p>
+<p>Relay可能并不是适合所有的挨派派和团队，但它在解决某些常见问题上确实令人非常激动。</p>
+<p>这篇文章中的源码放在<a href="https://github.com/clayallsopp/relay-101" target="_blank" rel="noopener">Github</a>，关注我<a href="http://twitter.com/clayallsopp" target="_blank" rel="noopener">@clayallsopp</a>和<a href="http://twitter.com/GraphQLHub" target="_blank" rel="noopener">@GraphQLHub</a>来获取更多的信息。</p>
+<p>###译者注</p>
+<p>看了不少相关资料，个人感觉，目前Relay+GraphQL相比react确实还有待社区的考量，并且它们确实还太新，官方也强调可能会出现比较大的变动。所以，目前用在实际项目里的风险确实较大，还是继续观望吧～纯属个人看法！</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.386Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2016/01/02/译-Relay101制作HackerNew客户端/" target="_blank" rel="external">https://blog.kazaff.me/2016/01/02/译-Relay101制作HackerNew客户端/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GraphQL/">GraphQL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Relay/">Relay</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/react/">react</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2016/01/02/译-Relay101制作HackerNew客户端/&title=《［译］Relay101制作HackerNew客户端》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2016/01/02/译-Relay101制作HackerNew客户端/&title=《［译］Relay101制作HackerNew客户端》 — kazaff's blog&source=原文地址：https://medium.com/@clayallsopp/relay-101-building-a-hacker-news-client-..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2016/01/02/译-Relay101制作HackerNew客户端/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《［译］Relay101制作HackerNew客户端》 — kazaff's blog&url=https://blog.kazaff.me/2016/01/02/译-Relay101制作HackerNew客户端/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2016/01/02/译-Relay101制作HackerNew客户端/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2016/02/26/老生常谈Mac下的ntfs写问题/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">老生常谈Mac下的ntfs写问题</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2016/01/01/GraphQL什么鬼/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">GraphQL什么鬼</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2016/01/02/译-Relay101制作HackerNew客户端/&title=《［译］Relay101制作HackerNew客户端》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2016/01/02/译-Relay101制作HackerNew客户端/&title=《［译］Relay101制作HackerNew客户端》 — kazaff's blog&source=原文地址：https://medium.com/@clayallsopp/relay-101-building-a-hacker-news-client-..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2016/01/02/译-Relay101制作HackerNew客户端/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《［译］Relay101制作HackerNew客户端》 — kazaff's blog&url=https://blog.kazaff.me/2016/01/02/译-Relay101制作HackerNew客户端/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2016/01/02/译-Relay101制作HackerNew客户端/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2016/01/02/译-Relay101制作HackerNew客户端/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

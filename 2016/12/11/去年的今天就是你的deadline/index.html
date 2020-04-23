@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>去年的今天就是你的Deadline | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="momentjs,去年同日">
+    <meta name="description" content="我最近有个感悟：时间，最复杂的存在。 像我这样一个从没有跨过时区的孩子，是感受不到时间算法的复杂度的。直到有一天，我们的系统需要面对多时区的场景，我才恍然大悟。简简单单的一个时区问题都已经让系统很多基于时间的逻辑变得复杂，更不要提分布式时序问题了（我们今天并不讨论这个问题，我也讲不好）。">
+<meta name="keywords" content="momentjs,去年同日">
+<meta property="og:type" content="article">
+<meta property="og:title" content="去年的今天就是你的Deadline">
+<meta property="og:url" content="https://blog.kazaff.me/2016/12/11/去年的今天就是你的deadline/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="我最近有个感悟：时间，最复杂的存在。 像我这样一个从没有跨过时区的孩子，是感受不到时间算法的复杂度的。直到有一天，我们的系统需要面对多时区的场景，我才恍然大悟。简简单单的一个时区问题都已经让系统很多基于时间的逻辑变得复杂，更不要提分布式时序问题了（我们今天并不讨论这个问题，我也讲不好）。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.386Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="去年的今天就是你的Deadline">
+<meta name="twitter:description" content="我最近有个感悟：时间，最复杂的存在。 像我这样一个从没有跨过时区的孩子，是感受不到时间算法的复杂度的。直到有一天，我们的系统需要面对多时区的场景，我才恍然大悟。简简单单的一个时区问题都已经让系统很多基于时间的逻辑变得复杂，更不要提分布式时序问题了（我们今天并不讨论这个问题，我也讲不好）。">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">去年的今天就是你的Deadline</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">去年的今天就是你的Deadline</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2016-12-11T09:37:12.000Z" itemprop="datePublished" class="page-time">
+  Dec 11 2016
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/前端/">前端</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+<article id="post-去年的今天就是你的deadline"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">去年的今天就是你的Deadline</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2016年12月11日 9:37" datetime="2016-12-11T09:37:12.000Z"  itemprop="datePublished">Dec 11 2016</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/前端/">前端</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>我最近有个感悟：时间，最复杂的存在。</p>
+<p>像我这样一个从没有跨过时区的孩子，是感受不到时间算法的复杂度的。直到有一天，我们的系统需要面对多时区的场景，我才恍然大悟。简简单单的一个时区问题都已经让系统很多基于时间的逻辑变得复杂，更不要提分布式时序问题了（我们今天并不讨论这个问题，我也讲不好）。<br><a id="more"></a><br>时区什么的并不是我们今天的讨论重点，其实我想说的是“去年同日”这个问题。本来觉得这个不是啥问题，只需要将给定的日期减去一年即可得呀：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(moment(<span class="string">'2016-12-11'</span>).subtract(<span class="number">1</span>, <span class="string">'years'</span>).format(<span class="string">'YYYY-MM-DD'</span>));</span><br><span class="line"><span class="comment">// or</span></span><br><span class="line"><span class="built_in">console</span>.log(moment(<span class="string">'2016-12-11'</span>).subtract(<span class="number">366</span>, <span class="string">'days'</span>).format(<span class="string">'YYYY-MM-DD'</span>));</span><br></pre></td></tr></table></figure>
+<p>That’s All! 这里要安利一个很强大很主流的时间库：<a href="http://momentjs.com/" target="_blank" rel="noopener">Moment</a>，本文重度依赖该库。</p>
+<p>可现实总是残酷的，从业务角度来思考的话，这种“去年的今天”意义是不大的。举个例子，通常运营人员希望得到的时间关系是：今天是12月的第一个星期三，那去年12月的第一个星期三呢？</p>
+<p>这种对应关系中，线索包含：年份，月份，星期几，第几个。打开日历，我们观察一下每个月，会发现每月包含的周个数是不同的，有包含5周的，有包含六周的，极端情况下也会有包含4周的（2026-02）。这就导致一个问题，如果今年的当月包含五周，而去年同月只有四周，那么回答“去年X月的最后一个星期三是几号？”就需要特殊对待了，因为描述中使用的“最后一个”，很口语化，但却直接影响了排序方向。</p>
+<p>而涉及到第几个星期几，就更复杂了。这里面还有一个隐藏的条件：每周起始天是星期几？我们国家都是星期一是每周的第一天，而美国是按照星期天是第一天哟~~</p>
+<p>小弟我写了一个Moment的扩展，方便来计算下面几个问题：</p>
+<ol>
+<li>指定月份包含的总周数，例如：2015年8月份总共包含6周</li>
+<li>指定日期属于当月的第几周，例如：当日属于9月份的第三个周</li>
+<li>指定日期在当月中是第几个礼拜几，例如：当日为9月份的第二个礼拜三</li>
+<li>指定月份中指定序号的指定星期的日期，例如：9月份第二个礼拜三的日期</li>
+</ol>
+<p>代码如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line">(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> moment = (<span class="keyword">typeof</span> <span class="built_in">require</span> !== <span class="string">'undefined'</span> &amp;&amp; <span class="built_in">require</span> !== <span class="literal">null</span>) &amp;&amp; !<span class="built_in">require</span>.amd ? <span class="built_in">require</span>(<span class="string">'moment'</span>) : <span class="keyword">this</span>.moment;</span><br><span class="line">	<span class="keyword">var</span> firstDay = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 设置每周起始日是星期几，num范围：0~6，0代表星期日，1代表星期一，...，6代表星期六</span></span><br><span class="line">	moment.setFirstDay = <span class="function"><span class="keyword">function</span> (<span class="params">num</span>)</span>&#123;</span><br><span class="line">		firstDay = num;</span><br><span class="line">	&#125;;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 返回指定月份包含的总周数，例如：2015年8月份总共包含6周</span></span><br><span class="line">  moment.totalOfWeekOfMonth = <span class="function"><span class="keyword">function</span> (<span class="params">date</span>) </span>&#123;</span><br><span class="line">		<span class="keyword">var</span> origin = moment(date);</span><br><span class="line">		<span class="keyword">var</span> dd = moment(date);</span><br><span class="line">		dd.date(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">		<span class="keyword">var</span> totalOfWeekOfMonth = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">var</span> step = <span class="number">1</span>;</span><br><span class="line">		<span class="keyword">var</span> plus = dd.day() !== firstDay ? <span class="number">2</span> : <span class="number">1</span>;	<span class="comment">// 若1号不是周起始日，相当于第一周，碰见第一个礼拜日时，就需要+2，之后再碰见周日只需要+1</span></span><br><span class="line">    <span class="keyword">while</span>(dd.month() === origin.month())&#123;</span><br><span class="line">        <span class="keyword">if</span>(dd.day() === firstDay)&#123;</span><br><span class="line">            totalOfWeekOfMonth += plus;</span><br><span class="line">						plus = <span class="number">1</span>;</span><br><span class="line">						step = <span class="number">7</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        dd.add(step, <span class="string">'d'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> totalOfWeekOfMonth;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 返回指定日期属于当月的第几周，例如：当日属于9月份的第三个周</span></span><br><span class="line">	moment.weekOfMonth = <span class="function"><span class="keyword">function</span> (<span class="params">date</span>)</span>&#123;</span><br><span class="line">		<span class="keyword">var</span> origin = moment(date);</span><br><span class="line">    <span class="keyword">var</span> dd = moment(date);</span><br><span class="line">    dd.date(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> weekOfMonth = dd.day() === firstDay ? <span class="number">0</span> : <span class="number">1</span>;	<span class="comment">// 若该月第一天是周起始日，为了避免下面循环中重复累加，初始值应该为0</span></span><br><span class="line">    <span class="keyword">while</span>(dd.date() &lt;= origin.date() &amp;&amp; dd.month() === origin.month())&#123;</span><br><span class="line">        <span class="keyword">if</span>(dd.day() === firstDay)&#123;</span><br><span class="line">            weekOfMonth++;</span><br><span class="line">        &#125;</span><br><span class="line">        dd.add(<span class="number">1</span>, <span class="string">'d'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> weekOfMonth;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 返回指定日期在当月中是第几个礼拜几，例如：当日为9月份的第二个礼拜三</span></span><br><span class="line">	moment.numOfDayOfWeek = <span class="function"><span class="keyword">function</span> (<span class="params">date</span>)</span>&#123;</span><br><span class="line">		<span class="keyword">var</span> origin = moment(date);</span><br><span class="line">    <span class="keyword">var</span> dd = moment(date);</span><br><span class="line">    dd.date(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> numOfDayOfWeek = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span>(dd.date() &lt;= origin.date() &amp;&amp; dd.month() === origin.month())&#123;</span><br><span class="line">        <span class="keyword">if</span>(dd.day() === origin.day())&#123;</span><br><span class="line">            numOfDayOfWeek++;</span><br><span class="line">        &#125;</span><br><span class="line">        dd.add(<span class="number">1</span>, <span class="string">'d'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> numOfDayOfWeek;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 返回指定月份中指定序号的指定星期的日期，例如：9月份第二个礼拜三的日期</span></span><br><span class="line">	moment.dateOfNumOfDayOfWeek = <span class="function"><span class="keyword">function</span> (<span class="params">date, dayOfWeek, num</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">var</span> dd = moment(date);</span><br><span class="line">    dd.date(<span class="number">1</span>);</span><br><span class="line">		<span class="keyword">var</span> month = dd.month();</span><br><span class="line">		<span class="keyword">var</span> times = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(dd.month() === month)&#123;</span><br><span class="line">        <span class="keyword">if</span>(dd.day() === dayOfWeek)&#123;</span><br><span class="line">					<span class="keyword">if</span>(times === num)&#123;</span><br><span class="line">						<span class="keyword">return</span> dd.format(<span class="string">'YYYY-MM-DD'</span>);</span><br><span class="line">					&#125;</span><br><span class="line">					times++;</span><br><span class="line">        &#125;</span><br><span class="line">        dd.add(<span class="number">1</span>, <span class="string">'d'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">undefined</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="built_in">module</span> !== <span class="string">"undefined"</span> &amp;&amp; <span class="built_in">module</span> !== <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="built_in">module</span>.exports = moment;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">this</span>.moment = moment;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;).call(<span class="keyword">this</span>);</span><br></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"//cdn.bootcss.com/moment.js/2.17.1/moment.min.js"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"./moment-sameday.js"</span> <span class="attr">charset</span>=<span class="string">"utf-8"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">title</span>&gt;</span><span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span></span><br><span class="line">			moment.setFirstDay(1);</span><br><span class="line"><span class="javascript">			<span class="built_in">console</span>.log(<span class="string">"当月总周数："</span>, moment.totalOfWeekOfMonth(<span class="string">'2026-02-01'</span>));</span></span><br><span class="line"><span class="javascript">			<span class="built_in">console</span>.log(<span class="string">"当日为第几周："</span>, moment.weekOfMonth(<span class="string">'2026-02-02'</span>));</span></span><br><span class="line"><span class="javascript">			<span class="built_in">console</span>.log(<span class="string">"当日为第几个星期几："</span>, moment.numOfDayOfWeek(<span class="string">'2026-02-02'</span>));</span></span><br><span class="line"><span class="javascript">			<span class="built_in">console</span>.log(<span class="string">"当月第几个星期几是几号："</span>, moment.dateOfNumOfDayOfWeek(<span class="string">'2026-02'</span>, <span class="number">0</span>, <span class="number">1</span>));</span></span><br><span class="line">		<span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>至于上面提到的“最后一个”问题，在你的业务中到底如何计算，我相信你可以通过上面4个方法的组合应用来得到你要的答案！我能帮的就这么多了，好自为之哟~~</p>
+<p>我的项目，获取去年同日的最终逻辑：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 假设dd为当日，targetDate为去年同日</span></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="keyword">var</span> targetDate = <span class="literal">null</span>;</span><br><span class="line"><span class="comment">// 计算当日是本月内的第N个星期X</span></span><br><span class="line"><span class="keyword">var</span> day = dd.day();	<span class="comment">//星期几</span></span><br><span class="line"><span class="keyword">var</span> num = moment.numOfDayOfWeek(dd);	<span class="comment">//第几个</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 计算去年当月的第N-1, 第N和第N+1个星期X的日期</span></span><br><span class="line"><span class="keyword">var</span> tmpDd = moment(dd).subtract(<span class="number">1</span>, <span class="string">'years'</span>);</span><br><span class="line"><span class="keyword">var</span> dates = [];</span><br><span class="line">dates.push(num &gt; <span class="number">1</span> ? moment.dateOfNumOfDayOfWeek (tmpDd, day, num - <span class="number">1</span>): <span class="literal">undefined</span>);</span><br><span class="line">dates.push(moment.dateOfNumOfDayOfWeek (tmpDd, day, num));</span><br><span class="line">dates.push(dates[<span class="number">1</span>] ? moment.dateOfNumOfDayOfWeek (tmpDd, day, num + <span class="number">1</span>): <span class="literal">undefined</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 计算去年当月三个目标日期与今年当日的距离（日期距离）</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">var</span> i = <span class="number">0</span>, max = dates.length, duration = <span class="number">31</span>; i &lt; max; i++)&#123;</span><br><span class="line">	<span class="keyword">if</span>(dates[i] !== <span class="literal">undefined</span>)&#123;</span><br><span class="line">		<span class="keyword">var</span> tmpDuration = <span class="built_in">Math</span>.abs(moment(dates[i]).date() - dd.date());</span><br><span class="line">		<span class="keyword">if</span>(tmpDuration &lt;= duration)&#123;</span><br><span class="line">			targetDate = dates[i];</span><br><span class="line">			duration = tmpDuration;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// targetDate已经计算出来了</span></span><br></pre></td></tr></table></figure>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.386Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2016/12/11/去年的今天就是你的deadline/" target="_blank" rel="external">https://blog.kazaff.me/2016/12/11/去年的今天就是你的deadline/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/momentjs/">momentjs</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/去年同日/">去年同日</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2016/12/11/去年的今天就是你的deadline/&title=《去年的今天就是你的Deadline》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2016/12/11/去年的今天就是你的deadline/&title=《去年的今天就是你的Deadline》 — kazaff's blog&source=我最近有个感悟：时间，最复杂的存在。
+像我这样一个从没有跨过时区的孩子，是感受不到时间算法的复杂度的。直到有一天，我们的系统需要面对多时区的场景，我才恍然..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2016/12/11/去年的今天就是你的deadline/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《去年的今天就是你的Deadline》 — kazaff's blog&url=https://blog.kazaff.me/2016/12/11/去年的今天就是你的deadline/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2016/12/11/去年的今天就是你的deadline/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2016/12/30/Request使用proxy导致的socket连接数泄漏问题/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Request使用proxy导致的socket连接数泄漏问题</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2016/11/15/nodejs下DNS缓存问题/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">nodejs下DNS缓存问题</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2016/12/11/去年的今天就是你的deadline/&title=《去年的今天就是你的Deadline》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2016/12/11/去年的今天就是你的deadline/&title=《去年的今天就是你的Deadline》 — kazaff's blog&source=我最近有个感悟：时间，最复杂的存在。
+像我这样一个从没有跨过时区的孩子，是感受不到时间算法的复杂度的。直到有一天，我们的系统需要面对多时区的场景，我才恍然..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2016/12/11/去年的今天就是你的deadline/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《去年的今天就是你的Deadline》 — kazaff's blog&url=https://blog.kazaff.me/2016/12/11/去年的今天就是你的deadline/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2016/12/11/去年的今天就是你的deadline/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2016/12/11/去年的今天就是你的deadline/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

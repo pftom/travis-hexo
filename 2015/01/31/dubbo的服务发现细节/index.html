@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>Dubbo的服务发现细节 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="dubbo,zookeeper,dubbox,soa,分布式,注册中心">
+    <meta name="description" content="对于分布式服务架构，解决服务的发现问题，引入了注册中心中间件，从而很好的解决了服务双方（消费方和提供方）的直接依赖问题。这种解耦的意义是非凡的，不仅在程序运行时保证了灵活性，在开发阶段也使得快速迭代成为了可能，甚至在运维层面也提供了非常好的自由度。">
+<meta name="keywords" content="dubbo,zookeeper,dubbox,soa,分布式,注册中心">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Dubbo的服务发现细节">
+<meta property="og:url" content="https://blog.kazaff.me/2015/01/31/dubbo的服务发现细节/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="对于分布式服务架构，解决服务的发现问题，引入了注册中心中间件，从而很好的解决了服务双方（消费方和提供方）的直接依赖问题。这种解耦的意义是非凡的，不仅在程序运行时保证了灵活性，在开发阶段也使得快速迭代成为了可能，甚至在运维层面也提供了非常好的自由度。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/EogBsej0/gvnAo.jpg">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/Ep8RFf0S/7imCY.png">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/Ep8ZmnoV/RmZZL.jpg">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/Epc4RElK/TJLi1.png">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Dubbo的服务发现细节">
+<meta name="twitter:description" content="对于分布式服务架构，解决服务的发现问题，引入了注册中心中间件，从而很好的解决了服务双方（消费方和提供方）的直接依赖问题。这种解耦的意义是非凡的，不仅在程序运行时保证了灵活性，在开发阶段也使得快速迭代成为了可能，甚至在运维层面也提供了非常好的自由度。">
+<meta name="twitter:image" content="http://pic.yupoo.com/kazaff/EogBsej0/gvnAo.jpg">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Dubbo的服务发现细节</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Dubbo的服务发现细节</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2015-01-31T15:54:30.000Z" itemprop="datePublished" class="page-time">
+  Jan 31 2015
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/j2ee/">j2ee</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#register"><span class="post-toc-number">1.</span> <span class="post-toc-text">register</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#subscribe"><span class="post-toc-number">2.</span> <span class="post-toc-text">subscribe</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#notify"><span class="post-toc-number">3.</span> <span class="post-toc-text">notify</span></a></li></ol>
+        </nav>
+    </aside>
+    
+<article id="post-dubbo的服务发现细节"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Dubbo的服务发现细节</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2015年01月31日 15:54" datetime="2015-01-31T15:54:30.000Z"  itemprop="datePublished">Jan 31 2015</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/j2ee/">j2ee</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>对于分布式服务架构，解决服务的发现问题，引入了注册中心中间件，从而很好的解决了服务双方（消费方和提供方）的直接依赖问题。这种解耦的意义是非凡的，不仅在程序运行时保证了灵活性，在开发阶段也使得快速迭代成为了可能，甚至在运维层面也提供了非常好的自由度。<br><a id="more"></a><br>夸了这么多，但要实现一个完美的注册中心系统却不是一件那么容易的事儿，你必须时刻注意关注它的可用性（包括<strong>稳定，实时和高效</strong>），这一点在任何一款分布式系统中都是件很复杂的事儿。当然这篇文章并不是打算摆平这么个庞然大物，我们只是从dubbo和zookeeper之间的关系来了解一下在dubbo架构中注册中心的相关知识：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/EogBsej0/gvnAo.jpg" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p>上图是官方给出的一张描述服务提供方、服务消费方和注册中心的关系图，其实dubbo提供多种注册中心实现，不过常用的就是zookeeper，我们也就拿它来当例子来分析。从图中可见，<strong>消费方远程调用服务方是不通过注册中心的</strong>，这有效的降低了注册中心的负载，也不会存在明显的单点瓶颈（尽管可以搭建注册中心的集群，但每次调用都走注册中心的话肯定对性能产生较大的伤害）。</p>
+<p>官方提供的规则是：</p>
+<ul>
+<li>注册中心负责服务地址的注册与查找，相当于目录服务，服务提供者和消费者只在启动时与注册中心交互，注册中心不转发请求，压力较小；</li>
+<li>注册中心，服务提供者，服务消费者三者之间均为长连接；</li>
+<li>注册中心通过长连接感知服务提供者的存在，服务提供者宕机，注册中心将立即推送事件通知消费者；</li>
+<li>注册中心返回服务提供者地址列表给消费者，如果有变更，注册中心将基于长连接推送变更数据给消费者；</li>
+<li>注册中心全部宕机，不影响已运行的提供者和消费者，消费者在本地缓存了提供者列表；</li>
+<li>注册中心是可选的，服务消费者可以直连服务提供者；</li>
+<li>注册中心对等集群，任意一台宕掉后，将自动切换到另一台。</li>
+</ul>
+<p>好啦，更多的理论我就不转载了，官方已经描述的非常详细了，我们按照老套路，从代码级别看一下dubbo到底是怎样实现的。</p>
+<h2 id="register"><a href="#register" class="headerlink" title="register"></a>register</h2><p>我们需要承接之前的<a href="http://blog.kazaff.me/2015/01/26/dubbo%E5%A6%82%E4%BD%95%E4%B8%80%E6%AD%A5%E4%B8%80%E6%AD%A5%E6%8B%BF%E5%88%B0bean/">文章</a>里的例子，从拿到需要暴露成服务的url开始：</p>
+<pre><code>registry://127.0.0.1:2181/com.alibaba.dubbo.registry.RegistryService?application=demo-provider&amp;dubbo=2.0.0&amp;export=dubbo%3A%2F%2F192.168.153.1%3A20880%2Fcom.alibaba.dubbo.demo.bid.BidService%3Fanyhost%3Dtrue%26application%3Ddemo-provider%26dubbo%3D2.0.0%26generic%3Dfalse%26interface%3Dcom.alibaba.dubbo.demo.bid.BidService%26methods%3DthrowNPE%2Cbid%26optimizer%3Dcom.alibaba.dubbo.demo.SerializationOptimizerImpl%26organization%3Ddubbox%26owner%3Dprogrammer%26pid%3D3872%26serialization%3Dkryo%26side%3Dprovider%26timestamp%3D1422241023451&amp;organization=dubbox&amp;owner=programmer&amp;pid=3872&amp;registry=zookeeper&amp;timestamp=1422240274186
+</code></pre><p>以这个url为基准暴露服务的话，dubbo会首先会根据指定协议（<code>registry</code>）拿到对应的protocol（<code>RegistryProtocol</code>），这部分是怎么做到的呢？还是之前通过IDE拿到的dubbo动态创建的protocol自适应扩展点，我们重点看<code>export</code>方法：</p>
+<pre><code>package com.alibaba.dubbo.rpc;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+
+public class Protocol$Adpative implements com.alibaba.dubbo.rpc.Protocol {
+
+    ......
+
+    public com.alibaba.dubbo.rpc.Exporter export(com.alibaba.dubbo.rpc.Invoker arg0) throws com.alibaba.dubbo.rpc.Invoker {
+        if (arg0 == null) 
+            throw new IllegalArgumentException(&quot;com.alibaba.dubbo.rpc.Invoker argument == null&quot;);
+
+        if (arg0.getUrl() == null) 
+            throw new IllegalArgumentException(&quot;com.alibaba.dubbo.rpc.Invoker argument getUrl() == null&quot;);
+
+        com.alibaba.dubbo.common.URL url = arg0.getUrl();
+        String extName = ( url.getProtocol() == null ? &quot;dubbo&quot; : url.getProtocol() );    //注意这句，根据我们的例子，extName=registry
+
+        if(extName == null) 
+            throw new IllegalStateException(&quot;Fail to get extension(com.alibaba.dubbo.rpc.Protocol) name from url(&quot; + url.toString() + &quot;) use keys([protocol])&quot;);
+
+        com.alibaba.dubbo.rpc.Protocol extension = (com.alibaba.dubbo.rpc.Protocol)ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.rpc.Protocol.class).getExtension(extName);    //根据扩展点加载规则，最终拿到RegistryProtocol实例。
+
+        return extension.export(arg0);
+    }
+
+    ......
+}
+</code></pre><p>我们需要注意<code>RegistryProtocol</code>的私有属性：</p>
+<pre><code>private Protocol protocol;
+
+public void setProtocol(Protocol protocol) {
+    this.protocol = protocol;   //由SPI机制为其赋予一个protocol的自适应扩展点（动态创建的）
+}
+</code></pre><p>这个属性真正被赋值的地方是在SPI机制中为扩展点注入的阶段（<code>injectExtension</code>方法）：</p>
+<pre><code>private T injectExtension(T instance) {
+    try {
+        if (objectFactory != null) {
+            for (Method method : instance.getClass().getMethods()) {
+                if (method.getName().startsWith(&quot;set&quot;)
+                        &amp;&amp; method.getParameterTypes().length == 1
+                        &amp;&amp; Modifier.isPublic(method.getModifiers())) {
+                    Class&lt;?&gt; pt = method.getParameterTypes()[0];
+                    try {
+                        String property = method.getName().length() &gt; 3 ? method.getName().substring(3, 4).toLowerCase() + method.getName().substring(4) : &quot;&quot;;
+                        Object object = objectFactory.getExtension(pt, property);    //注意这里，我们的例子中，这个object会是SPI动态创建的自适应扩展点实例：Protocol$Adpative
+                        if (object != null) {
+                            method.invoke(instance, object);
+                        }
+                    } catch (Exception e) {
+                        logger.error(&quot;fail to inject via method &quot; + method.getName()
+                                + &quot; of interface &quot; + type.getName() + &quot;: &quot; + e.getMessage(), e);
+                    }
+                }
+            }
+        }
+    } catch (Exception e) {
+        logger.error(e.getMessage(), e);
+    }
+    return instance;
+}
+</code></pre><p>有点乱，回到<code>RegistryProtocol</code>类，我们知道，在服务暴露阶段，会调用它的<code>export</code>方法，在这个方法里会完成服务的注册逻辑：</p>
+<pre><code>public &lt;T&gt; Exporter&lt;T&gt; export(final Invoker&lt;T&gt; originInvoker) throws RpcException {
+    //export invoker
+    final ExporterChangeableWrapper&lt;T&gt; exporter = doLocalExport(originInvoker); //完成真正的服务暴露逻辑：默认以netty创建server服务来处理远程调用，打算回头专门写一下dubbo使用netty的细节
+
+    //registry provider
+    final Registry registry = getRegistry(originInvoker);  //根据url参数获取对应的注册中心服务实例，这里就是ZookeeperRegistry
+
+    final URL registedProviderUrl = getRegistedProviderUrl(originInvoker);
+    registry.register(registedProviderUrl); //向注册中心注册当前暴露的服务的URL
+
+    // 订阅override数据
+    // FIXME 提供者订阅时，会影响同一JVM既暴露服务，又引用同一服务的的场景，因为subscribed以服务名为缓存的key，导致订阅信息覆盖。
+    final URL overrideSubscribeUrl = getSubscribedOverrideUrl(registedProviderUrl);
+    final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl);
+    overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
+    registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
+
+    //保证每次export都返回一个新的exporter实例
+    return new Exporter&lt;T&gt;() {
+        public Invoker&lt;T&gt; getInvoker() {
+            return exporter.getInvoker();
+        }
+        public void unexport() {
+            try {
+                exporter.unexport();
+            } catch (Throwable t) {
+                logger.warn(t.getMessage(), t);
+            }
+            try {
+                registry.unregister(registedProviderUrl);
+            } catch (Throwable t) {
+                logger.warn(t.getMessage(), t);
+            }
+            try {
+                overrideListeners.remove(overrideSubscribeUrl);
+                registry.unsubscribe(overrideSubscribeUrl, overrideSubscribeListener);
+            } catch (Throwable t) {
+                logger.warn(t.getMessage(), t);
+            }
+        }
+    };
+}
+</code></pre><p>到这里，主线轮廓已经勾勒出来了，我们接下来看一下dubbo和zookeeper之间在服务注册阶段的通信细节，要从上面这个方法中的下面三行下手：</p>
+<pre><code>//registry provider
+final Registry registry = getRegistry(originInvoker);  //根据url参数获取对应的注册中心服务实例，这里就是ZookeeperRegistry
+
+final URL registedProviderUrl = getRegistedProviderUrl(originInvoker);
+registry.register(registedProviderUrl); //向注册中心注册当前暴露的服务的URL
+</code></pre><p>正如注释标明的，第一行会获取invoker中url指定的注册中心实例，我们的情况就是拿到<code>zookeeperRegistry</code>。第二行其实就是过滤掉url中的注册中心相关参数，以及过滤器，监控中心等参数，按照我们上面的例子，<code>registedProviderUrl</code>大概应该如下：</p>
+<pre><code>dubbo://192.168.153.1:20880/com.alibaba.dubbo.demo.bid.BidService?anyhost=true&amp;application=demo-provider&amp;dubbo=2.0.0&amp;generic=false&amp;interface=com.alibaba.dubbo.demo.bid.BidService&amp;methods=throwNPE,bid&amp;optimizer=com.alibaba.dubbo.demo.SerializationOptimizerImpl&amp;organization=dubbox&amp;owner=programmer&amp;pid=3872&amp;serialization=kryo&amp;side=provider&amp;timestamp=1422241023451
+</code></pre><p>我们主要看第三行，真正完成向zookeeper中注册的工作就是靠register方法完成的，先来看一下zookeeperRegistry的继承关系：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/Ep8RFf0S/7imCY.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p>真正声明register方法的是zookeeperRegistry的父类：FailbackRegistry，从名字就能直观的看出它的作用，主要就是负责注册中心失效重试逻辑的。我们不打算在这里展开说这个话题。好吧，我们继续看zookeeperRegistry的doRegister方法（FailbackRegistry的register方法会调用zookeeperRegistry的doRegister的方法）：</p>
+<pre><code>protected void doRegister(URL url) {
+    try {
+        zkClient.create(toUrlPath(url), url.getParameter(Constants.DYNAMIC_KEY, true));     //参见：http://alibaba.github.io/dubbo-doc-static/Zookeeper+Registry-zh.htm
+    } catch (Throwable e) {
+        throw new RpcException(&quot;Failed to register &quot; + url + &quot; to zookeeper &quot; + getUrl() + &quot;, cause: &quot; + e.getMessage(), e);
+    }
+}
+</code></pre><p>到这里就已经可以告一段落了，需要叮嘱的是<code>toUrlPath</code>方法，它的作用就是把url格式化成最终存储在zookeeper中的数据格式，尤其要注意<code>category</code>参数，它表示注册类型，如下图：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/Ep8ZmnoV/RmZZL.jpg" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p>在我们的例子中，最终这次注册就会在对应serverInterface下的providers下创建一个url节点。</p>
+<h2 id="subscribe"><a href="#subscribe" class="headerlink" title="subscribe"></a>subscribe</h2><p>我们再来看看服务消费方对所引用服务的订阅细节，与服务提供方大致一样（忽略集群逻辑），只不过到达<code>RegistryProtocol</code>后调用的是<code>refer</code>方法：</p>
+<pre><code>public &lt;T&gt; Invoker&lt;T&gt; refer(Class&lt;T&gt; type, URL url) throws RpcException {
+    //处理注册中心的协议，用url中registry参数的值作为真实的注册中心协议
+    url = url.setProtocol(url.getParameter(Constants.REGISTRY_KEY, Constants.DEFAULT_REGISTRY)).removeParameter(Constants.REGISTRY_KEY);
+    Registry registry = registryFactory.getRegistry(url);   //拿到真正的注册中心实例，我们的例子中就是zookeeperRegistry
+
+    if (RegistryService.class.equals(type)) {   //todo 不太理解，貌似是注册中心服务本身的暴露
+        return proxyFactory.getInvoker((T) registry, type, url);
+    }
+
+    //分组聚合处理，http://alibaba.github.io/dubbo-doc-static/Merge+By+Group-zh.htm
+    // group=&quot;a,b&quot; or group=&quot;*&quot;
+    Map&lt;String, String&gt; qs = StringUtils.parseQueryString(url.getParameterAndDecoded(Constants.REFER_KEY));
+    String group = qs.get(Constants.GROUP_KEY);
+    if (group != null &amp;&amp; group.length() &gt; 0 ) {
+        if ( ( Constants.COMMA_SPLIT_PATTERN.split( group ) ).length &gt; 1
+                || &quot;*&quot;.equals( group ) ) {
+            return doRefer( getMergeableCluster(), registry, type, url );
+        }
+    }
+
+    return doRefer(cluster, registry, type, url);
+}
+</code></pre><p>真正完成订阅是在<code>doRefer</code>方法中：</p>
+<pre><code> private &lt;T&gt; Invoker&lt;T&gt; doRefer(Cluster cluster, Registry registry, Class&lt;T&gt; type, URL url) {
+    RegistryDirectory&lt;T&gt; directory = new RegistryDirectory&lt;T&gt;(type, url);   //这个directory把同一个serviceInterface对应的多个invoker管理起来提供概念上的化多为单一，供路由、均衡算法等使用
+    directory.setRegistry(registry);
+    directory.setProtocol(protocol);
+    URL subscribeUrl = new URL(Constants.CONSUMER_PROTOCOL, NetUtils.getLocalHost(), 0, type.getName(), directory.getUrl().getParameters());
+
+    //注册自己
+    if (! Constants.ANY_VALUE.equals(url.getServiceInterface())
+            &amp;&amp; url.getParameter(Constants.REGISTER_KEY, true)) {
+        registry.register(subscribeUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,
+                Constants.CHECK_KEY, String.valueOf(false)));
+    }
+
+    //订阅目标服务提供方
+    directory.subscribe(subscribeUrl.addParameter(Constants.CATEGORY_KEY, 
+            Constants.PROVIDERS_CATEGORY 
+            + &quot;,&quot; + Constants.CONFIGURATORS_CATEGORY 
+            + &quot;,&quot; + Constants.ROUTERS_CATEGORY));
+
+    return cluster.join(directory); //合并所有相同invoker
+}
+</code></pre><p>可见代码和上面给的那个图很吻合，服务消费方不仅会订阅相关的服务，也会注册自身供其他层使用（服务治理）。特别要注意的是订阅时，同时订阅了三个分类类型：<strong>providers，routers，configurators</strong>。目前我们不打算说另外两种类型的意义（因为我也不清楚），后面分析道路由和集群的时候再来扯淡。</p>
+<p>继续深挖dubbo中服务消费方订阅服务的细节，上面方法中最终把订阅细节委托给<code>RegistryDirectory.subscribe</code>方法，注意，这个方法接受的参数，此时的url已经把<code>category</code>设置为<code>providers，routers，configurators</code>：</p>
+<pre><code>public void subscribe(URL url) {
+    setConsumerUrl(url);
+    registry.subscribe(url, this);
+}
+</code></pre><p>这里<code>registry</code>就是zookeeperRegistry，这在<code>doRefer</code>方法可以看到明确的注入。然后和注册服务时一样，订阅会先由<code>FailbackRegistry</code>完成失效重试的处理，最终会交给<code>zookeeperRegistry.doSubscribe</code>方法。zookeeperRegistry实例拥有ZookeeperClient类型引用，该类型对象封装了和zookeeper通信的逻辑（默认是使用zkclient客户端），这里需要注意的一点，小爷我就被这里的一个数据结构卡住了一整天：</p>
+<pre><code>private final ConcurrentMap&lt;URL, ConcurrentMap&lt;NotifyListener, ChildListener&gt;&gt; zkListeners = new ConcurrentHashMap&lt;URL, ConcurrentMap&lt;NotifyListener, ChildListener&gt;&gt;();
+</code></pre><p>一开始很不理解，为何要在url和NotifyListener之间再搞一个ChildListener接口出来，后来反复查看zkclient的文档说明和dubbo注册中心的设计，才悟出来点门道。这个<strong>ChildListener接口用于把zkclient的事件（IZkChildListener）转换到registry事件（NotifyListener）</strong>。这么做的深意不是特别的理解，可能是因为我并没有太多zookeeper的使用经验导致的，这里的做法<strong>可以更好的把zkclient的api和dubbo真身的注册中心逻辑分离开</strong>，毕竟dubbo除了zkclient以外还可以选择curator。从dubbo源码中可以看出，架构师和开发人员对面向对象和设计模式的理解非常的深刻，合理的运用继承和组合，打造了非常灵活的一套系统，保证概念统一的前提下展现了非常强大的多态性，感叹！</p>
+<p>这样走一圈下来，关于服务订阅的大致流程就描述清楚了，部分问题需要留到未来再解决了。</p>
+<h2 id="notify"><a href="#notify" class="headerlink" title="notify"></a>notify</h2><p>最后看一下注册推送细节，在订阅时你会注意到，订阅真正操作的是用<code>RegistryDirectory</code>类型封装过的对象，这个类型实现了一个接口<code>NotifyListener</code>（前面我们已经提到这个接口了），该接口用于描述支持推送通知逻辑：</p>
+<pre><code>public interface NotifyListener {
+
+    /**
+     * 当收到服务变更通知时触发。
+     * 
+     * 通知需处理契约：&lt;br&gt;
+     * 1. 总是以服务接口和数据类型为维度全量通知，即不会通知一个服务的同类型的部分数据，用户不需要对比上一次通知结果。&lt;br&gt;
+     * 2. 订阅时的第一次通知，必须是一个服务的所有类型数据的全量通知。&lt;br&gt;
+     * 3. 中途变更时，允许不同类型的数据分开通知，比如：providers, consumers, routers, overrides，允许只通知其中一种类型，但该类型的数据必须是全量的，不是增量的。&lt;br&gt;
+     * 4. 如果一种类型的数据为空，需通知一个empty协议并带category参数的标识性URL数据。&lt;br&gt;
+     * 5. 通知者(即注册中心实现)需保证通知的顺序，比如：单线程推送，队列串行化，带版本对比。&lt;br&gt;
+     * 
+     * @param urls 已注册信息列表，总不为空，含义同{@link com.alibaba.dubbo.registry.RegistryService#lookup(URL)}的返回值。
+     */
+    void notify(List&lt;URL&gt; urls);
+}
+</code></pre><p>前面提到了ChildListener接口，dubbo靠它把zkclient的事件转换成自己的事件类型，如果从代码上来看确实有点绕，事件的流程我手绘了一下：</p>
+<p>[<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/Epc4RElK/TJLi1.png" alt="](http://pic.yupoo.com/kazaff/Epc4RElK/medish.jpg)" title>
+                </div>
+                <div class="image-caption">](http://pic.yupoo.com/kazaff/Epc4RElK/medish.jpg)</div>
+            </figure></p>
+<p>我们主要看一下RegistryDirectory的notify方法：</p>
+<pre><code>public synchronized void notify(List&lt;URL&gt; urls) {
+    List&lt;URL&gt; invokerUrls = new ArrayList&lt;URL&gt;();
+    List&lt;URL&gt; routerUrls = new ArrayList&lt;URL&gt;();
+    List&lt;URL&gt; configuratorUrls = new ArrayList&lt;URL&gt;();
+    for (URL url : urls) {
+        String protocol = url.getProtocol();
+        //允许不同类型的数据分开通知，比如：providers, consumers, routers, overrides，允许只通知其中一种类型，但该类型的数据必须是全量的，不是增量的。
+        String category = url.getParameter(Constants.CATEGORY_KEY, Constants.DEFAULT_CATEGORY);
+        if (Constants.ROUTERS_CATEGORY.equals(category) 
+                || Constants.ROUTE_PROTOCOL.equals(protocol)) {
+            routerUrls.add(url);
+        } else if (Constants.CONFIGURATORS_CATEGORY.equals(category) 
+                || Constants.OVERRIDE_PROTOCOL.equals(protocol)) {
+            configuratorUrls.add(url);
+        } else if (Constants.PROVIDERS_CATEGORY.equals(category)) {
+            invokerUrls.add(url);
+        } else {
+            logger.warn(&quot;Unsupported category &quot; + category + &quot; in notified url: &quot; + url + &quot; from registry &quot; + getUrl().getAddress() + &quot; to consumer &quot; + NetUtils.getLocalHost());
+        }
+    }
+    // configurators 更新缓存的服务提供方配置规则
+    if (configuratorUrls != null &amp;&amp; configuratorUrls.size() &gt;0 ){
+        this.configurators = toConfigurators(configuratorUrls);
+    }
+    // routers  更新缓存的路由配置规则
+    if (routerUrls != null &amp;&amp; routerUrls.size() &gt;0 ){
+        List&lt;Router&gt; routers = toRouters(routerUrls);
+        if(routers != null){ // null - do nothing
+            setRouters(routers);
+        }
+    }
+
+    // 合并override参数
+    List&lt;Configurator&gt; localConfigurators = this.configurators; // local reference
+    this.overrideDirectoryUrl = directoryUrl;
+    if (localConfigurators != null &amp;&amp; localConfigurators.size() &gt; 0) {
+        for (Configurator configurator : localConfigurators) {
+            this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
+        }
+    }
+
+    // providers
+    refreshInvoker(invokerUrls);
+}
+</code></pre><p>dubbo提供了强大的服务治理功能，所以这里在每次消费方接受到注册中心的通知后，大概会做下面这些事儿：</p>
+<ul>
+<li><a href="http://alibaba.github.io/dubbo-doc-static/Configurator+Rule-zh.htm" target="_blank" rel="noopener">更新服务提供方配置规则</a></li>
+<li><a href="http://alibaba.github.io/dubbo-doc-static/Router+Rule-zh.htm" target="_blank" rel="noopener">更新路由规则</a></li>
+<li>重建invoker实例</li>
+</ul>
+<p>前两件事儿我们放在分析路由，过滤器，集群的时候再讲，我们这里主要看dubbo如何“重建invoker实例”，也就是最后一行代码调用的方法<code>refreshInvoker</code>：</p>
+<pre><code>private void refreshInvoker(List&lt;URL&gt; invokerUrls){
+    if (invokerUrls != null &amp;&amp; invokerUrls.size() == 1 &amp;&amp; invokerUrls.get(0) != null
+            &amp;&amp; Constants.EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) { //如果传入的参数只包含一个empty://协议的url，表明禁用当前服务
+        this.forbidden = true; // 禁止访问
+        this.methodInvokerMap = null; // 置空列表
+        destroyAllInvokers(); // 关闭所有Invoker
+    } else {
+        this.forbidden = false; // 允许访问
+        Map&lt;String, Invoker&lt;T&gt;&gt; oldUrlInvokerMap = this.urlInvokerMap; // local reference
+
+        if (invokerUrls.size() == 0 &amp;&amp; this.cachedInvokerUrls != null){ //如果传入的invokerUrl列表是空，则表示只是下发的override规则或route规则，需要重新交叉对比，决定是否需要重新引用
+            invokerUrls.addAll(this.cachedInvokerUrls);
+        } else {
+            this.cachedInvokerUrls = new HashSet&lt;URL&gt;();
+            this.cachedInvokerUrls.addAll(invokerUrls);//缓存invokerUrls列表，便于交叉对比
+        }
+
+        if (invokerUrls.size() ==0 ){
+            return;
+        }
+
+        Map&lt;String, Invoker&lt;T&gt;&gt; newUrlInvokerMap = toInvokers(invokerUrls) ;// 将URL列表转成Invoker列表
+        Map&lt;String, List&lt;Invoker&lt;T&gt;&gt;&gt; newMethodInvokerMap = toMethodInvokers(newUrlInvokerMap); // 换方法名映射Invoker列表
+
+        // state change
+        //如果计算错误，则不进行处理.
+        if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0 ){
+            logger.error(new IllegalStateException(&quot;urls to invokers error .invokerUrls.size :&quot;+invokerUrls.size() + &quot;, invoker.size :0. urls :&quot;+invokerUrls.toString()));
+            return ;
+        }
+
+        this.methodInvokerMap = multiGroup ? toMergeMethodInvokerMap(newMethodInvokerMap) : newMethodInvokerMap;
+        this.urlInvokerMap = newUrlInvokerMap;
+
+        try{
+            destroyUnusedInvokers(oldUrlInvokerMap,newUrlInvokerMap); // 关闭未使用的Invoker
+        }catch (Exception e) {
+            logger.warn(&quot;destroyUnusedInvokers error. &quot;, e);
+        }
+    }
+}
+</code></pre><p>好吧，到这里我们已经完成了服务通知的业务逻辑，有兴趣的童鞋可以深究一下<code>toInvokers</code>方法，它又会走一遍<strong>url-&gt;invoker</strong>的逻辑（服务引用）。</p>
+<p>那么，就先到这里吧，再会~</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.382Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2015/01/31/dubbo的服务发现细节/" target="_blank" rel="external">https://blog.kazaff.me/2015/01/31/dubbo的服务发现细节/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dubbo/">dubbo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dubbox/">dubbox</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/soa/">soa</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zookeeper/">zookeeper</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/分布式/">分布式</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/注册中心/">注册中心</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/01/31/dubbo的服务发现细节/&title=《Dubbo的服务发现细节》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/01/31/dubbo的服务发现细节/&title=《Dubbo的服务发现细节》 — kazaff's blog&source=对于分布式服务架构，解决服务的发现问题，引入了注册中心中间件，从而很好的解决了服务双方（消费方和提供方）的直接依赖问题。这种解耦的意义是非凡的，不仅在程序..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/01/31/dubbo的服务发现细节/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Dubbo的服务发现细节》 — kazaff's blog&url=https://blog.kazaff.me/2015/01/31/dubbo的服务发现细节/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/01/31/dubbo的服务发现细节/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2015/02/02/dubbo的服务治理细节/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Dubbo的服务治理细节</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2015/01/27/dubbo中服务暴露的细节/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Dubbo的服务暴露细节</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/01/31/dubbo的服务发现细节/&title=《Dubbo的服务发现细节》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/01/31/dubbo的服务发现细节/&title=《Dubbo的服务发现细节》 — kazaff's blog&source=对于分布式服务架构，解决服务的发现问题，引入了注册中心中间件，从而很好的解决了服务双方（消费方和提供方）的直接依赖问题。这种解耦的意义是非凡的，不仅在程序..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/01/31/dubbo的服务发现细节/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Dubbo的服务发现细节》 — kazaff's blog&url=https://blog.kazaff.me/2015/01/31/dubbo的服务发现细节/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/01/31/dubbo的服务发现细节/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2015/01/31/dubbo的服务发现细节/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>Mac下react-Native-Android环境搭建 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="mac,react-native,android">
+    <meta name="description" content="最近闲来无事，就决定摆弄摆弄react-native，其实之前尝试过，不过那个时候react-native还没有出android版，而ios版本的环境搭建只需要给xcode装上，基本上就算搭建完成了。而这次大意了，原以为android环境会一样简单明了的，随便看了几篇环境搭建的帖子就以为能轻松完成，结果一搞就搞了一天半啊～">
+<meta name="keywords" content="mac,react-native,android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mac下react-Native-Android环境搭建">
+<meta property="og:url" content="https://blog.kazaff.me/2015/12/02/mac下react-native-android环境搭建/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="最近闲来无事，就决定摆弄摆弄react-native，其实之前尝试过，不过那个时候react-native还没有出android版，而ios版本的环境搭建只需要给xcode装上，基本上就算搭建完成了。而这次大意了，原以为android环境会一样简单明了的，随便看了几篇环境搭建的帖子就以为能轻松完成，结果一搞就搞了一天半啊～">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/F9aG4ZAQ/4wZMw.jpg">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/F9aG5Lb8/alWUY.jpg">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/F9aG6uNJ/ywiXw.jpg">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/F9aG7Zl0/hpstJ.jpg">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Mac下react-Native-Android环境搭建">
+<meta name="twitter:description" content="最近闲来无事，就决定摆弄摆弄react-native，其实之前尝试过，不过那个时候react-native还没有出android版，而ios版本的环境搭建只需要给xcode装上，基本上就算搭建完成了。而这次大意了，原以为android环境会一样简单明了的，随便看了几篇环境搭建的帖子就以为能轻松完成，结果一搞就搞了一天半啊～">
+<meta name="twitter:image" content="http://pic.yupoo.com/kazaff/F9aG4ZAQ/4wZMw.jpg">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Mac下react-Native-Android环境搭建</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Mac下react-Native-Android环境搭建</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2015-12-02T09:37:12.000Z" itemprop="datePublished" class="page-time">
+  Dec 2 2015
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/移动端/">移动端</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+<article id="post-mac下react-native-android环境搭建"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Mac下react-Native-Android环境搭建</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2015年12月02日 9:37" datetime="2015-12-02T09:37:12.000Z"  itemprop="datePublished">Dec 2 2015</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/移动端/">移动端</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>最近闲来无事，就决定摆弄摆弄react-native，其实之前尝试过，不过那个时候react-native还没有出android版，而ios版本的环境搭建只需要给xcode装上，基本上就算搭建完成了。而这次大意了，原以为android环境会一样简单明了的，随便看了几篇环境搭建的帖子就以为能轻松完成，结果一搞就搞了一天半啊～<br><a id="more"></a></p>
+<p>首先吐槽的就是，很多博客里写的安装步骤其实都不是很具体，总是缺少一些细节，对我这种小白来说就会变成噩梦！虽然我这篇可能也无法保证事无巨细，但至少我碰见的坑我会叮嘱一下大家撒～</p>
+<p>其实说了那么多，都怪自己太懒，按照官方提供的搭建流程，基本上就会规避非常多的坑，强烈推荐看官方手册：</p>
+<ul>
+<li><a href="https://facebook.github.io/react-native/docs/getting-started.html#content" target="_blank" rel="noopener">步骤一</a></li>
+<li><a href="https://facebook.github.io/react-native/docs/android-setup.html" target="_blank" rel="noopener">步骤二</a></li>
+</ul>
+<p>下面主要来说说我自己碰见的坑吧，希望能帮助到你～</p>
+<p>官方推荐（很多博客也推荐），使用brew来安装android-sdk，但我一开始是从另外一个博客上看到的，自己去找了一个mac版本的android sdk manger，按说应该和brew安装的一样，只不过位置不同而已～可是后面却碰到了死活无法找到android sdk的路径问题。单这一个问题就让我花了半天来排查，主要是无法搜索到有用的资料！</p>
+<p>删除掉自己下载的那个manger，使用brew安装即可：</p>
+<pre><code>brew install android-sdk
+</code></pre><p>不过一定要按照顺序来，第一步肯定是要保证你的mac下已经安装了jdk，直接gg可以搜索到mac版的jdk安装文件的！brew貌似无法安装jdk～～</p>
+<p>第二个坑呢，就是这个“ANDROID_HOME”环境变量的问题了，由于第一步我们是使用brew来安装android-sdk的，所以安装位置在“/usr/local/opt/android-sdk”，官方有叮嘱这一步，我的步骤是：</p>
+<pre><code>cd ~
+touch .bash_profile
+vi .bash_profile
+</code></pre><p>然后在打开的输入界面贴进去：</p>
+<pre><code>export ANDROID_HOME=/usr/local/opt/android-sdk
+</code></pre><p>保存退出，并关闭终端！！！</p>
+<p>第三个坑，是一定要安装最新版本的watchman和flow：</p>
+<pre><code>brew install watchman
+brew install flow
+</code></pre><p>不然你执行“react-native run-android”后，开启的node server终端总是会报错，提示什么”root of null”！我由于之前就装过watchman，可能是版本问题，又让我花了tm的多半天！！</p>
+<p>第四个坑，是当执行“react-native run-android”后，会下载大量的jar包，如果中间出现卡住了，可以直接ctrl+C，然后重新运行命令，要说的不是这个问题，当你下载完所有的包后，会开始部署代码，这个时候可能会碰到一个类似“xxx parent directory xxxx”无法创建的问题，应该是gradle无权限操作目录的问题，我尝试使用sudo来切换成root账号，结果会碰到由于切换了用户，之前设置的“ANDROID_HOME”环境变量未定义的问题，所以对于和我一样的小白来说，最简单的就是在你的项目文件上右键“简介”，弹出的窗口最下面调整一下操作权限，并记得继承到所有下级目录上！！！</p>
+<p>第五个坑，还是绕回来说android-sdk，安装完后执行：</p>
+<pre><code>android
+</code></pre><p>该命令会打开一个界面，按照官方说的安装所有的推荐工具包，强烈推荐选择统一的版本，比方说23.0.1，不然会碰到对应版本找不到的报错！我贴一下我这边目前选择的包情况：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/F9aG4ZAQ/4wZMw.jpg" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/F9aG5Lb8/alWUY.jpg" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/F9aG6uNJ/ywiXw.jpg" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/F9aG7Zl0/hpstJ.jpg" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p>未必都有用，但是至少不保错了！</p>
+<p>最后，对于跟我一样使用老mac的玩家，强烈推荐不要使用android-sdk自建模拟器，因为那真的实在是太tm的卡了！我足足等了30分钟，开启后还进到android系统后还是很卡～可能是我配置的不好吧，但这种方式的体验真的好差！</p>
+<p>按照官方推荐的，我们乖乖的来使用Genymotion，选择个人开发者，注册账号即可免费下载，然后再根据要求下载个最新版本的VirtualBox即可！配置非常简单，启动很迅速，效果好极了！但很多功能都是收费版的，不过对于尝鲜的我来说，足够了！</p>
+<p>这一趟下来，感觉好麻烦！还是react-native-ios爽一些，不过android还是不能错过的！！</p>
+<p>一切就绪，只需要run-android了！</p>
+<p>真机调试一样的简单，只需要插上数据线即可，当然，要记得把手机开启usb调试模式，我使用的是锤子坚果手机，连接后会弹出授权窗口，不确认会提示无法连接设备的哟～</p>
+<p>最后你还可能碰见无法加载jsbundle的问题，只需要摇晃手机，在弹出菜单中选择 Dev Setting &gt; Debug Server host for device，然后填入 Mac 的 IP 地址（ifconfig 命令可查看本机 IP）即可！</p>
+<p>参考：<a href="http://www.liaohuqiu.net/cn/posts/react-native-1/" target="_blank" rel="noopener">http://www.liaohuqiu.net/cn/posts/react-native-1/</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.382Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2015/12/02/mac下react-native-android环境搭建/" target="_blank" rel="external">https://blog.kazaff.me/2015/12/02/mac下react-native-android环境搭建/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/android/">android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mac/">mac</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/react-native/">react-native</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/12/02/mac下react-native-android环境搭建/&title=《Mac下react-Native-Android环境搭建》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/12/02/mac下react-native-android环境搭建/&title=《Mac下react-Native-Android环境搭建》 — kazaff's blog&source=最近闲来无事，就决定摆弄摆弄react-native，其实之前尝试过，不过那个时候react-native还没有出android版，而ios版本的环境搭建..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/12/02/mac下react-native-android环境搭建/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Mac下react-Native-Android环境搭建》 — kazaff's blog&url=https://blog.kazaff.me/2015/12/02/mac下react-native-android环境搭建/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/12/02/mac下react-native-android环境搭建/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2015/12/04/android的浏览器下无法表单提交附件/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Android的浏览器下无法表单提交附件</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2015/11/25/qq第三方登录/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">QQ第三方登录</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/12/02/mac下react-native-android环境搭建/&title=《Mac下react-Native-Android环境搭建》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/12/02/mac下react-native-android环境搭建/&title=《Mac下react-Native-Android环境搭建》 — kazaff's blog&source=最近闲来无事，就决定摆弄摆弄react-native，其实之前尝试过，不过那个时候react-native还没有出android版，而ios版本的环境搭建..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/12/02/mac下react-native-android环境搭建/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Mac下react-Native-Android环境搭建》 — kazaff's blog&url=https://blog.kazaff.me/2015/12/02/mac下react-native-android环境搭建/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/12/02/mac下react-native-android环境搭建/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2015/12/02/mac下react-native-android环境搭建/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

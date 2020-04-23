@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>React-Native-Android关于我是如何打包APK的 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="react-native,android,打包,APK">
+    <meta name="description" content="app写好了，最后一步多半应该是拿出来装逼喽～哇哈哈哈哈 但你总不能指望每次都USB连上你的开发机，然后run-android一下吧，虽然我承认看着命令行中刷刷刷的执行命令有种黑客帝国的范儿，但让所有人都连接的开发机，感觉也是怪怪的，更别提你还指望所有设备都在一个局域网下才能更新js文件。。。。 好吧，你还是应该考虑把你的项目打包成apk，然后传给任何你想装逼给他看的人！哇哈哈哈哈～ 时至今日，2">
+<meta name="keywords" content="react-native,android,打包,APK">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React-Native-Android关于我是如何打包APK的">
+<meta property="og:url" content="https://blog.kazaff.me/2015/12/21/react-native-android关于我是如何打包APK的/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="app写好了，最后一步多半应该是拿出来装逼喽～哇哈哈哈哈 但你总不能指望每次都USB连上你的开发机，然后run-android一下吧，虽然我承认看着命令行中刷刷刷的执行命令有种黑客帝国的范儿，但让所有人都连接的开发机，感觉也是怪怪的，更别提你还指望所有设备都在一个局域网下才能更新js文件。。。。 好吧，你还是应该考虑把你的项目打包成apk，然后传给任何你想装逼给他看的人！哇哈哈哈哈～ 时至今日，2">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/Fc35Cqee/swrie.jpg">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="React-Native-Android关于我是如何打包APK的">
+<meta name="twitter:description" content="app写好了，最后一步多半应该是拿出来装逼喽～哇哈哈哈哈 但你总不能指望每次都USB连上你的开发机，然后run-android一下吧，虽然我承认看着命令行中刷刷刷的执行命令有种黑客帝国的范儿，但让所有人都连接的开发机，感觉也是怪怪的，更别提你还指望所有设备都在一个局域网下才能更新js文件。。。。 好吧，你还是应该考虑把你的项目打包成apk，然后传给任何你想装逼给他看的人！哇哈哈哈哈～ 时至今日，2">
+<meta name="twitter:image" content="http://pic.yupoo.com/kazaff/Fc35Cqee/swrie.jpg">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">React-Native-Android关于我是如何打包APK的</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">React-Native-Android关于我是如何打包APK的</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2015-12-21T21:37:12.000Z" itemprop="datePublished" class="page-time">
+  Dec 21 2015
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/移动端/">移动端</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+<article id="post-react-native-android关于我是如何打包APK的"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">React-Native-Android关于我是如何打包APK的</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2015年12月21日 21:37" datetime="2015-12-21T21:37:12.000Z"  itemprop="datePublished">Dec 21 2015</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/移动端/">移动端</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>app写好了，最后一步多半应该是拿出来装逼喽～哇哈哈哈哈</p>
+<p>但你总不能指望每次都USB连上你的开发机，然后run-android一下吧，虽然我承认看着命令行中刷刷刷的执行命令有种黑客帝国的范儿，但让所有人都连接的开发机，感觉也是怪怪的，更别提你还指望所有设备都在一个局域网下才能更新js文件。。。。</p>
+<p>好吧，你还是应该考虑把你的项目打包成apk，然后传给任何你想装逼给他看的人！哇哈哈哈哈～</p>
+<p>时至今日，2015-12-21 晚上九点四十分，官方版本应该是0.16.0，我按照<a href="http://react-native.cn/docs/signed-apk-android.html#content" target="_blank" rel="noopener">官方教程</a>进行打包，还是没能一次性就成功！但这并不能阻挡我试图装逼的心！</p>
+<p>好吧，解决问题之旅开始了！</p>
+<p>官方文档中，在打包之初是让你先生成了一个签名文件，原因是，如果你打包未签名的APK，在非root的设备上是不允许安装的，所以，你懂的！官方已经给出了非常具体的签名步骤，我这里就不重复了！</p>
+<p>好的，签名也弄好，执行<code>gradlew assembleRelease</code>命令坐等完成吧～</p>
+<p>但是，怎么可能让你如此轻易就达到目的？毫不意外的，我碰到了报错：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">* What went wrong:</span><br><span class="line">Execution failed for task &apos;:app:packageRelease&apos;.</span><br><span class="line">&gt; Unable to compute hash of /Users/kazaff/Documents/React-Native/ZhuiYuan/android/app/build/intermediates/classes-proguard/release/classes.jar</span><br></pre></td></tr></table></figure>
+<p>不过GG了一下，看来碰见这个错误的人不少，按照<a href="http://stackoverflow.com/questions/31643339/errorexecution-failed-for-task-apppackagerelease-unable-to-compute-hash" target="_blank" rel="noopener">stackoverflow</a>给出的终结方案：<strong>*在proguard-rules.pro文件末尾增加：</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">-dontwarn java.nio.file.Files</span><br><span class="line">-dontwarn java.nio.file.Path</span><br><span class="line">-dontwarn java.nio.file.OpenOption</span><br><span class="line">-dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement</span><br><span class="line"></span><br><span class="line">-keep class com.google.android.gms.** &#123; *; &#125;</span><br><span class="line">-dontwarn com.google.android.gms.**</span><br><span class="line">-dontwarn butterknife.**</span><br></pre></td></tr></table></figure>
+<p>还是被我机智的搞定了！</p>
+<p>注意，再次执行<code>gradlew assembleRelease</code>之前，请先执行<code>gradlew clean</code>，清除之前打包的一些临时文件，不然你可能还是会悲剧～</p>
+<p>好了，其实说了这么多，我只是想贱贱的贴一个下载连接：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/Fc35Cqee/swrie.jpg" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p><a href="http://pan.baidu.com/s/1pKhY6wj" target="_blank" rel="noopener">http://pan.baidu.com/s/1pKhY6wj</a></p>
+<p>上图是<a href="https://github.com/kazaff/ZhuiYuanDemo" target="_blank" rel="noopener">ZhuiYuanDemo</a>APK的文件二维码，供大家把玩～</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.382Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2015/12/21/react-native-android关于我是如何打包APK的/" target="_blank" rel="external">https://blog.kazaff.me/2015/12/21/react-native-android关于我是如何打包APK的/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/APK/">APK</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/android/">android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/react-native/">react-native</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/打包/">打包</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/12/21/react-native-android关于我是如何打包APK的/&title=《React-Native-Android关于我是如何打包APK的》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/12/21/react-native-android关于我是如何打包APK的/&title=《React-Native-Android关于我是如何打包APK的》 — kazaff's blog&source=develop,code,full-stack,architecture,deploy,database,test" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/12/21/react-native-android关于我是如何打包APK的/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《React-Native-Android关于我是如何打包APK的》 — kazaff's blog&url=https://blog.kazaff.me/2015/12/21/react-native-android关于我是如何打包APK的/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/12/21/react-native-android关于我是如何打包APK的/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2016/01/01/GraphQL什么鬼/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">GraphQL什么鬼</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2015/12/21/React-Native-Android小结/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">React-Native-Android小结</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/12/21/react-native-android关于我是如何打包APK的/&title=《React-Native-Android关于我是如何打包APK的》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/12/21/react-native-android关于我是如何打包APK的/&title=《React-Native-Android关于我是如何打包APK的》 — kazaff's blog&source=develop,code,full-stack,architecture,deploy,database,test" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/12/21/react-native-android关于我是如何打包APK的/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《React-Native-Android关于我是如何打包APK的》 — kazaff's blog&url=https://blog.kazaff.me/2015/12/21/react-native-android关于我是如何打包APK的/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/12/21/react-native-android关于我是如何打包APK的/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2015/12/21/react-native-android关于我是如何打包APK的/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

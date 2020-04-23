@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>Jedis异常Could Not Get a Resource From the Pool | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="jedis,redis,连接池,jmeter,ulimit">
+    <meta name="description" content="今天用jmeter对项目中的相关接口进行压力测试，发现一个问题：  严重: Servlet.service() for servlet [mvc-dispatcher] in context with path [] threw exceptionjava.io.IOException: org.springframework.web.util.NestedServletException: Re">
+<meta name="keywords" content="jedis,redis,连接池,jmeter,ulimit">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Jedis异常Could Not Get a Resource From the Pool">
+<meta property="og:url" content="https://blog.kazaff.me/2015/01/04/Jedis异常Could not get a resource from the pool/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="今天用jmeter对项目中的相关接口进行压力测试，发现一个问题：  严重: Servlet.service() for servlet [mvc-dispatcher] in context with path [] threw exceptionjava.io.IOException: org.springframework.web.util.NestedServletException: Re">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.378Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Jedis异常Could Not Get a Resource From the Pool">
+<meta name="twitter:description" content="今天用jmeter对项目中的相关接口进行压力测试，发现一个问题：  严重: Servlet.service() for servlet [mvc-dispatcher] in context with path [] threw exceptionjava.io.IOException: org.springframework.web.util.NestedServletException: Re">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Jedis异常Could Not Get a Resource From the Pool</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Jedis异常Could Not Get a Resource From the Pool</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2015-01-04T16:42:58.000Z" itemprop="datePublished" class="page-time">
+  Jan 4 2015
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/j2ee/">j2ee</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+<article id="post-Jedis异常Could not get a resource from the pool"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Jedis异常Could Not Get a Resource From the Pool</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2015年01月04日 16:42" datetime="2015-01-04T16:42:58.000Z"  itemprop="datePublished">Jan 4 2015</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/j2ee/">j2ee</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>今天用<code>jmeter</code>对项目中的相关接口进行压力测试，发现一个问题：</p>
+<blockquote>
+<p>严重: Servlet.service() for servlet [mvc-dispatcher] in context with path [] threw exception<br>java.io.IOException: org.springframework.web.util.NestedServletException: Request processing failed; nested exception is org.springframework.data.redis.RedisConnectionFailureException: Cannot get Jedis connection; nested exception is redis.clients.jedis.exceptions.JedisConnectionException: Could not get a resource from the pool</p>
+</blockquote>
+<a id="more"></a>
+<p>字面意思来看，应该是redis连接池没有可申请的连接了。当然，在低并发测试时是不会看到这个报错的，大概在我把并发数调到200左右时会狂报这个错误！</p>
+<p>根据网上前辈们的总结，无非就是调整<code>Jedis</code>连接池的配置，redis本身的连接数的配置等等。这里我就不再复述了，我只想说，按照这些指示做了一边后问题并没任何好转。</p>
+<p>我用的是工作机，操作系统是WIN7 64位，redis用的是2.8.3 win64版，jedis的版本是2.6.1（网上说2.1.0之前的版本要手动归还连接），应用中操作redis的api是依赖spring-data封装的，配置如下：</p>
+<pre><code>&lt;!-- 会话持久层redis配置 --&gt;
+&lt;bean id=&quot;poolConfig&quot; class=&quot;redis.clients.jedis.JedisPoolConfig&quot;&gt;
+    &lt;property name=&quot;maxIdle&quot; value=&quot;${redis.maxIdle}&quot; /&gt;
+    &lt;property name=&quot;maxTotal&quot; value=&quot;${redis.maxTotal}&quot; /&gt;
+    &lt;property name=&quot;maxWaitMillis&quot; value=&quot;${redis.maxWaitMillis}&quot; /&gt;
+    &lt;property name=&quot;testOnBorrow&quot; value=&quot;${redis.testOnBorrow}&quot; /&gt;
+    &lt;property name=&quot;testOnReturn&quot; value=&quot;${redis.testOnReturn}&quot; /&gt;
+&lt;/bean&gt;
+
+&lt;bean id=&quot;jedisConnFactory&quot; class=&quot;org.springframework.data.redis.connection.jedis.JedisConnectionFactory&quot;&gt;
+    &lt;property name=&quot;hostName&quot; value=&quot;${redis.host}&quot; /&gt;
+    &lt;property name=&quot;port&quot; value=&quot;${redis.port}&quot; /&gt;
+    &lt;property name=&quot;password&quot; value=&quot;${redis.password}&quot; /&gt;
+    &lt;property name=&quot;usePool&quot; value=&quot;true&quot; /&gt;
+    &lt;property name=&quot;poolConfig&quot; ref=&quot;poolConfig&quot; /&gt;
+    &lt;property name=&quot;database&quot; value=&quot;${redis.db}&quot; /&gt;
+&lt;/bean&gt;
+
+&lt;bean id=&quot;redisTemplate&quot; class=&quot;org.springframework.data.redis.core.RedisTemplate&quot;&gt;
+    &lt;property name=&quot;connectionFactory&quot; ref=&quot;jedisConnFactory&quot; /&gt;
+    &lt;property name=&quot;keySerializer&quot;&gt;
+        &lt;bean class=&quot;org.springframework.data.redis.serializer.StringRedisSerializer&quot; /&gt;
+    &lt;/property&gt;
+    &lt;property name=&quot;valueSerializer&quot;&gt;
+        &lt;bean class=&quot;org.springframework.data.redis.serializer.JdkSerializationRedisSerializer&quot; /&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;
+</code></pre><p>redis连接池相关的参数如下：</p>
+<pre><code>#redis配置
+redis.maxIdle=100
+redis.maxTotal=1000
+redis.maxWaitMillis=2000
+redis.testOnBorrow=true
+redis.testOnReturn=true
+</code></pre><p>中规中矩，而且按照我配置的相关参数，设置的并发500绝逼不应该报这个错误的！其中一个细节是，当应用狂报错时，redis-cli命令也无法连接到redis服务了，也就是说redis本身的配置根本就不匹配我在应用中连接池的配置，这应该是导致问题的根本原因，简单地说就是：</p>
+<blockquote>
+<p>redis本身的连接数上限必须大于应用连接池中的最大连接数</p>
+</blockquote>
+<p>可本尊看了一下redis.conf文件，其中<code>maxClients</code>的值为0，也就是不限制。这尼玛如何是好？</p>
+<p>突然想到多年之前，小弟我刚接触redis的时候，就看到过一个大牛曾经说过：<strong>redis的win版本基本上就是个玩具</strong>。</p>
+<p>抱着试一试的心态（<s>我也购买了两盒…</s>），我试着让应用直连centos中的redis服务，尼玛直接就解决了，或者说出现的情况至少和配置相吻合，而且在linux下redis-server在启动之初就会提醒你关于连接数的配置，很贴心。</p>
+<p>好吧，最好再延伸一个老知识点，如果你想把redis的连接数设置的很大，很可能会超过目前配置的系统可使用文件句柄数上限，这时你的配置就会失效，那如何突破这个瓶颈呢，你需要了解一下这个命令： <a href="http://linuxguest.blog.51cto.com/195664/362366/" target="_blank" rel="noopener">ulimit</a>。</p>
+<p>PS：redis在linux上跑起来，就像吃了枪药，打了鸡血，磕了军粮丸一样，根本停不下来啊！</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.378Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2015/01/04/Jedis异常Could not get a resource from the pool/" target="_blank" rel="external">https://blog.kazaff.me/2015/01/04/Jedis异常Could not get a resource from the pool/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jedis/">jedis</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jmeter/">jmeter</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ulimit/">ulimit</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/连接池/">连接池</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/01/04/Jedis异常Could not get a resource from the pool/&title=《Jedis异常Could Not Get a Resource From the Pool》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/01/04/Jedis异常Could not get a resource from the pool/&title=《Jedis异常Could Not Get a Resource From the Pool》 — kazaff's blog&source=今天用jmeter对项目中的相关接口进行压力测试，发现一个问题：
+
+严重: Servlet.service() for servlet [mvc-disp..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/01/04/Jedis异常Could not get a resource from the pool/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Jedis异常Could Not Get a Resource From the Pool》 — kazaff's blog&url=https://blog.kazaff.me/2015/01/04/Jedis异常Could not get a resource from the pool/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/01/04/Jedis异常Could not get a resource from the pool/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2015/01/15/dubbo中SPI的基础--Cooma微容器/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">dubbo中SPI的基础--Cooma微容器</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2014/12/24/在无图形界面的Centos6.5下使用OpenOfiice4.1/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">在无图形界面的Centos6.5下使用OpenOffice4.1</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/01/04/Jedis异常Could not get a resource from the pool/&title=《Jedis异常Could Not Get a Resource From the Pool》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/01/04/Jedis异常Could not get a resource from the pool/&title=《Jedis异常Could Not Get a Resource From the Pool》 — kazaff's blog&source=今天用jmeter对项目中的相关接口进行压力测试，发现一个问题：
+
+严重: Servlet.service() for servlet [mvc-disp..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/01/04/Jedis异常Could not get a resource from the pool/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Jedis异常Could Not Get a Resource From the Pool》 — kazaff's blog&url=https://blog.kazaff.me/2015/01/04/Jedis异常Could not get a resource from the pool/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/01/04/Jedis异常Could not get a resource from the pool/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2015/01/04/Jedis异常Could not get a resource from the pool/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

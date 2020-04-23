@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>gmailWatcher之node | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="gmail,imap,async,mailparser">
+    <meta name="description" content="Email是一个可能比很多人岁数都大的“上古神器”，尽管和它同期出生的小伙伴很多都已经寿终正寝，但它却依然坚挺，可见其代表了多大的用户刚需！ 最近热映的《北京遇上西雅图2》讲的就是邮件的爱情故事，正巧又碰上项目新需求包含mail的收发要求，就借此良机好好学习一下这个陪伴我们很久的大伙伴。">
+<meta name="keywords" content="gmail,imap,async,mailparser">
+<meta property="og:type" content="article">
+<meta property="og:title" content="gmailWatcher之node">
+<meta property="og:url" content="https://blog.kazaff.me/2016/05/01/gmailWatcher之node/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="Email是一个可能比很多人岁数都大的“上古神器”，尽管和它同期出生的小伙伴很多都已经寿终正寝，但它却依然坚挺，可见其代表了多大的用户刚需！ 最近热映的《北京遇上西雅图2》讲的就是邮件的爱情故事，正巧又碰上项目新需求包含mail的收发要求，就借此良机好好学习一下这个陪伴我们很久的大伙伴。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="gmailWatcher之node">
+<meta name="twitter:description" content="Email是一个可能比很多人岁数都大的“上古神器”，尽管和它同期出生的小伙伴很多都已经寿终正寝，但它却依然坚挺，可见其代表了多大的用户刚需！ 最近热映的《北京遇上西雅图2》讲的就是邮件的爱情故事，正巧又碰上项目新需求包含mail的收发要求，就借此良机好好学习一下这个陪伴我们很久的大伙伴。">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">gmailWatcher之node</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">gmailWatcher之node</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2016-05-01T09:37:00.000Z" itemprop="datePublished" class="page-time">
+  May 1 2016
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/nodejs/">nodejs</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#理论知识"><span class="post-toc-number">1.</span> <span class="post-toc-text">理论知识</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#需求分析"><span class="post-toc-number">2.</span> <span class="post-toc-text">需求分析</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#现有库"><span class="post-toc-number">3.</span> <span class="post-toc-text">现有库</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#异常处理方案"><span class="post-toc-number">4.</span> <span class="post-toc-text">异常处理方案</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#结尾"><span class="post-toc-number">5.</span> <span class="post-toc-text">结尾</span></a></li></ol>
+        </nav>
+    </aside>
+    
+<article id="post-gmailWatcher之node"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">gmailWatcher之node</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2016年05月01日 9:37" datetime="2016-05-01T09:37:00.000Z"  itemprop="datePublished">May 1 2016</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/nodejs/">nodejs</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>Email是一个可能比很多人岁数都大的“上古神器”，尽管和它同期出生的小伙伴很多都已经寿终正寝，但它却依然坚挺，可见其代表了多大的用户刚需！</p>
+<p>最近热映的《北京遇上西雅图2》讲的就是邮件的爱情故事，正巧又碰上项目新需求包含mail的收发要求，就借此良机好好学习一下这个陪伴我们很久的大伙伴。<br><a id="more"></a></p>
+<h3 id="理论知识"><a href="#理论知识" class="headerlink" title="理论知识"></a>理论知识</h3><p>如果你是在不知道什么是Email，那我只能说：看看这篇生动的<a href="http://mp.weixin.qq.com/s?__biz=MzAxOTc0NzExNg==&amp;mid=2665513086&amp;idx=1&amp;sn=ad45995d6c6e355d4dc7cf90815560a8#rd" target="_blank" rel="noopener">微小说</a>吧。</p>
+<p>好，我们来先聊聊几个关键词：</p>
+<ul>
+<li><a href="http://baike.baidu.com/view/2367542.htm" target="_blank" rel="noopener">邮件协议</a>：LDAP、SMTP、POP、IMAP</li>
+<li>邮件服务器：商用厂商（gmail.com、163.com）、自建邮件服务</li>
+<li>邮件客户端：原生客户端（outlook）、网页邮箱系统、浏览器插件、自建邮件客户端</li>
+</ul>
+<p>提到“自建邮件服务器”，勾起了我痛苦的回忆，之前在前任公司为了在centos上手动搭建邮件服务，让我反复安装操作系统N次（不要问我为什么）。所以这篇文章并不是讲如何搭建邮件服务器的，我们会使用gmail作为我们的邮件服务器。</p>
+<p>由于我们的主题是邮件获取，所以POP和IMAP协议是我们主要需要了解的内容，这里我使用的是 <strong>IMAP</strong>，因为<a href="https://zh.wikipedia.org/wiki/IMAP" target="_blank" rel="noopener">它新</a>。</p>
+<h3 id="需求分析"><a href="#需求分析" class="headerlink" title="需求分析"></a>需求分析</h3><p>我们要做的是这么一件事儿：</p>
+<blockquote>
+<p>监控我们指定的一个gmail帐号，一旦该邮箱收到邮件，就解析邮件内容（包括附件）,并将该邮件标识为已读（确保不会重复处理该邮件）。</p>
+</blockquote>
+<p>目标明确，可以开始写代码了！等等，其实如此常见的需求一定已经有大量的实现方案，不管是php，java，还是python，或是今天我们要使用的nodejs，都已经有现成的库或框架来供我们使用了。</p>
+<p>不过我们上面的理论知识可以辅助我们知道，要实现这么一个需求，我们的思路是：</p>
+<ol>
+<li>使用对应协议和目标邮箱建立链接</li>
+<li>获取满足条件的邮件数据</li>
+<li>根据协议解析数据，获取我们需要的属性（发件人，标题，内容以及附件）</li>
+<li>更新该邮件的状态为已读</li>
+<li>持续监听“新邮件”事件，重复第2步</li>
+</ol>
+<p>这里面我们忽略了一些细节复杂问题，如：</p>
+<ul>
+<li>邮箱安全认证问题</li>
+<li>邮箱链接中断处理</li>
+<li>邮件解析失败</li>
+<li>大邮件解析资源损耗（主要是大附件导致的内存损耗）</li>
+<li>海量邮件的并发处理模型</li>
+<li>其它</li>
+</ul>
+<h3 id="现有库"><a href="#现有库" class="headerlink" title="现有库"></a>现有库</h3><p>相信现有的解决方案可以帮我们完成上述的各个方面，那么nodejs为我们提供了怎样的现成代码呢？经过一番搜索，锁定了这个库：<a href="https://github.com/kazaff/mail-listener2" target="_blank" rel="noopener">mail-listener2</a>(注意这里给的链接是我已经fork后的，并加了一些中文注释和小修改)。</p>
+<p>我已经在其中的关键部分添加了近乎啰嗦的注释，所以这里就不重复制造垃圾了。这里需要特别说明一下的是，该库使用了<a href="http://blog.fens.me/nodejs-async/" target="_blank" rel="noopener">aysnc并发库</a>，依赖其提供的并发模型让实现代码简化了不少，推荐大家在自己的项目中也大胆使用。</p>
+<p>还有就是，如果你针对附件解析开启了流处理，那你需要自己来处理附件流，该库的并没有在开启流处理后帮你把附件保存在指定位置，不过扩展起来也很简单，只需要在对应的位置添加：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//替换该行fs.writeFile(self.attachmentOptions.directory + attachment.generatedFileName, attachment.content, function(err)</span></span><br><span class="line">attachment.stream.pipe(fs.createWriteStream(self.attachmentOptions.directory + attachment.generatedFileName+attachment.generatedFileName));</span><br></pre></td></tr></table></figure>
+<p>除此之外，该库并没有保留”node-imap”中的关于超时的相关参数，这会导致网速不太好的环境无法使用，建议后期加上下面俩参数：</p>
+<ul>
+<li>connTimeout 创建连接的超时时间，node-imap默认是10000毫秒</li>
+<li>authTimeout 连接创建完毕后认证的超时时间，node-imap默认是5000毫秒</li>
+</ul>
+<p>这个库其实只是简单的封装了一下<a href="https://github.com/mscdex/node-imap" target="_blank" rel="noopener">node-imap</a>和<a href="https://github.com/andris9/mailparser" target="_blank" rel="noopener">mailparser</a>。</p>
+<p>这俩库才是真正完成我们前面说的步骤，其中”node-imap”学习起来成本较高，主要是你得先了解imap协议本身。在协议之上该作者增加了nodejs的一些语言特性，靠事件来组织业务，所以需要静下来好好看看。</p>
+<h3 id="异常处理方案"><a href="#异常处理方案" class="headerlink" title="异常处理方案"></a>异常处理方案</h3><p>目前为止，基本上除了异常处理，其他工作都被库做完了，娃哈哈，生活就是如此美好！那，我们应该如何处理异常才比较合适呢？</p>
+<p>这还是要看业务需求，如果你开发的是一个用户参与度很高的客户端，那你只需要在异常发生后上报给用户即可，例如弹窗。</p>
+<p>但如果是一个后台常驻服务，就不仅要考虑上报异常的方法，还需要考虑如何保证碰到无法恢复的异常后应用线程会自动重启，听起来很高大上，但其实<a href="http://pm2.keymetrics.io/" target="_blank" rel="noopener">PM2</a>已经帮你实现了。除此之外，国内BAT好像也都有自己的nodejs运维方案供我们选择。</p>
+<h3 id="结尾"><a href="#结尾" class="headerlink" title="结尾"></a>结尾</h3><p>相信已经说的够详细了，剩下的就靠大家留言了！</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.382Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2016/05/01/gmailWatcher之node/" target="_blank" rel="external">https://blog.kazaff.me/2016/05/01/gmailWatcher之node/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/async/">async</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/gmail/">gmail</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/imap/">imap</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mailparser/">mailparser</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2016/05/01/gmailWatcher之node/&title=《gmailWatcher之node》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2016/05/01/gmailWatcher之node/&title=《gmailWatcher之node》 — kazaff's blog&source=Email是一个可能比很多人岁数都大的“上古神器”，尽管和它同期出生的小伙伴很多都已经寿终正寝，但它却依然坚挺，可见其代表了多大的用户刚需！
+最近热映的《..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2016/05/01/gmailWatcher之node/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《gmailWatcher之node》 — kazaff's blog&url=https://blog.kazaff.me/2016/05/01/gmailWatcher之node/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2016/05/01/gmailWatcher之node/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2016/05/02/只谈服务切分问题/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">只谈服务切分问题</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2016/04/30/ztree如何优雅自定义ajax的header参数/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Ztree如何优雅自定义ajax的header参数</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2016/05/01/gmailWatcher之node/&title=《gmailWatcher之node》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2016/05/01/gmailWatcher之node/&title=《gmailWatcher之node》 — kazaff's blog&source=Email是一个可能比很多人岁数都大的“上古神器”，尽管和它同期出生的小伙伴很多都已经寿终正寝，但它却依然坚挺，可见其代表了多大的用户刚需！
+最近热映的《..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2016/05/01/gmailWatcher之node/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《gmailWatcher之node》 — kazaff's blog&url=https://blog.kazaff.me/2016/05/01/gmailWatcher之node/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2016/05/01/gmailWatcher之node/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2016/05/01/gmailWatcher之node/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

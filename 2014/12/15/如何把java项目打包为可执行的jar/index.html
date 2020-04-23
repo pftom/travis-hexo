@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>如何把Java项目打包为可执行的jar | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="打包,jar,idea,maven,MANIFEST.MF,资源">
+    <meta name="description" content="这几天用java写了一个后台服务，就是把office文件转换成pdf。实现挺简单的，直接调用openoffice服务即可，大致做法网上有很多教程，这里就不多扯了，今天主要是说一下项目打包的事儿。">
+<meta name="keywords" content="打包,jar,idea,maven,MANIFEST.MF,资源">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何把Java项目打包为可执行的jar">
+<meta property="og:url" content="https://blog.kazaff.me/2014/12/15/如何把java项目打包为可执行的jar/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="这几天用java写了一个后台服务，就是把office文件转换成pdf。实现挺简单的，直接调用openoffice服务即可，大致做法网上有很多教程，这里就不多扯了，今天主要是说一下项目打包的事儿。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.386Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="如何把Java项目打包为可执行的jar">
+<meta name="twitter:description" content="这几天用java写了一个后台服务，就是把office文件转换成pdf。实现挺简单的，直接调用openoffice服务即可，大致做法网上有很多教程，这里就不多扯了，今天主要是说一下项目打包的事儿。">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">如何把Java项目打包为可执行的jar</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">如何把Java项目打包为可执行的jar</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2014-12-15T09:37:12.000Z" itemprop="datePublished" class="page-time">
+  Dec 15 2014
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/j2ee/">j2ee</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#用Idea打包"><span class="post-toc-number">1.</span> <span class="post-toc-text">用Idea打包</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#用Maven打包"><span class="post-toc-number">2.</span> <span class="post-toc-text">用Maven打包</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#java读取jar包中的资源文件"><span class="post-toc-number">3.</span> <span class="post-toc-text">java读取jar包中的资源文件</span></a></li></ol>
+        </nav>
+    </aside>
+    
+<article id="post-如何把java项目打包为可执行的jar"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">如何把Java项目打包为可执行的jar</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2014年12月15日 9:37" datetime="2014-12-15T09:37:12.000Z"  itemprop="datePublished">Dec 15 2014</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/j2ee/">j2ee</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>这几天用java写了一个后台服务，就是把office文件转换成pdf。实现挺简单的，直接调用openoffice服务即可，大致做法网上有很多教程，这里就不多扯了，今天主要是说一下项目打包的事儿。<br><a id="more"></a></p>
+<h2 id="用Idea打包"><a href="#用Idea打包" class="headerlink" title="用Idea打包"></a>用Idea打包</h2><p>前段时间是直接用IDE提供的支持把java Web项目打包成war。一切都是那么的顺利，可现在想要的是直接把项目打包成jar，而且需要的是直接在终端中输入<code>java -jar xxxx.jar</code>即可运行！</p>
+<p>一开始也打算尝试使用IDE提供的打包方式，可总是失败，jar是生成了，不过运行时总提示类缺失，明明已经把所有依赖的第三方jar包都copy了一份，可死活就是找不到，十分怀疑是<code>MANIFEST.MF</code>文件的配置问题。</p>
+<p>总之使用了几种网上找的方式都出现各种问题，所以暂时放弃了Idea打包jar的想法，有经验的童鞋可以来<a href="http://segmentfault.com/q/1010000002429996" target="_blank" rel="noopener">这里</a>捧场，一经测试，立马送分哟~。</p>
+<h2 id="用Maven打包"><a href="#用Maven打包" class="headerlink" title="用Maven打包"></a>用Maven打包</h2><p>要说吧，这算是大家最认可的方式，不过maven打包也有好多种插件，这让我这种新手很是头疼。</p>
+<p><strong>方案一：</strong></p>
+<pre><code>&lt;plugin&gt;
+    &lt;artifactId&gt;maven-assembly-plugin&lt;/artifactId&gt;
+    &lt;version&gt;2.2&lt;/version&gt;
+    &lt;configuration&gt;
+        &lt;archive&gt;
+            &lt;manifest&gt;
+                &lt;mainClass&gt;me.kazaff.Main&lt;/mainClass&gt;
+            &lt;/manifest&gt;
+        &lt;/archive&gt;
+        &lt;descriptorRefs&gt;
+            &lt;descriptorRef&gt;jar-with-dependencies&lt;/descriptorRef&gt;
+        &lt;/descriptorRefs&gt;
+    &lt;/configuration&gt;
+    &lt;executions&gt;
+        &lt;execution&gt;
+            &lt;id&gt;make-assembly&lt;/id&gt;
+            &lt;phase&gt;package&lt;/phase&gt;
+            &lt;goals&gt;
+                &lt;goal&gt;single&lt;/goal&gt;
+            &lt;/goals&gt;
+        &lt;/execution&gt;
+    &lt;/executions&gt;
+&lt;/plugin&gt;
+</code></pre><p>这会将所有依赖的包解压后重新和自己的项目包合并打入jar包中，至于这么做的优劣可以留给你自己去体会，这么做的理由我猜应该和jar包查找classpatch有关系吧，否则为什么要这么奇葩呢？</p>
+<p><strong>方案二：</strong></p>
+<pre><code>&lt;plugin&gt;
+    &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-jar-plugin&lt;/artifactId&gt;
+    &lt;configuration&gt;
+        &lt;archive&gt;
+            &lt;manifest&gt;
+                &lt;addClasspath&gt;true&lt;/addClasspath&gt;
+                &lt;classpathPrefix&gt;lib/&lt;/classpathPrefix&gt;
+                &lt;mainClass&gt;me.kazaff.Main&lt;/mainClass&gt;
+            &lt;/manifest&gt;
+        &lt;/archive&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;
+&lt;plugin&gt;
+    &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-dependency-plugin&lt;/artifactId&gt;
+    &lt;executions&gt;
+        &lt;execution&gt;
+            &lt;id&gt;copy&lt;/id&gt;
+            &lt;phase&gt;package&lt;/phase&gt;
+            &lt;goals&gt;
+                &lt;goal&gt;copy-dependencies&lt;/goal&gt;
+            &lt;/goals&gt;
+            &lt;configuration&gt;
+                &lt;outputDirectory&gt;./target/lib&lt;/outputDirectory&gt;
+            &lt;/configuration&gt;
+        &lt;/execution&gt;
+    &lt;/executions&gt;
+&lt;/plugin&gt;
+</code></pre><p>这种方式相对方案一，似乎好了那么一些，它会把你的项目打成一个独立的jar包，并在jar包所在的目录中建立一个lib文件夹，并把所有三方依赖jar包拷贝进去，这还不算完，生成的那个jar包中的<code>MANIFEST.MF</code>会配置好<code>Class-Path</code>属性。</p>
+<p>需要注意的是，如果你想直接在终端中运行该jar包，必须保证终端进入到项目jar包所在的目录下，否则相对路径会导致依赖的三方jar包找不到哟~~</p>
+<p>好吧，如果你像我一样记性不好，又需要将打包的jar文件拷贝到其他机器上部署的话，很容易忘记lib文件夹！这里有一个进阶的打包方法：<a href="http://www.xeclipse.com/?p=1470" target="_blank" rel="noopener">传送门</a>。</p>
+<p><strong>方案三：</strong></p>
+<p>那有没有一种方法，可以让我们把项目真正的打包成单一可执行的jar包呢？而且这个jar包中的结构不会像方案一那样混乱，而是把所有第三方依赖包以jar包的方式存储。这难道成了奢望么？</p>
+<p>油腻的湿姐并非我一个人在寻找：<a href="http://www.gznote.com/2014/07/maven%E4%B8%ADmaven-assembly-plugin%E7%9A%84%E4%BD%BF%E7%94%A8.html" target="_blank" rel="noopener">队友</a>。不过，按照他的最后一个办法打包出来的jar是无法直接执行的，因为其中<code>MANIFEST.MF</code>缺少<code>Main-Class</code>和<code>Class-Path</code>属性，他的这种方式如果是打包成一个非执行jar包的话应该还是不错的。</p>
+<p>所以，如你所见，方案三并不存在，至少我不知道应该怎么做！有办法的朋友可以在文章下面留言，不胜感激！</p>
+<h2 id="java读取jar包中的资源文件"><a href="#java读取jar包中的资源文件" class="headerlink" title="java读取jar包中的资源文件"></a>java读取jar包中的资源文件</h2><p>打包后发现原先在代码中直接通过路径读取的配置文件再也找不到了，可是打开jar包明明看得到啊！</p>
+<p>查了一下资料，才知道到底发生了什么，看这里：<a href="http://ppjava.com/?p=1205" target="_blank" rel="noopener">传送门</a>，<a href="http://www.iteye.com/topic/483115" target="_blank" rel="noopener">传送门2</a>。</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.386Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2014/12/15/如何把java项目打包为可执行的jar/" target="_blank" rel="external">https://blog.kazaff.me/2014/12/15/如何把java项目打包为可执行的jar/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MANIFEST-MF/">MANIFEST.MF</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/idea/">idea</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jar/">jar</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/maven/">maven</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/打包/">打包</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/资源/">资源</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2014/12/15/如何把java项目打包为可执行的jar/&title=《如何把Java项目打包为可执行的jar》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2014/12/15/如何把java项目打包为可执行的jar/&title=《如何把Java项目打包为可执行的jar》 — kazaff's blog&source=这几天用java写了一个后台服务，就是把office文件转换成pdf。实现挺简单的，直接调用openoffice服务即可，大致做法网上有很多教程，这里就不..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2014/12/15/如何把java项目打包为可执行的jar/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《如何把Java项目打包为可执行的jar》 — kazaff's blog&url=https://blog.kazaff.me/2014/12/15/如何把java项目打包为可执行的jar/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2014/12/15/如何把java项目打包为可执行的jar/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2014/12/24/在无图形界面的Centos6.5下使用OpenOfiice4.1/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">在无图形界面的Centos6.5下使用OpenOffice4.1</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2014/12/09/No WebApplicationContext found no ContextLoaderListener registered/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">No WebApplicationContext Found</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2014/12/15/如何把java项目打包为可执行的jar/&title=《如何把Java项目打包为可执行的jar》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2014/12/15/如何把java项目打包为可执行的jar/&title=《如何把Java项目打包为可执行的jar》 — kazaff's blog&source=这几天用java写了一个后台服务，就是把office文件转换成pdf。实现挺简单的，直接调用openoffice服务即可，大致做法网上有很多教程，这里就不..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2014/12/15/如何把java项目打包为可执行的jar/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《如何把Java项目打包为可执行的jar》 — kazaff's blog&url=https://blog.kazaff.me/2014/12/15/如何把java项目打包为可执行的jar/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2014/12/15/如何把java项目打包为可执行的jar/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2014/12/15/如何把java项目打包为可执行的jar/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

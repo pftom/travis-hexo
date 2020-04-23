@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>kazaff&#39;s blog</title>
+  <icon>https://www.gravatar.com/avatar/09cb9d559adf8d0c08b3a0abe9787e9a</icon>
+  <subtitle>要相信，一切都是最好的安排~</subtitle>
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="https://blog.kazaff.me/"/>
+  <updated>2020-04-23T08:24:11.382Z</updated>
+  <id>https://blog.kazaff.me/</id>
+  
+  <author>
+    <name>kazaff</name>
+    <email>edisondik@gmail.com</email>
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>关于积分的Db设计之二</title>
+    <link href="https://blog.kazaff.me/2020/04/23/%E5%85%B3%E4%BA%8E%E7%A7%AF%E5%88%86%E7%9A%84db%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%BA%8C/"/>
+    <id>https://blog.kazaff.me/2020/04/23/关于积分的db设计之二/</id>
+    <published>2020-04-23T10:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.382Z</updated>
+    
+    <content type="html"><![CDATA[<p>继续积分这个话题，我们接着之前的<a href="https://blog.kazaff.me/2020/04/23/%E5%85%B3%E4%BA%8E%E7%A7%AF%E5%88%86%E7%9A%84db%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%B8%80/">那篇文章</a>往下说。上一篇给了一个db的设计方案，也简单讨论了一下它的精妙与不足。<br>那么，是否还可以有更好一些的db设计呢？</p><p>别着急，我们还是先来说业务。<br>其实除了上一篇文章提到的那些规则外，我们的电商系统里，还有另外一个额外的小规则，由于比较另类，所以我放在这里才说，因为它也会对上面的那个db设计造成一定的问题。</p><p>我们的电商系统，在客户结算时并不提供一个输入框来给客户输入打算用使用的积分数量，而是只提供了一个开关选项，如果客户选择使用积分（默认），则意味着会<strong>尽可能使用积分来完成结算</strong>。这一点应该算是比较另类了，这意味着，合理的情况下会尽可能避免用户的积分到期，除非他很久才回归。也意味着客户只要选择使用积分，就可能会关联一大批的积分记录（请结合之前的points表来理解这句话）。这也是我对之前的db设计直觉上总感到不完美的切入点。</p><p>我假设的是，客户每次下单都积累积分（假设10次），之后他想要使用积分了，就可能会影响10条记录，并且在这10条记录上做写锁以及扣减逻辑，未来退款还要再逆向做一次。而且，其实每次计算客户当前可用积分，<code>where</code>条件也很难很好的利用索引（<code>expire &gt; NOW</code>很难有效的过滤掉足够多的记录）。</p><p>那么结合这些因素，我们试着改良一下前面的db设计：</p><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> points_status(</span><br><span class="line">    <span class="keyword">id</span> <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span> AUTO_INCREMENT  <span class="keyword">COMMENT</span> <span class="string">'主键'</span> ,</span><br><span class="line">    user_id <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>   <span class="keyword">COMMENT</span> <span class="string">'用户id'</span> ,</span><br><span class="line">    points <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>  <span class="keyword">DEFAULT</span> <span class="number">0</span> <span class="keyword">COMMENT</span> <span class="string">'可用积分总值'</span> ,</span><br><span class="line">    points_status <span class="built_in">TEXT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>  <span class="keyword">DEFAULT</span> [] <span class="keyword">COMMENT</span> <span class="string">'积分状态明细'</span> ,</span><br><span class="line">    PRIMARY <span class="keyword">KEY</span> (<span class="keyword">id</span>)</span><br><span class="line">)<span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span> <span class="keyword">CHARSET</span>=utf8 <span class="keyword">COMMENT</span> = <span class="string">'积分状态表 '</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> points_logs(</span><br><span class="line">    <span class="keyword">id</span> <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span> AUTO_INCREMENT  <span class="keyword">COMMENT</span> <span class="string">'主键'</span> ,</span><br><span class="line">    user_id <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>   <span class="keyword">COMMENT</span> <span class="string">'用户id'</span> ,</span><br><span class="line">    order_id <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>  <span class="keyword">DEFAULT</span> <span class="number">0</span> <span class="keyword">COMMENT</span> <span class="string">'订单id'</span> ,</span><br><span class="line">    <span class="keyword">type</span> <span class="built_in">CHAR</span>(<span class="number">1</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>  <span class="keyword">DEFAULT</span> <span class="number">0</span> <span class="keyword">COMMENT</span> <span class="string">'操作类型'</span> ,</span><br><span class="line">    points <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>   <span class="keyword">COMMENT</span> <span class="string">'积分变更值'</span> ,</span><br><span class="line">    <span class="keyword">expire</span> <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>  <span class="keyword">DEFAULT</span> <span class="number">0</span> <span class="keyword">COMMENT</span> <span class="string">'到期时间批次'</span> ,</span><br><span class="line">    PRIMARY <span class="keyword">KEY</span> (<span class="keyword">id</span>)</span><br><span class="line">)<span class="keyword">ENGINE</span>=MyISAM <span class="keyword">CHARSET</span>=utf8  <span class="keyword">COMMENT</span> = <span class="string">'积分流水表 '</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> idx1 <span class="keyword">ON</span> points_logs (user_id, <span class="keyword">type</span>, <span class="keyword">expire</span>, order_id);</span><br></pre></td></tr></table></figure><p>这次拆分成了两张表，也比较符合习惯，一张数据聚合表（points_status），另一张数据流水表（points_logs）。</p><p>其中<strong>积分状态表</strong>中直接将当前用户可用的积分总值存入<code>points</code>字段，方便获取，而为了记录每一批次积分的到期时间，该表的<code>points_status</code>字段中存放的也是json结构的数据字符串：</p><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[&#123;<span class="string">"expire"</span>: <span class="string">"精确到日期的时间戳"</span>, <span class="string">"val"</span>: <span class="string">"该批次的积分数值"</span>&#125;, ...]</span><br></pre></td></tr></table></figure><p>这里注意一个细节，<code>expire</code>键中存放的是精确到日期的时间戳，这样同一天到期的多个积分会自动汇总到一起。我们姑且称为<strong>积分批次</strong>。而在表<code>points_logs</code>中，每一条积分的流水记录也都有相同颗粒度的到期批次字段<code>expire</code>，这样当出现退款时，可以从对应流水记录中的批次得到每个批次应该退还多少数值。</p><p>我们还是举个具体的例子吧~~依然假设目前就只有一个客户，他通过下单，已经挣到了200积分，那么在db中会保存对应的记录：</p><p><strong>points_status表</strong></p><table><thead><tr><th style="text-align:left">id</th><th style="text-align:left">user_id</th><th style="text-align:left">points</th><th style="text-align:left">points_status</th></tr></thead><tbody><tr><td style="text-align:left">1</td><td style="text-align:left">1</td><td style="text-align:left">200</td><td style="text-align:left">[{“expire”:”2020-05-01”, “val”:100},{“expire”:”2020-06-01”, “val”:100}]</td></tr></tbody></table><p><strong>points_logs</strong></p><table><thead><tr><th style="text-align:left">id</th><th style="text-align:left">user_id</th><th style="text-align:left">points</th><th style="text-align:left">expire</th><th style="text-align:left">type</th><th style="text-align:left">order_id</th></tr></thead><tbody><tr><td style="text-align:left">1</td><td style="text-align:left">1</td><td style="text-align:left">+100</td><td style="text-align:left">2020-05-01</td><td style="text-align:left">earn</td><td style="text-align:left">1</td></tr><tr><td style="text-align:left">2</td><td style="text-align:left">1</td><td style="text-align:left">+100</td><td style="text-align:left">2020-06-01</td><td style="text-align:left">earn</td><td style="text-align:left">2</td></tr></tbody></table><p>每次客户挣得积分，业务代码操作时只需要锁定<code>points_status</code>表中对应<code>user_id</code>的那一条数据。至于积分流水表，以插入为主。<br>每当业务需要更新客户的积分状态时，都可以“顺便”做一件事儿：将<code>points_status.points_status</code>字段中的过期值清理一下，清理出得过期积分也要插入到<code>points_logs</code>表中，如下面这样的记录：</p><p><strong>points_logs</strong></p><table><thead><tr><th style="text-align:left">id</th><th style="text-align:left">user_id</th><th style="text-align:left">points</th><th style="text-align:left">expire</th><th style="text-align:left">type</th><th style="text-align:left">order_id</th></tr></thead><tbody><tr><td style="text-align:left">3</td><td style="text-align:left">1</td><td style="text-align:left">-100</td><td style="text-align:left">1984-07-23</td><td style="text-align:left">expire</td></tr></tbody></table><blockquote><p>注意：该记录的<code>type</code>为expire，我们可以暂定<code>type</code>字段供有三种类型值：earn(得取)，cost(消费)，expire(过期)</p></blockquote><p>我们也可以在每天的凌晨执行一个定时任务，用来把系统中所有客户的过期积分都处理一遍。当然如果系统的客户数据量巨大，也可以根据客户的活跃度分批次进行处理。即便是不处理，在客户决定使用积分的时候，也优先从<code>points_status.points_status</code>字段中动态计算积分的有效性，听起来好像也没有彻底解决实时计算的复杂度，但至少不会造成并发锁的冲突。</p><p>而且如果考虑到定时任务，那我们则可以认为<code>points_status.points</code>值就是精确的。即便是前面提到的数据量大而选择分批执行，我们也可以通过增加一个字段来存储是否精确，以此来最大程度减少频繁实时计算带来的性能问题。</p><p>我们再来看看之前提到的业务指标是否得到了满足：</p><ol><li>积分存在有效期，过期作废</li><li>用户可以查看当前可用积分总数</li><li>允许用户看到累积过期的积分总数</li><li>结算时，若用户选择使用积分，需要优先使用快要到期的积分部分</li><li>退款时，若用户之前有使用积分，需要按照积分的有效期，优先退还到期时间晚的积分部分</li></ol><p>第1、2，4点，直接在<code>points_status</code>表单条记录中就可以得到答案；<br>第3点，可以从<code>points_logs</code>表中按照<code>type==expire</code>的条件拿到总数；<br>第5点，需要借助<code>points_logs</code>中<code>type==cost &amp;&amp; order_id==退款订单id</code>的条件得到需要退款的积分数值和对应的批次，再去<code>points_status</code>表中进行具体查找修改即可（若在对应的记录中已经找不到对应的积分批次了，则说明该批次积分已经过期了，此时不需要其它操作，直接将需要退还的积分直接以<code>type=expire</code>类型插入积分流水表即可）。</p><p>这样的设计，解决了一部分问题。<br>可是，还有更好一些的设计方案吗？</p><p>我相信答案一定是肯定的，请留下你的看法，谢谢~~</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;继续积分这个话题，我们接着之前的&lt;a href=&quot;https://blog.kazaff.me/2020/04/23/%E5%85%B3%E4%BA%8E%E7%A7%AF%E5%88%86%E7%9A%84db%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%
+      
+    
+    </summary>
+    
+      <category term="数据库" scheme="https://blog.kazaff.me/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+    
+    
+      <category term="积分设计" scheme="https://blog.kazaff.me/tags/%E7%A7%AF%E5%88%86%E8%AE%BE%E8%AE%A1/"/>
+    
+      <category term="有效期" scheme="https://blog.kazaff.me/tags/%E6%9C%89%E6%95%88%E6%9C%9F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>关于积分的Db设计之一</title>
+    <link href="https://blog.kazaff.me/2020/04/23/%E5%85%B3%E4%BA%8E%E7%A7%AF%E5%88%86%E7%9A%84db%E8%AE%BE%E8%AE%A1%E4%B9%8B%E4%B8%80/"/>
+    <id>https://blog.kazaff.me/2020/04/23/关于积分的db设计之一/</id>
+    <published>2020-04-23T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.382Z</updated>
+    
+    <content type="html"><![CDATA[<p>今天来讲一个业务场景及其对应的解决方案：用户积分！肯定不陌生，毕竟现在很多电商系统都提供积分功能。简单说一下我手里的电商项目中积分的相关规则：</p><ol><li>下单会根据订单金额，奖励对应比例的积分</li><li>订单结算时，用户可以使用积分来按照比例抵扣现金消费</li><li>积分存在有效期，过期作废</li><li>用户可以查看自身的积分流水</li><li>用户可以查看当前可用积分总数</li></ol><p>极其常规的业务逻辑，对吧~~<br>这里延伸几点规则，算是基于上述规则的合理推导：</p><ol><li>结算时，若用户选择使用积分，需要优先使用快要到期的积分部分</li><li>退款时，若用户之前有使用积分，需要按照积分的有效期，优先退还到期时间晚的积分部分</li><li>有积分快过期时给用户足够的提醒</li><li>允许用户看到累积过期的积分总数</li></ol><p>那么接下来，如果要你来设计满足上面这些需求点的db结构，你会怎么做呢？<br>经过我们开发组的一轮商讨，给出了下面的一个表设计方案：</p><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> points(</span><br><span class="line">    <span class="keyword">id</span> <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span> AUTO_INCREMENT  <span class="keyword">COMMENT</span> <span class="string">'主键'</span> ,</span><br><span class="line">    user_id <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>   <span class="keyword">COMMENT</span> <span class="string">'用户id'</span> ,</span><br><span class="line">    total_point <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>  <span class="keyword">DEFAULT</span> <span class="number">0</span> <span class="keyword">COMMENT</span> <span class="string">'积分总值'</span> ,</span><br><span class="line">    <span class="keyword">expire</span> <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>   <span class="keyword">COMMENT</span> <span class="string">'到期时间戳'</span> ,</span><br><span class="line">    cost_point <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>  <span class="keyword">DEFAULT</span> <span class="number">0</span> <span class="keyword">COMMENT</span> <span class="string">'消耗积分值'</span> ,</span><br><span class="line">    used_detail <span class="built_in">TEXT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>  <span class="keyword">DEFAULT</span> [] <span class="keyword">COMMENT</span> <span class="string">'使用占比明细'</span> ,</span><br><span class="line">    order_id <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>  <span class="keyword">DEFAULT</span> <span class="number">0</span> <span class="keyword">COMMENT</span> <span class="string">'订单id'</span> ,</span><br><span class="line">    PRIMARY <span class="keyword">KEY</span> (<span class="keyword">id</span>)</span><br><span class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span> <span class="keyword">CHARSET</span>=utf8;</span><br></pre></td></tr></table></figure><p>单看表结构，无法直观的理解到这种设计的用意，我下面拿一个实际场景来举例吧~~</p><p>假设目前就只有一个客户，他通过下单，已经挣到了200积分，那么在db中会保存对应的记录：</p><table><thead><tr><th style="text-align:left">id</th><th style="text-align:left">user_id</th><th style="text-align:left">total_point</th><th style="text-align:left">expire</th><th style="text-align:left">cost_point</th><th style="text-align:left">order_id</th><th style="text-align:left">used_detail</th></tr></thead><tbody><tr><td style="text-align:left">1</td><td style="text-align:left">1</td><td style="text-align:left">+100</td><td style="text-align:left">2020/3/30</td><td style="text-align:left">0</td><td style="text-align:left">1</td><td style="text-align:left">[]</td></tr><tr><td style="text-align:left">2</td><td style="text-align:left">1</td><td style="text-align:left">+100</td><td style="text-align:left">2020/4/30</td><td style="text-align:left">0</td><td style="text-align:left">2</td><td style="text-align:left">[]</td></tr></tbody></table><blockquote><p>注意：我把expire字段写成容易阅读的时间格式了，实际存储的应该是unix时间戳</p></blockquote><p>目前应该不需要额外的解释，除了<code>cost_point</code>，<code>used_detail</code>外，其它字段的含义都是很直观的。</p><p>接下来，我们的客户又要开始shopping了，不过这次他结账的时候想要使用积分来抵扣现金了，那么db中会如何记录呢？</p><table><thead><tr><th style="text-align:left">id</th><th style="text-align:left">user_id</th><th style="text-align:left">total_point</th><th style="text-align:left">expire</th><th style="text-align:left">cost_point</th><th style="text-align:left">order_id</th><th style="text-align:left">used_detail</th></tr></thead><tbody><tr><td style="text-align:left">1</td><td style="text-align:left">1</td><td style="text-align:left">+100</td><td style="text-align:left">2020/3/30</td><td style="text-align:left">100</td><td style="text-align:left">1</td><td style="text-align:left">[]</td></tr><tr><td style="text-align:left">2</td><td style="text-align:left">1</td><td style="text-align:left">+100</td><td style="text-align:left">2020/4/30</td><td style="text-align:left">50</td><td style="text-align:left">2</td><td style="text-align:left">[]</td></tr><tr><td style="text-align:left">3</td><td style="text-align:left">1</td><td style="text-align:left">-150</td><td style="text-align:left">0</td><td style="text-align:left">0</td><td style="text-align:left">3</td><td style="text-align:left">[{id:2, val:-50},{id: 1, val:-100}]</td></tr></tbody></table><p>看到了么？这个时候，<code>used_detail</code>里保存了这次使用积分的细节，以json结构字符串保存在表中。这个json结构也比较明了吧：</p><ul><li>id: 指向对应的积分记录</li><li>val: 标识消耗了对应积分记录中的多少积分</li></ul><p>同时，对应积分记录的<code>cost_point</code>字段也会出现对应的值。</p><p>这么设计是否能很好的满足我们的业务需要呢？我们来拿前面提到的业务指标来核查一下是否都满足。其中一些简单的业务规则咱们就不讨论了，我们就拿其中比较重要的一些来检查：</p><ol><li>积分存在有效期，过期作废</li><li>用户可以查看当前可用积分总数</li><li>允许用户看到累积过期的积分总数</li><li>结算时，若用户选择使用积分，需要优先使用快要到期的积分部分</li><li>退款时，若用户之前有使用积分，需要按照积分的有效期，优先退还到期时间晚的积分部分</li></ol><p>第1点，靠<code>expire</code>字段可以很容易保证，只需要检查一下<code>expire</code>和当前时间对比一下，就可知道哪些积分已经过期了；<br>第2、3、4点，靠<code>expire</code>，<code>total_point</code>和<code>cost_point</code>三个字段就可以实时计算出值，不过感觉不是那么直观，相当于每次都需要做实时聚合操作；<br>第5点，可以靠<code>used_detail</code>字段中的明细信息，在退款时保证正确的返还合规的积分。</p><p>从上面的分析我们应该得到了初步的结论，这么设计表结构，有它精妙的地方，也有不足的地方。可以看出，我们在设计这个结构之初，过于关注退款所带来的限制条件，而忽略了一个细节：<strong>相比其它，退款发生的频率应该是最低的</strong>。这意味着，在相对频繁的场景中（如可用积分总数），我们不得不进行复杂繁琐的计算。</p><p>那么我们来试着在第4点的时候，把程序要做的步骤列一下：</p><ol start="0"><li>开启事务</li><li><code>SELECT * FROM points WHERE user_id=1 AND expire &gt; NOW AND total_point != cost_point ORDER BY expire asc FOR UPDATE</code>；</li><li>根据客户想要使用的积分数，从第一步得到的数据集合中，遵照集合中的记录顺序，完成扣减计算；</li><li>更新需要更新的记录，并提交事务。</li></ol><p>除了步骤多外，事务中的锁也会成为一个问题（当然同一个用户并发下单的可能性有待商讨）。但不可否认的是这么设计表结构是会导致这个场景中数据的使用是比较“麻烦”的~~不知道读到这里，你是否觉得这个表结构是可以接受的呢？是否觉得使用数据时并不是很复杂呢？</p><p>那有没有更好一些的设计方案呢？</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;今天来讲一个业务场景及其对应的解决方案：用户积分！肯定不陌生，毕竟现在很多电商系统都提供积分功能。简单说一下我手里的电商项目中积分的相关规则：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;下单会根据订单金额，奖励对应比例的积分&lt;/li&gt;
+&lt;li&gt;订单结算时，用户可以使用积分来按照比例抵扣现金
+      
+    
+    </summary>
+    
+      <category term="数据库" scheme="https://blog.kazaff.me/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+    
+    
+      <category term="积分设计" scheme="https://blog.kazaff.me/tags/%E7%A7%AF%E5%88%86%E8%AE%BE%E8%AE%A1/"/>
+    
+      <category term="有效期" scheme="https://blog.kazaff.me/tags/%E6%9C%89%E6%95%88%E6%9C%9F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Go Get 如何指定库的版本</title>
+    <link href="https://blog.kazaff.me/2019/12/09/go%20get%20%E5%A6%82%E4%BD%95%E6%8C%87%E5%AE%9A%E5%BA%93%E7%9A%84%E7%89%88%E6%9C%AC/"/>
+    <id>https://blog.kazaff.me/2019/12/09/go get 如何指定库的版本/</id>
+    <published>2019-12-09T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.382Z</updated>
+    
+    <content type="html"><![CDATA[<p>最近修改了一个很早前写的程序，然后在一台新的服务器上进行发布。本以为仅仅改了个参数，直接编译就搞定的事儿，没想到尴尬了！<br>一开始的报错，着实让人懵逼。后来翻看源码，才发现是依赖的第三方库有了不向下兼容的新版本~</p><p>然后继续天真的以为<code>go get</code>可以指定版本，可再次被打脸，才不可置信的发现原来老一点版本的golang，对包版本的管理真的很渣。<br>查了一下资料，golang的包管理相关的解决方案也五花八门，我这边急着发布呢，怎可能静下心来修行呢？！</p><p>转念一想，<code>go get</code>本来就是借助<code>git</code>去下载源码的，我为啥不直接去替换掉下载的源码文件呢？<br>所以你应该知道我的粗暴方案了，就是直接找到那个库的源码文件，然后去它官网的代码仓库中，找到你之前使用的那个版本，然后把代码覆盖掉你本地<code>go get</code>的那版，就搞定啦~</p><p>问题解决了，是时候静下心来看看golang新版本是如何优雅解决库版本依赖的问题了：<a href="https://juejin.im/post/5c9c8c4fe51d450bc9547ba1" target="_blank" rel="noopener">传送门</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;最近修改了一个很早前写的程序，然后在一台新的服务器上进行发布。本以为仅仅改了个参数，直接编译就搞定的事儿，没想到尴尬了！&lt;br&gt;一开始的报错，着实让人懵逼。后来翻看源码，才发现是依赖的第三方库有了不向下兼容的新版本~&lt;/p&gt;
+&lt;p&gt;然后继续天真的以为&lt;code&gt;go get
+      
+    
+    </summary>
+    
+      <category term="golang" scheme="https://blog.kazaff.me/categories/golang/"/>
+    
+    
+      <category term="go get" scheme="https://blog.kazaff.me/tags/go-get/"/>
+    
+      <category term="版本" scheme="https://blog.kazaff.me/tags/%E7%89%88%E6%9C%AC/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>审批流程中的一个有趣的需求点</title>
+    <link href="https://blog.kazaff.me/2019/12/09/%E5%AE%A1%E6%89%B9%E6%B5%81%E7%A8%8B%E4%B8%AD%E7%9A%84%E4%B8%80%E4%B8%AA%E6%9C%89%E8%B6%A3%E7%9A%84%E9%9C%80%E6%B1%82%E7%82%B9/"/>
+    <id>https://blog.kazaff.me/2019/12/09/审批流程中的一个有趣的需求点/</id>
+    <published>2019-12-09T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.386Z</updated>
+    
+    <content type="html"><![CDATA[<p>这篇文章，我们来讨论一个比较有趣的需求，可能曾经出现在你设计的系统中，又或者你见过类似的解决方案。<br>不管怎样，我们抱着思考讨论的心态，一起来聊一下吧~</p><p>先来简单的描述一下目标功能的大概内容：我们的系统提供一个模块，该模块有3种用户类型：一线销售人员，销售经理，市场总监。<br>该模块最基本的一个流程是：销售人员提前填写未来周的工作计划（7天），提交后先由自己部门经理审批，通过后再由市场总监审批，最终流程完结。如果在审批过程中出现工作计划变更或审批拒绝，则回到流程原点。<br>我们这里不把关注点放在讨论该流程是否合理的方面（毕竟如果人数众多的话，市场总监怎么可能了解所有销售人员的工作明细呢？）。<br>我们假设这是一个用于十人的小型销售团队，此外该公司业务稳定，团队成员稳定。没毛病了吧？</p><p>由于需求过于常见，所以并没有什么值得深究的，一周开发下来就交付给客户了。<br>这个时候，对方提出了一个“小需求”：假如销售人员的工作计划中有错别字怎么办？</p><p>当听到这个需求，我第一感觉是无语。系统也要照顾到这类问题吗？换句话说，在一个严肃的审批流程中，如果错别字影响工作计划了，主观直接拒绝就好啦，如果有强迫症，那就改一下然后重新走审批流程不得了~</p><p>但客户不怎么想，站在客户的角度来看，如果只是因为一个错别字，就要麻烦领导重新审批，岂不是“非常的”不方便吗！！<br>实不相瞒，这个问题直接造成了我们团队认知上的撕裂。到底这个“错别字”问题是否应该让系统来解决呢？</p><p>经过一轮的讨论，大家最终妥协出一个方案：增加历史记录。但在我看来这已然严重破坏了这个模块的核心功能：审批。<br>何为增加历史记录？就需要将“是否重新审批”的权利交给销售人员，假如他选择了不重新审批，则他做的变更系统需要做历史版本的记录。<br>而他对一周的工作计划的变更的情况又非常复杂，包含了新增，删除，编辑其中的多项。<br>开发量和复杂度都直线上升，而且我们仅仅为的是“错别字”这个有点玩笑的需求。我个人觉得真的是不值得~</p><p>那有没有完美的方案呢？高端一点的自然语言识别来解决错别字纠错？搜了一下果然也是各种云服务可用，不过涉及到运营成本问题了。<br>不知道为这个“错别字”问题追加运营成本，公司领导又会有怎样的思考呢？</p><p>我们再说回“历史记录”这个方案，深入下去的话也还是有很多的小细节需要决策，例如系统默认显示的是更新后的版本还是更新前的版本呢？<br>显示更新后的版本，出了问题再追溯历史版本？但在我们的业务场景中，识别是否出问题的成本比较高，这也就意味着用户很容易忽略历史版本。<br>（那不是很好吗？本来历史版本也都是错别字才对吧）<br>但如果是恶意的更新呢？就让它悄声无息的覆盖掉原始的审批版本吗？所以我更倾向于优先显示更新前版本，然后标识出该计划有最新版本变更，用户可以手动切换到最新版本来看，负责审批的角色也可以在心情好的时候对新版本进行审批，之后系统就会显示最新审批过的那个版本。</p><p>不过不管怎么说，我们都要为“错别字”买单，而提出这个需求的用户，有思考过一个问题吗？错别字到底发生的概率和产生的后果有多大？是否值得如此厚待呢？</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;这篇文章，我们来讨论一个比较有趣的需求，可能曾经出现在你设计的系统中，又或者你见过类似的解决方案。&lt;br&gt;不管怎样，我们抱着思考讨论的心态，一起来聊一下吧~&lt;/p&gt;
+&lt;p&gt;先来简单的描述一下目标功能的大概内容：我们的系统提供一个模块，该模块有3种用户类型：一线销售人员，销售
+      
+    
+    </summary>
+    
+      <category term="需求分析" scheme="https://blog.kazaff.me/categories/%E9%9C%80%E6%B1%82%E5%88%86%E6%9E%90/"/>
+    
+    
+      <category term="审批流程" scheme="https://blog.kazaff.me/tags/%E5%AE%A1%E6%89%B9%E6%B5%81%E7%A8%8B/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>它是如何知道请求来自于Puppeteer的</title>
+    <link href="https://blog.kazaff.me/2019/10/28/%E5%AE%83%E6%98%AF%E5%A6%82%E4%BD%95%E7%9F%A5%E9%81%93%E8%AF%B7%E6%B1%82%E6%9D%A5%E8%87%AA%E4%BA%8Epuppeteer%E7%9A%84/"/>
+    <id>https://blog.kazaff.me/2019/10/28/它是如何知道请求来自于puppeteer的/</id>
+    <published>2019-10-28T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.386Z</updated>
+    
+    <content type="html"><![CDATA[<p>一直以来，在采集的道路上，都是puppeteer与我相伴，感觉无往不利，无坚不摧。<br>但内心是知道总有一天，随着越来越规范，你使用puppeteer的目的会被限缩到固定范围的，毕竟它存在的意义是端到端测试。<br>而我们拿来作为采集数据的工具来用，总不算是正路~哇哈</p><p>闲话不多说，我们快入主题，我最近发现之前一直work的采集程序最近突然失败了，然后经过一番排查，发现目标网站识别出<br>请求是来自于非人类的，而拒绝登录了。好家伙，没想到这一天来得这么快~好歹等我交接出去啊~~😂</p><p>期初以为是对方识别user-agent来做出判断，但我设置了各种常规user-agent，并使用抓包工具确认设置成功，但依然无法突破！<br>这就奇怪了，也确实没有什么服务器可以用来识别的请求头了啊~</p><p>查了一圈，最后还是在puppeteer的社区求得了大神的帮忙。原来确实这种基于浏览器编程接口的模式下，浏览器会默认设置一个标识位：<br><code>navigator.webdriver</code>，如果目标系统用js脚本判断这个变量是否被设置，就可以识别出本次访问到底是人类还是程序了。<br>而这种机制，就是我前面提到的标准。puppeteer官方也不希望这个工具未来会被滥用以至于被唾弃。</p><p>不过进一步查了一下，<code>navigator.webdriver</code>这个标识位不仅仅用于puppeteer，其它界面测试的套件也都会设置这个标识位。<br>下面说一下暂时如何突破这一点的：</p><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> browser = <span class="keyword">await</span> puppeteer.launch(&#123;<span class="attr">headless</span>: <span class="literal">false</span>, <span class="attr">ignoreDefaultArgs</span>: [<span class="string">"--enable-automation"</span>],&#125;);</span><br></pre></td></tr></table></figure><p>目前，我们可以在启动puppeteer的时候，忽略<code>--enable-automation</code>这个设置来避免<code>navigator.webdriver</code>标识位被初始化。<br>但我觉得未来可能就不会再有效了~</p><p>除非，我们基于chrome源码自己开发一个浏览器来做我们想做的事儿~~</p><h3 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h3><p><a href="https://www.kingname.info/2019/02/12/hide-webdriver/" target="_blank" rel="noopener">一行js代码识别Selenium+Webdriver及其应对方案</a><br><a href="https://app.slack.com/client/T8WQY2F8Q/C8XEP1718" target="_blank" rel="noopener">puppeteer slack</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;一直以来，在采集的道路上，都是puppeteer与我相伴，感觉无往不利，无坚不摧。&lt;br&gt;但内心是知道总有一天，随着越来越规范，你使用puppeteer的目的会被限缩到固定范围的，毕竟它存在的意义是端到端测试。&lt;br&gt;而我们拿来作为采集数据的工具来用，总不算是正路~哇哈&lt;/
+      
+    
+    </summary>
+    
+      <category term="nodejs" scheme="https://blog.kazaff.me/categories/nodejs/"/>
+    
+    
+      <category term="puppeteer" scheme="https://blog.kazaff.me/tags/puppeteer/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>基于AES和RSA来保护数据</title>
+    <link href="https://blog.kazaff.me/2019/08/23/%E5%9F%BA%E4%BA%8EAES%E5%92%8CRSA%E6%9D%A5%E4%BF%9D%E6%8A%A4%E6%95%B0%E6%8D%AE/"/>
+    <id>https://blog.kazaff.me/2019/08/23/基于AES和RSA来保护数据/</id>
+    <published>2019-08-23T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.386Z</updated>
+    
+    <content type="html"><![CDATA[<p>今天来说一下加解密相关的内容~</p><p>在这个后Rest时代，基本上HTTP API已经满大街了，如果你还不了解这个细节，或者你的项目不提供Rest API，你都不好意思来看我这篇文章~~<br>而通常我们简单的这些API，都不约儿童的包含了一个签名字段，主要目的是为了避免通信数据被恶意篡改，这也是https生而伟大的原因。</p><p>我们来进一步说一下这个签名逻辑：一般通信双方会提前约定好使用相同的一段字符串来作为签名的密钥，然后约定好使用的签名算法（例如md5），<br>然后双方在发送数据时，会把数据按照约定好的顺序拼接成一个字符串，然后再加上密钥，最后做个MD5就生成了一个签名字符串。</p><p>因为其他人不知道密钥，所以尽管他们能看到明文的通信数据，但他们无法生成相同的签名。同样，他们可以修改明文的数据，但也无法为修改后的数据<br>生成一个合法的签名。这样，只要接受数据的一方用接受到的明文数据+密钥做一次签名，然后和接受到的签名一比对，就知道数据是不是被篡改过了。</p><p>这并没有什么高深的思想，不过我们要注意一个细节：签名算法。一个比较好的签名算法，要求对碰撞几率足够低（即不同的字符串生成相同的签名值），<br>更要求签名不可逆性，最后也要保证签名性价比高（不能太慢，不能太耗资源）。</p><p>而签名的另外一个需要注意的细节是：传输过程中数据是明文的。为何必须要包含明文呢？</p><p>那么，如果传输的数据比较敏感呢？例如银行密码。那么只是签名肯定就是不够的了。这个时候就要对数据进行加密了。<br>常见的加密类型分为：对称加密，和非对称加密。对称加密比较好理解，通信双方约定好使用相同的密钥，然后在传递数据之前，对所有数据进行加密即可。<br>这样，只要密钥是安全的，中间人即便是抓包看到通信携带的数据，也因为无法解密而不能识别数据的含义。</p><p>听起来，岂不是不管三七二一，加就对了。那为何支付宝啊，微信啊，它们的接口都使用签名方式呢？<br>这个问题留给大家自己琢磨吧，我们今儿的主题不是它~</p><p>下面继续说一下非对称加密，这就有点意思了。一言以蔽之就是，加密和解密的时候需要使用不同的密钥来完成。神奇吧，什么？不知道这用来干啥么？<br>举个例子，假如请求方的密钥泄露了，是不是知道这个密钥的人都可以解密数据了？而非对称加密就能解决这个问题，牛逼吧！</p><p>那么，听起来，岂不是不管三七二一，非对称加就对了？那为何。。。（哎呀，别打我~）<br>其实冷静后不难得出，它们各自有各自的价值。</p><p>需要注意的是，非对称加密最安全，但性能越最低，然后是对称加密，然后是签名。所以如果用在接口上，考虑到并发量，还是需要根据具体场景具体分析的。</p><p>另外，如果你最终就是选择使用非对称加密来保护你的数据，你还要注意一点是，非对称加密对被加密的数据容量有限制，所以并不是想用就用的。<br>不过也别灰心，我们可以将它们结合在一起来使用：</p><ol><li>使用创建的随机的AES对称加密算法使用的key对目标字符串进行对称加密</li><li>使用私钥对创建的随机key进行非对称加密</li></ol><p>这样就可以避免数据量的问题。</p><p>不过我实际测试了一下，性能确实不理想啊。。。<br>如果你对数据的明文传输并不介意，但想要一个非对称的签名，那就既能保证足够的安全，性能也可以照顾到了。<br>幸运的是，RSA已经提供了这种非对称签名的实现，对这篇文章提到的内容有实战需求的朋友，可以看一下这个库：</p><p><a href="https://github.com/kazaff/CipherUtils" target="_blank" rel="noopener">https://github.com/kazaff/CipherUtils</a></p><h3 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h3><p><a href="https://niels.nu/blog/2016/java-rsa.html" target="_blank" rel="noopener">https://niels.nu/blog/2016/java-rsa.html</a><br><a href="https://www.novixys.com/blog/using-aes-rsa-file-encryption-decryption-java/" target="_blank" rel="noopener">https://www.novixys.com/blog/using-aes-rsa-file-encryption-decryption-java/</a><br><a href="https://blog.csdn.net/qq_32523587/article/details/79146977" target="_blank" rel="noopener">https://blog.csdn.net/qq_32523587/article/details/79146977</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;今天来说一下加解密相关的内容~&lt;/p&gt;
+&lt;p&gt;在这个后Rest时代，基本上HTTP API已经满大街了，如果你还不了解这个细节，或者你的项目不提供Rest API，你都不好意思来看我这篇文章~~&lt;br&gt;而通常我们简单的这些API，都不约儿童的包含了一个签名字段，主要目的是为
+      
+    
+    </summary>
+    
+      <category term="java" scheme="https://blog.kazaff.me/categories/java/"/>
+    
+    
+      <category term="对称加密" scheme="https://blog.kazaff.me/tags/%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86/"/>
+    
+      <category term="非对称加密" scheme="https://blog.kazaff.me/tags/%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86/"/>
+    
+      <category term="非对称签名" scheme="https://blog.kazaff.me/tags/%E9%9D%9E%E5%AF%B9%E7%A7%B0%E7%AD%BE%E5%90%8D/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>谈Puppeteer碰到的bug</title>
+    <link href="https://blog.kazaff.me/2019/08/22/%E8%B0%88puppeteer%E7%A2%B0%E5%88%B0%E7%9A%84bug/"/>
+    <id>https://blog.kazaff.me/2019/08/22/谈puppeteer碰到的bug/</id>
+    <published>2019-08-22T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.386Z</updated>
+    
+    <content type="html"><![CDATA[<p>什么是puppeteer？直观点说，就是一个提供以编程的方式控制浏览器（chromium）的nodejs库，非常的彪悍。<br>有了它，你可以用来做端到端测试，也可用来采集一些比较复杂的网站。我之前文章有涉及到这个神器，所以就不再啰嗦了~</p><p>这篇文章只是记录在使用中几个碰到的坑~</p><h3 id="page-click-无限阻塞"><a href="#page-click-无限阻塞" class="headerlink" title="page.click 无限阻塞"></a>page.click 无限阻塞</h3><p>从官网手册上看，<code>click</code>函数在发现页面上没有对应的元素的时候，会报错。但我在实际使用的时候发现，<code>puppeteer 1.12.x</code>版本下程序可能会无限阻塞在这个函数上，不抛异常，也不会返回。而且发生这种情况的时候，页面上确实是有对应的元素的，手动点击该按钮也是可以正常触发页面响应的。</p><p>此外，注意到一点是，当出现这个情况的时候，我切换成下面的写法:</p><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">await</span> page.evaluate(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  jQuery(<span class="string">'button'</span>).click();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure><p>程序会直接报错，提示 <strong>执行期间，上下文被销毁</strong> 的异常信息。正常情况下，该方式和直接<code>page.click</code>都应该是可以触发按钮点击的，现在突然都失灵了~<br>更增加排查难度的是，在循环执行时，一开始是成功的，平均到第三次时，发生这个bug的可能性就非常大。同样的代码，使用<code>puppeteer 1.19.x</code>则完全正常！</p><p>和同事讨论了一下，他之前也碰到过这个问题，后来在网站找到另外一个解决方案：</p><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 直接click方法，会导致莫名其妙的阻塞在click调用上</span></span><br><span class="line"><span class="keyword">let</span> submitBtn = <span class="keyword">await</span> page.$(<span class="string">'button'</span>);</span><br><span class="line"><span class="keyword">let</span> submitBox = <span class="keyword">await</span> submitBtn.boundingBox();</span><br><span class="line"><span class="keyword">let</span> boxX = submitBox.x + (submitBox.width / <span class="number">2</span>);</span><br><span class="line"><span class="keyword">let</span> boxY = submitBox.y + (submitBox.height / <span class="number">2</span>);</span><br><span class="line"><span class="keyword">await</span> page.mouse.click(boxX, boxY, &#123;<span class="attr">delay</span>: <span class="number">0</span>&#125;);</span><br></pre></td></tr></table></figure><p>这段代码就完全可以解决问题，它使用了更底层的一套接口，直接操作鼠标。。。不过实际使用的时候需要注意，<strong>该方式必须要将headless设置成false</strong>。</p><p>所以，目前的结论是，如果你不想升级版本的话，就是用鼠标接口，否则可以升级sdk版本来解决。</p><h3 id="page-click-点击无效"><a href="#page-click-点击无效" class="headerlink" title="page.click 点击无效"></a>page.click 点击无效</h3><p>依然是和 <code>page.click</code> 函数相关，在我们项目的某个页面（日历插件），发现<code>puppeteer 1.19.x</code>下，点击后无法影响该输入项的当前值。<br>但降低版本到<code>puppeteer 1.18.x</code>后，问题就解决了。</p><p>目前怀疑是最新版本的puppeteer可能存在bug（我们测试的时候，1.19.0才刚更新25天）。</p><p>以后有新的坑，再更新这个篇文章吧~<br>祝大家顺利~</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;什么是puppeteer？直观点说，就是一个提供以编程的方式控制浏览器（chromium）的nodejs库，非常的彪悍。&lt;br&gt;有了它，你可以用来做端到端测试，也可用来采集一些比较复杂的网站。我之前文章有涉及到这个神器，所以就不再啰嗦了~&lt;/p&gt;
+&lt;p&gt;这篇文章只是记录在使
+      
+    
+    </summary>
+    
+      <category term="nodejs" scheme="https://blog.kazaff.me/categories/nodejs/"/>
+    
+    
+      <category term="puppeteer" scheme="https://blog.kazaff.me/tags/puppeteer/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>不安全证书提示下的请求是否依然基于Tls</title>
+    <link href="https://blog.kazaff.me/2019/07/23/%E4%B8%8D%E5%AE%89%E5%85%A8%E8%AF%81%E4%B9%A6%E6%8F%90%E7%A4%BA%E4%B8%8B%E7%9A%84%E8%AF%B7%E6%B1%82%E6%98%AF%E5%90%A6%E4%BE%9D%E7%84%B6%E5%9F%BA%E4%BA%8Etls/"/>
+    <id>https://blog.kazaff.me/2019/07/23/不安全证书提示下的请求是否依然基于tls/</id>
+    <published>2019-07-23T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.382Z</updated>
+    
+    <content type="html"><![CDATA[<p>好久没有更新Blog了，惭愧惭愧~</p><p>今天咱们来聊一个之前总是忽略的问题：</p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="http://pic.yupoo.com/kazaff_v/c80e0b52/1eb41ad3.png" alt title>                </div>                <div class="image-caption"></div>            </figure><p>我记得是好几年前，当时https风初见势头，很多大一些的互联网平台都https化的时候，我也跟风的研究并搭建过基于https的网站。不过那个时候证书还是需要花钱买的，所以跟着网上的教材我只能在本地搭建测试环境~</p><p>不过这几年随着https证书贫民化，几乎所有网站都切换到了https下，什么？你还不知道如何免费https化？强力推荐使用<a href="https://certbot.eff.org/" target="_blank" rel="noopener">Certbot</a>。</p><p>有点跑题了，拉回来拉回来。假如我们使用自签名的证书，用浏览器打开的时候就会碰到上面截图的提示。这其实是浏览器的保护措施，不过它的提示感觉有点“过度”保护了~之前没有深究过，突然想知道，在浏览器提示不安全的私密连接的基础下执意访问呢？是否会退化到http？</p><p>不光是自签名证书会碰到这个问题，只要是浏览器验证证书有效性的时候发现问题都会提示不安全，例如证书过期，域名不匹配等。</p><p>所以我本地搭建了个测试环境，然后利用抓包工具进行了分析，得到了最终的结论：<code>不安全的私密连接，依然是基于https的，只是使用的证书由于没有通过验证，所以很可能是中间人的恶意证书</code>。</p><p>本文章不会展开SSL和TLS的历史，也不会科普TLS握手流程，这些都可以在文章底部的参考链接中的文章里找到答案。</p><p>得到这个结论并非没有任何意义，假如我们使用<code>curl</code>命令或某个语言的http库，请求一个rest服务或基于http的api接口，在服务使用自签名证书的前提下，本次调用到底是否使用证书呢？</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> curl https://192.168.1.142</span></span><br><span class="line"><span class="meta">  %</span><span class="bash"> Total    % Received % Xferd  Average Speed   Time    Time     Time  Current</span></span><br><span class="line">                                 Dload  Upload   Total   Spent    Left  Speed</span><br><span class="line">  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0</span><br><span class="line">curl: (60) SSL certificate problem: self signed certificate</span><br><span class="line">More details here: https://curl.haxx.se/docs/sslcerts.html</span><br><span class="line"></span><br><span class="line">curl failed to verify the legitimacy of the server and therefore could not</span><br><span class="line">establish a secure connection to it. To learn more about this situation and</span><br><span class="line">how to fix it, please visit the web page mentioned above.</span><br></pre></td></tr></table></figure><p>可以看到，<code>curl</code>默认由于证书验证问题会最终放弃请求。所以我们必须明确告知<code>curl</code>忽略证书问题，可以使用这个参数<code>-k</code>。</p><p>那么如果是某种编程语言呢？我们来看几种语言的http库是什么情况：</p><h3 id="php"><a href="#php" class="headerlink" title="php"></a>php</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl_setopt($cHandler, CURLOPT_SSL_VERIFYHOST, <span class="keyword">false</span>);</span><br><span class="line">curl_setopt($cHandler, CURLOPT_SSL_VERIFYPEER, <span class="keyword">false</span>);</span><br></pre></td></tr></table></figure><h3 id="golang"><a href="#golang" class="headerlink" title="golang"></a>golang</h3><figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">transCfg := &amp;http.Transport&#123;</span><br><span class="line">  TLSClientConfig: &amp;tls.Config&#123;InsecureSkipVerify: <span class="literal">true</span>&#125;, <span class="comment">// ignore expired SSL certificates</span></span><br><span class="line">&#125;</span><br><span class="line">client := &amp;http.Client&#123;Transport: transCfg&#125;</span><br></pre></td></tr></table></figure><h3 id="nodejs"><a href="#nodejs" class="headerlink" title="nodejs"></a>nodejs</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">process.env[&quot;NODE_TLS_REJECT_UNAUTHORIZED&quot;] = 0;</span><br></pre></td></tr></table></figure><h3 id="java"><a href="#java" class="headerlink" title="java"></a>java</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    TrustManager[] trustAllCerts = <span class="keyword">new</span> TrustManager[] &#123;</span><br><span class="line">       <span class="keyword">new</span> X509TrustManager() &#123;</span><br><span class="line">    <span class="keyword">public</span> java.security.cert.X509Certificate[] getAcceptedIssuers() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">checkClientTrusted</span><span class="params">(X509Certificate[] certs, String authType)</span> </span>&#123;  &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">checkServerTrusted</span><span class="params">(X509Certificate[] certs, String authType)</span> </span>&#123;  &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    SSLContext sc = SSLContext.getInstance(<span class="string">"SSL"</span>);</span><br><span class="line">    sc.init(<span class="keyword">null</span>, trustAllCerts, <span class="keyword">new</span> SecureRandom());</span><br><span class="line">    CloseableHttpClient httpClient = HttpClients.custom().setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).setSslcontext(sc).build();</span><br><span class="line"></span><br><span class="line">    String output = Executor.newInstance(httpClient).execute(Request.Get(<span class="string">"https://127.0.0.1:3000/something"</span>)</span><br><span class="line">                                      .connectTimeout(<span class="number">1000</span>)</span><br><span class="line">                                      .socketTimeout(<span class="number">1000</span>)).returnContent().asString();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    # source: http://stackoverflow.com/questions/2703161/how-to-ignore-ssl-certificate-errors-in-apache-httpclient-4-0</span><br></pre></td></tr></table></figure><p>目前，小弟我只实际抓包过<code>curl -k</code>的流程，稍后我会尝试抓一下<code>golang</code>的请求看看是否符合预期。</p><h2 id="抓包工具"><a href="#抓包工具" class="headerlink" title="抓包工具"></a>抓包工具</h2><p>如果你只是在浏览器端或postman测试，使用<code>fiddler</code>这款工具即可，简单够用~ 但我没有办法使用它抓到<code>curl</code>的包，所以只能拿神器<code>wireshark</code>来解决问题了。</p><p>不过友情提示，一定要去官方下载<code>wireshark</code>最新版（3.03+），安装的时候选择支持监听回环网卡（npcap loopback adapter），否则是无法抓住你本机回环的请求的。</p><p>更有意思的是，<code>wireshark</code>把我本机的内网ip（192.168.1.142）也当做回环地址来处理了，我本以为只要我不是用localhost或127.0.0.1，就应该可以监听到数据包的，结果花了好多时间才。。不说了，都是泪。</p><h2 id="查看系统支持的根证书"><a href="#查看系统支持的根证书" class="headerlink" title="查看系统支持的根证书"></a>查看系统支持的根证书</h2><p>windows系统下，可以开始运行中输入<code>certmgr.msc</code>，打开的面板里查找<code>Trusted Root Certification Authorities</code>项就可以看到系统中已经包含的信任根证书列表了。</p><p>linux系统下，则可以查看<code>/etc/pki/tls/certs/ca-bundle.crt</code>文件，其中包含了已经信任的根证书。</p><h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ul><li><a href="http://www.ruanyifeng.com/blog/2014/02/ssl_tls.html" target="_blank" rel="noopener">SSL/TLS协议运行机制的概述</a></li><li><a href="https://www.jianshu.com/p/24af67c40e8d" target="_blank" rel="noopener">TLS整理（下）：TLS如何保证安全</a></li><li><a href="https://juejin.im/post/5b88a93df265da43231f1451" target="_blank" rel="noopener">TLS 详解</a></li><li><a href="https://cloud.tencent.com/developer/article/1416948" target="_blank" rel="noopener">如何用 wireshark 抓包 TLS 封包</a></li><li><a href="https://www.barretlee.com/blog/2016/04/24/detail-about-ca-and-certs/" target="_blank" rel="noopener">细说 CA 和证书</a></li><li><a href="https://juejin.im/post/5a4f4884518825732b19a3ce" target="_blank" rel="noopener">HTTPS加密过程和TLS证书验证</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;好久没有更新Blog了，惭愧惭愧~&lt;/p&gt;
+&lt;p&gt;今天咱们来聊一个之前总是忽略的问题：&lt;/p&gt;
+&lt;figure class=&quot;image-bubble&quot;&gt;
+                &lt;div class=&quot;img-lightbox&quot;&gt;
+                
+      
+    
+    </summary>
+    
+      <category term="运维" scheme="https://blog.kazaff.me/categories/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="证书" scheme="https://blog.kazaff.me/tags/%E8%AF%81%E4%B9%A6/"/>
+    
+      <category term="TLS" scheme="https://blog.kazaff.me/tags/TLS/"/>
+    
+      <category term="HTTPS" scheme="https://blog.kazaff.me/tags/HTTPS/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>从华为事件谈自己造轮子的必要性</title>
+    <link href="https://blog.kazaff.me/2019/05/21/%E4%BB%8E%E5%8D%8E%E4%B8%BA%E4%BA%8B%E4%BB%B6%E8%B0%88%E8%87%AA%E5%B7%B1%E9%80%A0%E8%BD%AE%E5%AD%90%E7%9A%84%E5%BF%85%E8%A6%81%E6%80%A7/"/>
+    <id>https://blog.kazaff.me/2019/05/21/从华为事件谈自己造轮子的必要性/</id>
+    <published>2019-05-21T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.382Z</updated>
+    
+    <content type="html"><![CDATA[<p>贸易战到现在，愈演愈烈，自从川普老头发布华为禁令后，先后很多美国本土企业都中断了和华为的合作关系，尤其是google。<br>安卓系统对于华为的海外手机业务来说无疑是非常重要的，而华为内部发布出来的信息中有一句话让我这种程序员很有感觉：</p><blockquote><p>所有“备胎”一夜之间全部转正！</p></blockquote><p>以前看过很多资料，总会不经意看到关于“重造轮子”的梗，多数都是用来表达“闭门造车”的愚蠢行为。相对比较正面的一句话应该是来自图灵书籍的封面：</p><blockquote><p>站在巨人的肩膀上</p></blockquote><p>看来，有时候巨人脾气也不咋地，不是你随随便便想站就站的啊~</p><p>话说回来，今几年国内很多技术出众的大公司都在开源的项目上深耕已久，各种升级版层出不穷（我就不举例了），其实早就说明一个问题：我们是有能力也是有需要自造轮子的！<br>当然，重造轮子不只是完全克隆，而且有所取舍的剪裁，有所目的的增强。所以，伙计们，撸起袖子造轮子吧~</p><p>从这个事儿上，确实十分佩服华为的远见和魄力，魄力在于一个民营企业与一个世界第一强的国家对峙，何等的气概啊，想一下都热血沸腾！<br>远见在于未雨绸缪，投入巨资自研“备胎”，从硬件到软件，足以看出华为是一家对“独立自由”理解是多么深刻的公司！</p><p>作为一个小老百姓，在如今风云莫测的世界局势下，只有吃瓜的份儿？<br>不，至少我会从自己下一部手机开始做华为的粉丝，给予其足够的耐心和热情，相信这样的企业总有天会改变世界~</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;贸易战到现在，愈演愈烈，自从川普老头发布华为禁令后，先后很多美国本土企业都中断了和华为的合作关系，尤其是google。&lt;br&gt;安卓系统对于华为的海外手机业务来说无疑是非常重要的，而华为内部发布出来的信息中有一句话让我这种程序员很有感觉：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;
+      
+    
+    </summary>
+    
+      <category term="talk" scheme="https://blog.kazaff.me/categories/talk/"/>
+    
+    
+      <category term="需求分析" scheme="https://blog.kazaff.me/tags/%E9%9C%80%E6%B1%82%E5%88%86%E6%9E%90/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>激活Apple ID的two-Factor认证</title>
+    <link href="https://blog.kazaff.me/2019/05/10/%E6%BF%80%E6%B4%BBapple%20id%E7%9A%84two-factor%E8%AE%A4%E8%AF%81/"/>
+    <id>https://blog.kazaff.me/2019/05/10/激活apple id的two-factor认证/</id>
+    <published>2019-05-10T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.386Z</updated>
+    
+    <content type="html"><![CDATA[<p>事情是这样的，我司的一个ERP有一个ios app，因为当时没有通过Apple的个人开发审核，所以按照Apple的推荐选择使用企业账号类型来开发。<br>企业app的证书有效期是1年，也就是说每年都要去更新证书。</p><p>问题来了，当我这几天登录我们的企业开发者账号时，被拦截了，提醒我该账号没有开启双重认证。。。这也太霸道了啊~<br>这个开发者账号是属于公司的，不可能绑定在私人的手机上，怎么设置这个双重认证呢？</p><p>GG上查了很多文章，都不是十分符合我们的场景，而且大量的流程都已经过期了，Apple官网UI都已经变了~<br>还好在Apple的官网找到了相关的<a href="https://developer.apple.com/support/account/authentication/" target="_blank" rel="noopener">描述</a>：</p><ol><li>需要先添加一个把开发者账号appl id添加到手机中：设置 -&gt; 密码和账号 -&gt; 添加账号，这可能需要先开通开发者账号的store功能？我不确定~因为我一开始以为需要用账号登录app store，所以就顺便开通了；</li><li>退出你手机中当前的iCloud账号，然后用开发者账号再次登录：吐槽一下，官网并没有描述正确如何退出，你只需要： 设置 -&gt; 账号（第一行） -&gt; 退出（滑动到最下面就看到了）-&gt; 退出iCloud 即可；</li><li>开启双重认证： 设置 -&gt; 账号（第一行） -&gt; 密码与安全 -&gt; 双重认证 开启即可。</li></ol><p>退出我自己的iCloud账号后，导致我很多依赖iCloud存储的数据全部都没了（例如备忘录）~大家注意备份啊~<br>苹果这么强制开通双重认证，并且又那么麻烦，真的很不人性化啊。为啥不基于google的双重认证服务啊。。。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;事情是这样的，我司的一个ERP有一个ios app，因为当时没有通过Apple的个人开发审核，所以按照Apple的推荐选择使用企业账号类型来开发。&lt;br&gt;企业app的证书有效期是1年，也就是说每年都要去更新证书。&lt;/p&gt;
+&lt;p&gt;问题来了，当我这几天登录我们的企业开发者账号时
+      
+    
+    </summary>
+    
+      <category term="移动端" scheme="https://blog.kazaff.me/categories/%E7%A7%BB%E5%8A%A8%E7%AB%AF/"/>
+    
+    
+      <category term="需求分析" scheme="https://blog.kazaff.me/tags/%E9%9C%80%E6%B1%82%E5%88%86%E6%9E%90/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>事无巨细Vs点到为止</title>
+    <link href="https://blog.kazaff.me/2019/04/29/%E4%BA%8B%E6%97%A0%E5%B7%A8%E7%BB%86vs%E7%82%B9%E5%88%B0%E4%B8%BA%E6%AD%A2/"/>
+    <id>https://blog.kazaff.me/2019/04/29/事无巨细vs点到为止/</id>
+    <published>2019-04-29T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.382Z</updated>
+    
+    <content type="html"><![CDATA[<p>最近在思考一个问题，在项目需求分析阶段，到底是应该“事无巨细” 还是 “点到为止” 呢？</p><p>这个问题源自我最近参与公司其它项目的经历，作为一个“外来者”，按照他们组的规则按部就班的推进需求分析的进度。<br>我发现的第一个与众不同是他们组开会特别频繁，而我们组正式会议几个月都很难一次，当然我们组存在频繁的小会议（问题参与者们自发组织的临时会谈）。</p><p>其实，会议频繁不算是问题，但每个会议必须有效率。我参与的这个组的会议中，经常出现参会者完全没有主题要表达，或者为了找一个文档花费好几分钟。这些是缺乏准备造成的（也可能是会议实在太多，大家都不以为然了~），也和组织会议的负责人在之前没有描述清楚会议主题有关系。这些都可以很轻易的解决~</p><p>最大的问题是，会议中沟通时，大家多同一个需求，存在多套叙述语言。但这可是一个运行很久的项目了，竟然还没有“默契的”形成统一的沟通用语。这很难解决，在我们组，在新需求初期，我都会在讨论的初期阶段，时刻关注着大家的沟通用语，一旦发现有“恰到好处”的代名词，我都会反复强调它，并明示所有组员，该需求点以后只允许使用该代名词来表达，不管是在会议中还是在文档里。</p><p>最后绕回到我们的本文的主题：到底应该讨论到哪个程度才算合理？</p><p>说说我个人的看法吧，我是个比较粗颗粒的人，往往比较在意全局层面的相关问题。前几年“全栈工程师”的概念比较火，我一度以为我之所以有这种思维方式，是因为前后端我都多多少少有所涉猎。但后来我发现也不完全因为如此，尽管全栈会让我的思考可能更全面，但在何时何地把握何种层面的思考，是需要刻意训练的。否则你知道的越多，你就越容易陷入“分析瘫痪”中。</p><p>另外一方面，团队会议中必须有人时刻保持对全局问题的敏感性，在负责各自领域的讨论者提出一个方案时，总应该有个人用全局的眼光来进行校验。这个听起来很自然~ 不过人往往都很难面面俱到，不是么？我在做这个角色的时候，就无法同时兼顾细节。例如我不会允许自己过分思考具体方案的细节问题，要尽量的站在方案之外，观察它是如何与其它部分协作的，是否会造成其它部分的困扰和麻烦。</p><p>所以我们组讨论的时候，我总是提一些很“笼统”的建议。笼统但绝不模糊，我会反复强调需求中包含的约束，也会提及方案应该避免的一些不好的方面。我会留一个大大的问号给这部分的实际负责人，但我同时会给他定好一个问题边界，我们在会议上多半就只能得到这种“点到为止”的结论。</p><p>我有思考过我这种“偷懒”到底源于什么？首先和我的性格有关系，还有就是我发现，开发人员多数（并非全部）都喜欢接受挑战，但这些挑战必须和技术密切相关。这个时候如果开发中所有的枝枝叶叶都在会议中确定了，这个活儿就失去了魅力~ 我认为总是应该留有一些空间给开发人员，再给他增加一些期许的目光和鼓励的对白，一般稍微有上进心的人都会给你交付一份完美的答案。</p><p>回到我提到的这个项目上，在会议中我看到项目经理会追着细节不放，不停的连续追问，而开发人员难以掩饰的不耐烦，加上笨拙的沟通技巧，原本十几行代码做的工作需要讲很久很久。。。</p><p>那这表明过度关注细节就一定不好么？<br>这也是困扰我的原因，如果一种方法绝对的好，那任何关于它的讨论都显得多余不是么？</p><p>关注细节的优势在于，对组内新人更友好（另一个问题是真的应该在项目中间加人么？），对项目更保险。最终交付的结果更容易把控。<br>但这一切都是可以通过code review来弥补的。这好像也是技术管理离不开开发能力的本质原因？</p><p>说了这么多，依然都是我的个人观点，我希望得到前辈们的指点，请留下宝贵的建议吧~</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;最近在思考一个问题，在项目需求分析阶段，到底是应该“事无巨细” 还是 “点到为止” 呢？&lt;/p&gt;
+&lt;p&gt;这个问题源自我最近参与公司其它项目的经历，作为一个“外来者”，按照他们组的规则按部就班的推进需求分析的进度。&lt;br&gt;我发现的第一个与众不同是他们组开会特别频繁，而我们组正
+      
+    
+    </summary>
+    
+      <category term="talk" scheme="https://blog.kazaff.me/categories/talk/"/>
+    
+    
+      <category term="需求分析" scheme="https://blog.kazaff.me/tags/%E9%9C%80%E6%B1%82%E5%88%86%E6%9E%90/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>你想真正掌握你的个人数据吗</title>
+    <link href="https://blog.kazaff.me/2019/03/20/%E4%BD%A0%E6%83%B3%E7%9C%9F%E6%AD%A3%E6%8E%8C%E6%8F%A1%E4%BD%A0%E7%9A%84%E4%B8%AA%E4%BA%BA%E6%95%B0%E6%8D%AE%E5%90%97/"/>
+    <id>https://blog.kazaff.me/2019/03/20/你想真正掌握你的个人数据吗/</id>
+    <published>2019-03-20T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.382Z</updated>
+    
+    <content type="html"><![CDATA[<p>时代在召唤，我们所生活在的星球，每隔一段时间都会自我颠覆一次，就像细胞的迭代一样。<br>在前段时间各种新闻大事件（fb的泄露门，欧盟的隐私法案）的炒作下，越来越多的互联网问题暴露出来。<br>不过，这个领域从来不缺少革命者，一些大师总是会在关键时刻站出来发表一个颠覆性的思想，引领世人。</p><p>之前，在了解区块链的时候，无意间有看到一个项目<a href="https://ipfs.io/" target="_blank" rel="noopener">IPFS</a>，去中心化的web应用多么有魅力啊。<br>不过今天看到一个更热血沸腾的项目<a href="https://learnsolid.cn/" target="_blank" rel="noopener">SoLiD</a>，这种概念真的令人佩服啊~</p><p>按照SoLiD的描述，我们的个人数据完全掌控在我们手中，而不是各大平台，听起来就爽的飞起。<br>再也不需要为数据迁移发愁了，再也不需要受制于某个平台了！</p><p>不过，作为开发人员，会格外好奇，如何设计一种数据结构来适配各种平台呢？如何在个性和共性之间找到平衡呢？<br>另外，个人数据存储在哪个位置呢？如果还是托管在云端，似乎本质上还是被某个服务所“绑架”，<br>若能存储在个人手持设备上，那岂不是美哉？</p><p>喜欢折腾的小伙伴，学起来吧~</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;时代在召唤，我们所生活在的星球，每隔一段时间都会自我颠覆一次，就像细胞的迭代一样。&lt;br&gt;在前段时间各种新闻大事件（fb的泄露门，欧盟的隐私法案）的炒作下，越来越多的互联网问题暴露出来。&lt;br&gt;不过，这个领域从来不缺少革命者，一些大师总是会在关键时刻站出来发表一个颠覆性的思
+      
+    
+    </summary>
+    
+      <category term="talk" scheme="https://blog.kazaff.me/categories/talk/"/>
+    
+    
+      <category term="solid" scheme="https://blog.kazaff.me/tags/solid/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Https证书申请</title>
+    <link href="https://blog.kazaff.me/2019/03/19/https%E8%AF%81%E4%B9%A6%E7%94%B3%E8%AF%B7/"/>
+    <id>https://blog.kazaff.me/2019/03/19/https证书申请/</id>
+    <published>2019-03-19T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.382Z</updated>
+    
+    <content type="html"><![CDATA[<p>时间飞逝，现在https已经是web项目必选项了。<br>早在很久之前，就有过一篇文章提<a href="https://blog.kazaff.me/2015/06/01/https%E6%83%85%E7%BB%93/">https</a>，里面提供的证书申请方案已经过时。</p><p>其实，一直以来都有机构或组织提供openssl证书服务，最接地气的就应该是<a href="https://letsencrypt.org/" target="_blank" rel="noopener">Let’s Encrypt</a>。<br>去年年初，我们公司搭建环境的时候，就是用的是它提供的<a href="https://github.com/Neilpang/acme.sh/wiki/%E8%AF%B4%E6%98%8E" target="_blank" rel="noopener">ACME.sh</a>，可以看到它还是比较远古的，很多步骤，而且我们公司后来出现过它证书没有自动创建的问题~~</p><p>在一个夜黑风高的晚上，马上钻被窝的我，被领导电话夺命追魂，因为公司官网无法访问了，吓得我瞬间睡意全无。<br>打开电脑才发现是证书过期了~~</p><p>慌忙中我怎么有耐心执行完acme.sh的所有步骤~~不能够的！<br>google一查，原来已经有更智（lan）能（duo）的方案了：<a href="https://certbot.eff.org/" target="_blank" rel="noopener">certbot</a></p><p>有了它，我们只需要两步即可完成证书替换：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ wget https://dl.eff.org/certbot-auto</span><br><span class="line">$ chmod a+x certbot-auto</span><br><span class="line"></span><br><span class="line">$ sudo /path/to/certbot-auto --nginx</span><br></pre></td></tr></table></figure><p>然后顺着导航提示回车即可。是不是很爽？</p><p>睡觉~</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;时间飞逝，现在https已经是web项目必选项了。&lt;br&gt;早在很久之前，就有过一篇文章提&lt;a href=&quot;https://blog.kazaff.me/2015/06/01/https%E6%83%85%E7%BB%93/&quot;&gt;https&lt;/a&gt;，里面提供的证书申请方案已经过
+      
+    
+    </summary>
+    
+      <category term="运维" scheme="https://blog.kazaff.me/categories/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="https" scheme="https://blog.kazaff.me/tags/https/"/>
+    
+      <category term="openssl" scheme="https://blog.kazaff.me/tags/openssl/"/>
+    
+      <category term="ACME" scheme="https://blog.kazaff.me/tags/ACME/"/>
+    
+      <category term="certbot" scheme="https://blog.kazaff.me/tags/certbot/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>关于Mysql的insert for Update在多条插入记录下的使用</title>
+    <link href="https://blog.kazaff.me/2019/03/18/%E5%85%B3%E4%BA%8Emysql%E7%9A%84insert%20for%20update%E5%9C%A8%E5%A4%9A%E6%9D%A1%E6%8F%92%E5%85%A5%E8%AE%B0%E5%BD%95%E4%B8%8B%E7%9A%84%E4%BD%BF%E7%94%A8/"/>
+    <id>https://blog.kazaff.me/2019/03/18/关于mysql的insert for update在多条插入记录下的使用/</id>
+    <published>2019-03-18T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.382Z</updated>
+    
+    <content type="html"><![CDATA[<p>今天我们来讨论一个比较大众的问题：关于当在mysql中insert记录时违反了表的唯一键后要怎么办？<br>其实一般而言，越来越多的系统在数据一致性和有效性问题上，都放在应用逻辑层来维护合法性。<br>到底哪种方式好，在这篇文章中不做评论，我个人觉得尽量都在代码中体现才是王道。</p><p>回到问题，一般遇到这种情况，第一反应是使用<code>insert for update</code>语法，例如：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO t1 (a,b,c) VALUES (1,2,3)</span><br><span class="line">  ON DUPLICATE KEY UPDATE c=c+1;</span><br></pre></td></tr></table></figure><p>这句sql很直观，基本上算是语义化了。但如果是批量insert呢，我们希望如果遇到冲突，update块使用对应插入记录的值来更新，<br>而不是固定值或db中当前值，该怎么办呢？</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO t1 (a,b,c) VALUES (1,2,3),(4,5,6)</span><br><span class="line">  ON DUPLICATE KEY UPDATE c=VALUES(c), b=VALUES(b);</span><br></pre></td></tr></table></figure><p>对，没错，mysql提供的内置函数<code>VALUES()</code>就是针对这种需求的。</p><h4 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h4><p><a href="https://dev.mysql.com/doc/refman/8.0/en/insert-on-duplicate.html" target="_blank" rel="noopener">https://dev.mysql.com/doc/refman/8.0/en/insert-on-duplicate.html</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;今天我们来讨论一个比较大众的问题：关于当在mysql中insert记录时违反了表的唯一键后要怎么办？&lt;br&gt;其实一般而言，越来越多的系统在数据一致性和有效性问题上，都放在应用逻辑层来维护合法性。&lt;br&gt;到底哪种方式好，在这篇文章中不做评论，我个人觉得尽量都在代码中体现才是王
+      
+    
+    </summary>
+    
+      <category term="数据库" scheme="https://blog.kazaff.me/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+    
+    
+      <category term="mysql" scheme="https://blog.kazaff.me/tags/mysql/"/>
+    
+      <category term="insert for update" scheme="https://blog.kazaff.me/tags/insert-for-update/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>关于电商项目的需求难点</title>
+    <link href="https://blog.kazaff.me/2019/03/07/%E5%85%B3%E4%BA%8E%E7%94%B5%E5%95%86%E9%A1%B9%E7%9B%AE%E7%9A%84%E9%9C%80%E6%B1%82%E9%9A%BE%E7%82%B9/"/>
+    <id>https://blog.kazaff.me/2019/03/07/关于电商项目的需求难点/</id>
+    <published>2019-03-07T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.382Z</updated>
+    
+    <content type="html"><![CDATA[<p>现在国内的电商产品真的是多如牛毛，功能其实都大同小异，质量参差不齐。有的当软件产品卖，有的依托在完整的SaaS平台中卖服务，百家齐放。</p><p>我司本身有运营着一个B2C的电商系统，基于国外一个开源电商项目二次开发而来，修修改改也使用了将近三年了，今年公司打算对其进行重构（基本上是推倒重来），并进一步将其产品化。之所以有这种想法，也是因为我们调研了一圈市面上的产品后，觉得这个市场还是有机会的。</p><p>我之前少有接触过此类项目，现在的电商系统早不再是简单的产品展示+在线支付的粗犷派，其中充斥着各种营销各种活动，应该说是及其复杂。本文简单的罗列出这段时间来我们团队梳理出的一些需求难点，供大家思考和讨论。</p><h3 id="订单编辑"><a href="#订单编辑" class="headerlink" title="订单编辑"></a>订单编辑</h3><p>订单应该是电商系统中的核心业务，几乎所有角色都会“与其有染”。教科书式的订单的简单模型是：</p><ul><li>下单用户</li><li>购买的商品</li><li>支付方式</li><li>物流方式及收货地址</li><li>订单状态（待支付，已支付，已发货，已完成，已取消）</li></ul><p>通常会包含这些基本的属性。但真实世界会更加黑暗和复杂，比方说下面这些属性：</p><ul><li>使用的积分数</li><li>使用的优惠券</li><li>物流拆分（如常温与冷冻）</li></ul><p>这些都会导致订单价格计算的时候引入复杂逻辑。当然，模型一旦确定，搞就完事儿了，不服就干嘛~</p><p>实际开发中，我们得到的宝贵结论（教训）是：订单编辑才是万恶之首。<br>我们参考了一些电商项目，它们提供订单编辑的操作往往都是在订单未付款的状态下。一旦用户付款就锁定订单不允许编辑了。</p><p>但其实，即便是未付款状态，订单编辑依然是很复杂的，考虑的情况非常的繁杂，下面我举一些例子：</p><ul><li>编辑后优惠券条件不满足</li><li>编辑后影响积分使用条件</li><li>物流成本和方式变更</li></ul><p>此外，还存在订单编辑带来的安全问题，账目核对问题等。尤其是在用户已经支付后再编辑订单的时候，一切就更加的邪恶。<br>参考主流的电商平台，一般也都是让用户取消当前订单并再次下单。</p><p>其实上述问题不光涉及到开发复杂性，商户在使用的时候也很难完全理解每一种情况。而下单用户呢？多数下单用户发现订单被编辑了，我相信一定还是会感到不安，即便是已经线下和商户协商好了，这种协商往往很灵活（各种突发奇想的操作），或者很“死板”（直接退单再下）。</p><p>针对已付款的订单进行编辑，从金额角度会有三种情况：价格不变，变低，变高。前两种好办，可以不麻烦下单用户就完成，而价格变高就必须让用户补差价了，之前很多电商平台中的商户都会创建一个虚拟商品专门用来补差价。</p><p>总结来说就是，由于导致订单编辑的原因和编辑波及的方面太多，无法轻易收敛，所以目前建议放弃模式匹配的思维。<br>可能提供“松散”的策略会更易于开发和使用：</p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="http://pic.yupoo.com/kazaff_v/fcc1f0d0/22458eeb.png" alt title>                </div>                <div class="image-caption"></div>            </figure><p>可以在此思路上继续往走下去。</p><h3 id="营销活动"><a href="#营销活动" class="headerlink" title="营销活动"></a>营销活动</h3><p>只有你想不到，没有做不到的营销，水深的很。我们看一下有赞电商后台提供的营销类型：</p><figure class="image-bubble">                <div class="img-lightbox">                    <div class="overlay"></div>                    <img src="http://pic.yupoo.com/kazaff_v/89b3740b/47525e87.png" alt title>                </div>                <div class="image-caption"></div>            </figure><p>简直是眼花缭乱，试问谁能抵抗这么多类型的诱惑完成荷包保卫战？你们先聊，我去下单了~</p><p>这些营销活动，最终都会直接影响购物流程，甚至改变购物流程。要想让系统能够轻松扩展出各种影响活动，对系统的扩展性就要提出很高的要求才行。</p><p>这些活动中，有些是独立入口，有些则辅佐在主流程的某些步骤中，有些只是逻辑扩展，有些会涉及到页面展示。这就要求系统在页面渲染和计算流程中处处提供扩展点。这些扩展点有些是同步执行，有些可以异步调用。<br>针对各种场景，我们可以在扩展点处提供Hook，或事件消息机制，尽可能让这些营销活动模块化插件化。</p><p>另外一方面，商户新建一个营销活动，除了规则和玩法以外，还需要设置该活动的范围，这里所说的范围，分为：</p><ul><li>商品维度范围</li><li>用户维度范围</li><li>时间维度范围</li></ul><p>各种维度的交集才是有效范围。在电商系统中展示商品时，要动态计算出该商品所处于哪个活动范围也是一个不小的问题。解决这类问题，需要前后端配合，单一方的优化总感觉不够完美。</p><p>例如，我们系统的首页，加载商品数据后，异步加载活动规则，前端计算出商品和活动的匹配关系。又或者在活动创建时强绑定和商品的关系，在商品CURD时维护这种关系。</p><p>在时间维度方面，可以借助定时任务触发活动上线和下线时机。具体怎么做，还是根据具体情况来决策。</p><p>最后想说的是，涉及到抢购的那种活动比较危险，有条件的话应该隔离部署这些活动，并做抢购相关的优化。关于抢购可以在GG上搜到大量的技术方案分享。</p><h3 id="页面布局自定义"><a href="#页面布局自定义" class="headerlink" title="页面布局自定义"></a>页面布局自定义</h3><p>回顾我个人的上网经验，最早看到这种功能还是在QQ空间，后来很多不同类型的网站也都提供此类功能，主要是因为我们人类关于个性的追求。<br>在电商系统中，常见的页面布局主要是首页，首页又分成pc端和mobile端。这种自定义，可简单可复杂，开发成本较高。<br>我不确定业界都是怎么实现的，个人感觉借助现代前端框架组件化方案，再设计一种简单的DSL来序列化存储用户的配置，应该是一个完整的解决方案。</p><p>总之，直觉告诉我，这一块感觉坑不浅。</p><h3 id="SEO"><a href="#SEO" class="headerlink" title="SEO"></a>SEO</h3><p>之前看过一篇文章，好像是18年年底的，主要是讲google目前的爬虫是否能识别js代码。结论是google对外宣称这一点的时候，用了“maybe”，实际测试虽然比较理想，但官网却不提供任何保证。更何况其它搜索引擎呢？所以就目前来看，SEO还是需要考虑的！</p><p>所以，在选择前端技术的时候，要多考虑SSR（Server-side Render），一般主流框架都有完善的SSR方案。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;现在国内的电商产品真的是多如牛毛，功能其实都大同小异，质量参差不齐。有的当软件产品卖，有的依托在完整的SaaS平台中卖服务，百家齐放。&lt;/p&gt;
+&lt;p&gt;我司本身有运营着一个B2C的电商系统，基于国外一个开源电商项目二次开发而来，修修改改也使用了将近三年了，今年公司打算对其进行
+      
+    
+    </summary>
+    
+      <category term="需求分析" scheme="https://blog.kazaff.me/categories/%E9%9C%80%E6%B1%82%E5%88%86%E6%9E%90/"/>
+    
+    
+      <category term="电商" scheme="https://blog.kazaff.me/tags/%E7%94%B5%E5%95%86/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Yum Remove害死人</title>
+    <link href="https://blog.kazaff.me/2018/12/20/yum%20remove%E5%AE%B3%E6%AD%BB%E4%BA%BA/"/>
+    <id>https://blog.kazaff.me/2018/12/20/yum remove害死人/</id>
+    <published>2018-12-20T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.382Z</updated>
+    
+    <content type="html"><![CDATA[<p>前几天犯了个天大的错，简单的说就是我把公司线上服务器的nginx卸载了。。。然后整整花了将近7个小时才让公司的系统重新上线！<br>我想如果在BAT，我肯定要滚蛋了~~</p><p>事情的缘由比较啰嗦就不细说了，主要说一下我是如何干掉nginx的吧，哈哈哈：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum remove GeoIP -y</span><br></pre></td></tr></table></figure><p>我本来是打算删除这个库的，执行完命令后它竟然把依赖它的其它软件也给删除了。。。。<br>当然，重新安装nginx分分钟的事儿，之所以停机7小时是因为它还删除了一些网络相关的库，导致我们的aws ec2的节点无法ssh。。。</p><p>不过重点是，<code>yum remove</code>会删除依赖的库，这就有点尴尬了，搜了一下，网上推荐使用<code>rpm -e --nodeps xxx</code>这种删除软件的命令。<br>你是不是也是第一次听说这个问题呢？想想我以前干的事儿，真的有点小激动呢。。。。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;前几天犯了个天大的错，简单的说就是我把公司线上服务器的nginx卸载了。。。然后整整花了将近7个小时才让公司的系统重新上线！&lt;br&gt;我想如果在BAT，我肯定要滚蛋了~~&lt;/p&gt;
+&lt;p&gt;事情的缘由比较啰嗦就不细说了，主要说一下我是如何干掉nginx的吧，哈哈哈：&lt;/p&gt;
+&lt;f
+      
+    
+    </summary>
+    
+      <category term="运维" scheme="https://blog.kazaff.me/categories/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="centos" scheme="https://blog.kazaff.me/tags/centos/"/>
+    
+      <category term="yum" scheme="https://blog.kazaff.me/tags/yum/"/>
+    
+      <category term="rpm" scheme="https://blog.kazaff.me/tags/rpm/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>你Php的session_start慢么</title>
+    <link href="https://blog.kazaff.me/2018/12/18/%E4%BD%A0php%E7%9A%84session_start%E6%85%A2%E4%B9%88/"/>
+    <id>https://blog.kazaff.me/2018/12/18/你php的session_start慢么/</id>
+    <published>2018-12-18T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.382Z</updated>
+    
+    <content type="html"><![CDATA[<p>事情发生在一个晴朗的早上，客户投诉说公司运营的一个web电商系统出现偶发的504问题。“偶发”这种事儿，真心不好排查啊。<br>我们检查了一遍所有的相关配置，包括nginx，php，php-fpm，mysql等等等等，调整了一些参数后情况并没有变好~~<br>不仅如此，还有相当多的其它因素干扰着问题的排查，这其中就包含今天的这个主题。</p><p>实在没辙了，只能开启所有的log来追查了。</p><p>经过对日志的分析，发现“偶发”的504都会伴随着几次php的slow log记录，其中包含了两个比较惹人注目的函数调用：curl和session_start。<br>前者很好理解，肯定是curl的目标地址出现了响应问题，经过确认也证实了如此，原来是之前依赖的一个第三方接口停止服务了。<br>而之所以“偶尔”，是因为这个服务有时候响应null，有时候直接阻塞到超时。。。</p><p>这不是今天的重点，我们来看session_start慢的问题。在用户浏览器上表现的行为是，当出现了某个页面504，接下来的一个时间段内，<br>该浏览器访问同一个二级域名下的所有页面都会返回504，但立即切换浏览器或更换二级域名即可立即正常访问。</p><p>同事提出一种看法：所有的同一个会话的请求都会最终交给同一个php-fpm的worker进程来处理，所以会出现这种现象。<br>这和我的认知有点不同，毕竟要想实现session粘度处理，一般往往是要在整个请求链路的各个节点都要做设置的，<br>不可能默认就提供这样的“高级功能”才对。可问题表现出来的情况恰恰又和同事的看法吻合，一时间很苦恼。</p><p>那就按照这个观点，我们调整了php-fpm的一个参数：request_terminate_timeout。<br>将它开启并设置一个较短的等待时间，确实发现上面提到的那个浏览器的504等待时间缩短了，<br>这仿佛又一次验证了同事的观点。</p><p>一直到排查的尾声，我也一直没有特别接受这个观点，直到我们看到了session_start的慢日志。<br>第一感觉是，一个内置函数怎么可能会慢呢？GG了一下，发现大量的相关文章，原来是文件锁导致的。<br>简单的说，php默认的session机制是靠文件，浏览器携带的cookie中指明的session_id到服务端后，<br>我们的php脚本会在入口统一调用session_start来开启会话，<strong>假如一个请求开启session后卡住了，后面的同一个会话的请求就会在<br>session_start调用上等待</strong>，直到第一个请求释放文件锁。对应我们的问题场景就是处理第一个请求的worker进程被kill。</p><p>这对这种问题，大家给出的方案是，依靠php提供的session handler机制把session存储在memcache或db里。<br>或者使用<code>session_write_close()</code>方法来释放写锁，在session_start后直接调用该方法，可以化解锁冲突，<br>而且你依然可以继续读取session中的值，只是无法编辑，若想编辑，再次调用<code>@session_start()</code>函数即可。</p><p>长远来看，还是推荐大家讲session存储在独立的节点上，方便日后的集群扩展。</p><p>今天的分享就到这里~</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;事情发生在一个晴朗的早上，客户投诉说公司运营的一个web电商系统出现偶发的504问题。“偶发”这种事儿，真心不好排查啊。&lt;br&gt;我们检查了一遍所有的相关配置，包括nginx，php，php-fpm，mysql等等等等，调整了一些参数后情况并没有变好~~&lt;br&gt;不仅如此，还有
+      
+    
+    </summary>
+    
+      <category term="php" scheme="https://blog.kazaff.me/categories/php/"/>
+    
+    
+      <category term="session" scheme="https://blog.kazaff.me/tags/session/"/>
+    
+      <category term="文件锁" scheme="https://blog.kazaff.me/tags/%E6%96%87%E4%BB%B6%E9%94%81/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>迟来的成人礼</title>
+    <link href="https://blog.kazaff.me/2018/11/29/%E8%BF%9F%E6%9D%A5%E7%9A%84%E6%88%90%E4%BA%BA%E7%A4%BC/"/>
+    <id>https://blog.kazaff.me/2018/11/29/迟来的成人礼/</id>
+    <published>2018-11-29T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.386Z</updated>
+    
+    <content type="html"><![CDATA[<p>刚刚过去的两周，对我来讲，如时间旅行一样，众多的“人生第一次”像赶集一样接踵而来。<br>庆幸的是我及我的家人犹如神助，正如几个月前我从朋友口中得到的那句启示“一切都是最好的安排”！</p><p>此刻花时间来整理自己的思绪，那些镜头还会在眼前复现，上次如此深刻的画面还是在姥姥去世的时候。<br>不同的是这次是多了一个新的生命，一个我和我爱的人的生命的延续。</p><p>一直以来我都没有感觉生活马上就要有所变化，直到我在产房外听到声嘶力竭的叫喊声时，心突然悸动。<br>不知道因为担心失去还是害怕得到，那一刻懂得了“坐立难安”的意思，不去在乎别人的目光，不停的踱步。</p><p>看到爱人和孩子的那一刻，就好像喝了一口冰镇甘甜的泉水，滋润了焦燥的心田，安抚了慌乱的思想。<br>也是那一刻，知道自己突然长大成人了，因为世界上多了一个生命需要依靠我，需要依靠我们。</p><p>这种心理现象应该深刻在人类基因里吧？不然为何一代人总会哺育下一代？<br>面对孩子，“牺牲自我”根本不需要一秒钟的思想准备，一切都是那么自然，一切都是早有安排。</p><p>出院后的日子里，我的她没日没夜的守候在孩子身边，我们两人的爸妈及家属也轮番的关心指导。<br>所有的这一切，皆因一个新的生命的诞生，而我们终于不再是家族中最重要的那个人，却没有丝毫的失落。</p><p>直到我在公司电脑面前的某一刻，脑子突然开始思念一个刚认识不到2周的人；<br>直到搜索引擎历史中出现各种婴儿相关的记录，各种电商平台不停的推送给我婴儿相关产品；<br>直到我察觉了这些细节后，我才知道我已经真真切切的经历了一场迟来的成人礼！</p><p>他的人生，一定和我不同，也不应该相同。<br>之前一直和朋友吹牛哔，对自己的下一代唯一想做到的只是帮助他尽可能早的找到他的人生目标。<br>现在，却慌了，才知道担心和质疑自己到底是否有能力做到，自己是否有积累足够的人生来与他分享。</p><p>在没有更多想法之前，唯一值得叮嘱自己的是“尊重他”，平等对待，就把他当做是一起探索世界的战友吧~<br>愿他一生安康，愿我身边的所有人能平平安安普普通通的过日子。</p><p>=============================</p><p>毕竟是技术博客，那么分享一个知识点吧，如果你发现自己的win10系统无法修改文件默认打开方式，不妨试一试<a href="https://www.jianshu.com/p/bd9d88070c62" target="_blank" rel="noopener">这个</a>。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;刚刚过去的两周，对我来讲，如时间旅行一样，众多的“人生第一次”像赶集一样接踵而来。&lt;br&gt;庆幸的是我及我的家人犹如神助，正如几个月前我从朋友口中得到的那句启示“一切都是最好的安排”！&lt;/p&gt;
+&lt;p&gt;此刻花时间来整理自己的思绪，那些镜头还会在眼前复现，上次如此深刻的画面还是在
+      
+    
+    </summary>
+    
+      <category term="talk" scheme="https://blog.kazaff.me/categories/talk/"/>
+    
+    
+      <category term="新生命" scheme="https://blog.kazaff.me/tags/%E6%96%B0%E7%94%9F%E5%91%BD/"/>
+    
+      <category term="成长之重量" scheme="https://blog.kazaff.me/tags/%E6%88%90%E9%95%BF%E4%B9%8B%E9%87%8D%E9%87%8F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>单台服务器同时跑多套Php</title>
+    <link href="https://blog.kazaff.me/2018/10/21/%E5%8D%95%E5%8F%B0%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%90%8C%E6%97%B6%E8%B7%91%E5%A4%9A%E5%A5%97php/"/>
+    <id>https://blog.kazaff.me/2018/10/21/单台服务器同时跑多套php/</id>
+    <published>2018-10-21T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.386Z</updated>
+    
+    <content type="html"><![CDATA[<p>一套web系统，后台往往比前台功能要复杂丰满许多，但后台的访问权限往往更容易控制，毕竟前台是给宇宙中所有的生物在使用的。<br>为了安全起见，我们公司的一套web电商系统开始尝试做前后台功能隔离，根据整理出来的报告，后台功能需要大量的风险高的php内置函数。<br>前台基本上db的存存取取，没有什么图片管理，报表导出，文件打包等等功能，所以我们需要让它们分别跑在不同的php安全配置下。</p><p>服务器是一台AWS EC2，跑着默认提供的免费linux镜像，webserver用的是nginx，它使用fastcgi的方式把php交给php-fpm来处理。<br>所以，我们的方案就很直观了：</p><ol><li>为前后台搭建独立的虚拟主机；</li><li>前后台各自的虚拟主机将php请求分配给各自的php-fpm管理器；</li><li>运行两套不同php配置的php-fpm进程。</li></ol><p>前两步关于nginx虚拟主机的内容这里就不多讲了，我们直奔主题：<strong>同时运行两套php-fpm进程</strong></p><p>clone一套已有的php-fpm配置（<code>/lib/systemd/system/php-fpm.service</code>）:</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">[Unit]</span><br><span class="line">Description=The PHP FastCGI Process Manager For Honmi Admin System</span><br><span class="line">After=syslog.target network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=notify</span><br><span class="line">PIDFile=/run/php-fpm/php-fpm-admin.pid</span><br><span class="line">ExecStart=/usr/sbin/php-fpm --nodaemonize -c /etc/php-admin.ini -y /etc/php-fpm-admin.conf</span><br><span class="line">ExecReload=/bin/kill -USR2 $MAINPID</span><br><span class="line">PrivateTmp=true</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure><p>注意上面我们在<code>ExecStart</code>项中设置了php-admin.ini和php-fpm-admin.conf，这样新运行的这套php-fpm进程将会使用独立的php设置和php-fpm设置。</p><p>打开<code>php-fpm-admin.conf</code>文件，我们需要配置它使用的独立的端口号：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">[www]</span><br><span class="line">listen = 127.0.0.1:9001</span><br><span class="line">...</span><br></pre></td></tr></table></figure><p>默认那套跑的在9000端口上，这样我们现在就完成了第三步。</p><h3 id="知识点"><a href="#知识点" class="headerlink" title="知识点"></a>知识点</h3><ul><li><p>高版本的linux，不再使用<code>service</code>命令管理服务，所以使用它是总会看到<code>Redirecting to /bin/systemctl start xxxx.service</code>提示，因为系统默认会帮你转发到<code>systemctl</code>命令下</p></li><li><p>执行<code>systemctl enable xxxxx.service</code>来将服务设置成开机启动</p></li></ul><h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><p><a href="https://www.jianshu.com/p/b5fa86d54685" target="_blank" rel="noopener">添加服务到开机自动启动（centos7开机自启动nginx，php-fpm）</a><br><a href="https://www.cnblogs.com/ningskyer/articles/5639276.html" target="_blank" rel="noopener">linux下多版本php共存的原理、方法</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;一套web系统，后台往往比前台功能要复杂丰满许多，但后台的访问权限往往更容易控制，毕竟前台是给宇宙中所有的生物在使用的。&lt;br&gt;为了安全起见，我们公司的一套web电商系统开始尝试做前后台功能隔离，根据整理出来的报告，后台功能需要大量的风险高的php内置函数。&lt;br&gt;前台基本
+      
+    
+    </summary>
+    
+      <category term="运维" scheme="https://blog.kazaff.me/categories/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="php-fpm" scheme="https://blog.kazaff.me/tags/php-fpm/"/>
+    
+      <category term="nginx" scheme="https://blog.kazaff.me/tags/nginx/"/>
+    
+      <category term="linux" scheme="https://blog.kazaff.me/tags/linux/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>php5.x禁用eval</title>
+    <link href="https://blog.kazaff.me/2018/10/19/php5.x%E7%A6%81%E7%94%A8eval/"/>
+    <id>https://blog.kazaff.me/2018/10/19/php5.x禁用eval/</id>
+    <published>2018-10-19T09:37:12.000Z</published>
+    <updated>2020-04-23T08:24:11.382Z</updated>
+    
+    <content type="html"><![CDATA[<p>如果是我的死忠粉，你应该看得出来，这几天我在修补公司服务器的安全漏洞。<br>我并不是专家，干的也都只是苦力活，但也要记录一下，人老了，总忘。</p><p>这次我们来说如何禁止php代码中执行eval函数，本来以为直接修改php.ini中的disable_function即可~<br>但现实往往并不是那么如意，查了一下GG，发现原来eval并非函数，而是php底层提供的一种特性。</p><p>幸好有前辈提供了php扩展来禁用万恶的eval：<a href="https://www.suhosin.org/stories/download.html" target="_blank" rel="noopener">suhosin</a><br>一开始发现是需要给php打补丁，我是拒绝的，但确实没有找到更好的方法。不过实际安装下来，真的很方便：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">yum install wget  make gcc gcc-c++ zlib-devel openssl openssl-devel pcre-devel kernel keyutils  patch perl</span><br><span class="line"></span><br><span class="line">cd /usr/local/src</span><br><span class="line"></span><br><span class="line">wget http://download.suhosin.org/suhosin-对应的版本.tgz</span><br><span class="line"></span><br><span class="line">tar zxvf suhosin-对应的版本.tgz</span><br><span class="line"></span><br><span class="line">cd suhosin-对应的版本</span><br><span class="line"></span><br><span class="line">/usr/bin/phpize</span><br><span class="line"></span><br><span class="line">./configure  --with-php-config=/usr/bin/php-config</span><br><span class="line"></span><br><span class="line">make &amp; make install</span><br></pre></td></tr></table></figure><p>编译完后会提示你库文件的位置，例如: <code>/usr/lib64/php/modules</code></p><p>我们只需要在php.ini中增加对应的扩展即可：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">extension=/usr/lib64/php/modules/suhosin.so</span><br><span class="line">suhosin.executor.disable_eval=On</span><br></pre></td></tr></table></figure></p><p>重启php-fpm进程后，就可以在phpinfo中看到suhosin扩展已经装好了~<br>仔细看增加的配置项，其实很多控制的点，得慢慢研究啊~</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;如果是我的死忠粉，你应该看得出来，这几天我在修补公司服务器的安全漏洞。&lt;br&gt;我并不是专家，干的也都只是苦力活，但也要记录一下，人老了，总忘。&lt;/p&gt;
+&lt;p&gt;这次我们来说如何禁止php代码中执行eval函数，本来以为直接修改php.ini中的disable_function
+      
+    
+    </summary>
+    
+      <category term="运维" scheme="https://blog.kazaff.me/categories/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+      <category term="php" scheme="https://blog.kazaff.me/tags/php/"/>
+    
+      <category term="linux" scheme="https://blog.kazaff.me/tags/linux/"/>
+    
+      <category term="eval" scheme="https://blog.kazaff.me/tags/eval/"/>
+    
+  </entry>
+  
+</feed>

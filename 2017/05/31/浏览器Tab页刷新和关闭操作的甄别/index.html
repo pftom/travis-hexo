@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>浏览器Tab页刷新和关闭操作的甄别 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="session,chrome,beforeunload">
+    <meta name="description" content="最近工作压力太大，感觉身体被掏空，每天都疲惫不堪，终于体会到心累的滋味了。原因仅仅是一个来自日本的外包项目，具体就不展开说了，我们今天就盯着一个技术问题来扯。 一般的Web项目，对于帐号重复登录的逻辑上，常见的解决方案是后登陆的把前登录的用户踢掉。这么做很大一定程度上是受限于http协议的本质的。当然，如果你的项目允许同一个帐号多次登录，那更幸福。 然后，世界并不总是美好的，至少日本这个项目不是。">
+<meta name="keywords" content="session,chrome,beforeunload">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浏览器Tab页刷新和关闭操作的甄别">
+<meta property="og:url" content="https://blog.kazaff.me/2017/05/31/浏览器Tab页刷新和关闭操作的甄别/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="最近工作压力太大，感觉身体被掏空，每天都疲惫不堪，终于体会到心累的滋味了。原因仅仅是一个来自日本的外包项目，具体就不展开说了，我们今天就盯着一个技术问题来扯。 一般的Web项目，对于帐号重复登录的逻辑上，常见的解决方案是后登陆的把前登录的用户踢掉。这么做很大一定程度上是受限于http协议的本质的。当然，如果你的项目允许同一个帐号多次登录，那更幸福。 然后，世界并不总是美好的，至少日本这个项目不是。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.386Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="浏览器Tab页刷新和关闭操作的甄别">
+<meta name="twitter:description" content="最近工作压力太大，感觉身体被掏空，每天都疲惫不堪，终于体会到心累的滋味了。原因仅仅是一个来自日本的外包项目，具体就不展开说了，我们今天就盯着一个技术问题来扯。 一般的Web项目，对于帐号重复登录的逻辑上，常见的解决方案是后登陆的把前登录的用户踢掉。这么做很大一定程度上是受限于http协议的本质的。当然，如果你的项目允许同一个帐号多次登录，那更幸福。 然后，世界并不总是美好的，至少日本这个项目不是。">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">浏览器Tab页刷新和关闭操作的甄别</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">浏览器Tab页刷新和关闭操作的甄别</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2017-05-31T09:37:12.000Z" itemprop="datePublished" class="page-time">
+  May 31 2017
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/前端/">前端</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+<article id="post-浏览器Tab页刷新和关闭操作的甄别"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">浏览器Tab页刷新和关闭操作的甄别</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2017年05月31日 9:37" datetime="2017-05-31T09:37:12.000Z"  itemprop="datePublished">May 31 2017</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/前端/">前端</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>最近工作压力太大，感觉身体被掏空，每天都疲惫不堪，终于体会到心累的滋味了。原因仅仅是一个来自日本的外包项目，具体就不展开说了，我们今天就盯着一个技术问题来扯。</p>
+<p>一般的Web项目，对于帐号重复登录的逻辑上，常见的解决方案是后登陆的把前登录的用户踢掉。这么做很大一定程度上是受限于http协议的本质的。当然，如果你的项目允许同一个帐号多次登录，那更幸福。</p>
+<p>然后，世界并不总是美好的，至少日本这个项目不是。对方要求的是<strong>若账户已经被登录，再次登录时需要提示该账号正在使用中</strong>。其实单纯讲业务，这个要求一点也不过分，很多软件也确实是这么做的。不过，在Web上想这么搞，就很恶心人了。</p>
+<p>受限于http的先天条件，项目的服务端session很难毫无时差的和浏览器端进行同步，换句话讲，这是一个分布式的问题。因为客户端和服务端分别保存了会话的一部分，并且还要维护数据状态的一致性。</p>
+<p>维护这种一致性，就要求浏览器端在用户出现关闭页面，关闭浏览器，甚至关闭电脑的情况下，能通知服务端以清理session。当然，这里面还没包含电脑死机等非正常情况。</p>
+<p>可能有人会说，这也不是做不到哇，浏览器上不是存在了一些事件，用来监听用户的操作行为么？例如：onunload，onbeforeunload等。</p>
+<p>一开始我们团队也是这么想的，结果在开发的时候发现，这种类型的事件是存在浏览器<a href="http://www.asheep.cn/skill/onunload.html" target="_blank" rel="noopener">兼容性问题</a>的，在chrome下，你是无法甄别出用户是刷新还是关闭页面的。展开来说的话，即便是兼容性最好的<code>onbeforeunload</code>事件，chrome下你也无法得知用户是点击的确定还是取消按钮。</p>
+<p>这尼玛就有点悲剧了！~我拿着问题的详细描述去找客户去解释，得到的结论是“我不管那么多，我只看结果”，这个观点让我想CTMLGB。你可能觉得我的问题更多一些，我也不打算详细解释（如果有心情，我会花时间另开一个文章专门介绍一下这个奇葩客户）。</p>
+<p>现在，问题已经描述清楚了，如果是你，该怎么办？</p>
+<p>老朽中午吃饭的时候想到了一个变通的方案，在这里分享出来，希望能帮助到大家。</p>
+<p>问题的核心在于无法区分刷新和关闭Tab。针对这两种情况，前者不应该将session清除，后者应该立刻清除session。而两种截然不同的处理方式由于chrome下是相同的事件监听，我们只能从其它维度下手了。</p>
+<p>正常情况下，刷新页面会引发数据重新加载，一定会和服务端进行交互。而关闭tab，则不应该会在几秒钟内再发送任何请求了。基于这个常理，我们 <strong>只需要在前端的<code>onbeforeunload</code>事件回调中将该用户的session设置成5秒（延迟时间可以根据实际情况来调整）后到期即可</strong> 。</p>
+<p>这样做，在刷新触发前，设置了延迟到期，刷新后由于获取数据而立刻在服务端将该session正常续约。而关闭Tab后由于不会获取数据，该session在5秒中自动过期。</p>
+<p>这样就几乎完美的解决了这个问题，别跟我扯淡说5秒中内用户再登录会提示帐号正在使用中，你手速那么快你小弟弟受得了么？！</p>
+<p>唉，虽然解决了，但宝宝一点也不开心~~</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.386Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2017/05/31/浏览器Tab页刷新和关闭操作的甄别/" target="_blank" rel="external">https://blog.kazaff.me/2017/05/31/浏览器Tab页刷新和关闭操作的甄别/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/beforeunload/">beforeunload</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/chrome/">chrome</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/session/">session</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2017/05/31/浏览器Tab页刷新和关闭操作的甄别/&title=《浏览器Tab页刷新和关闭操作的甄别》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2017/05/31/浏览器Tab页刷新和关闭操作的甄别/&title=《浏览器Tab页刷新和关闭操作的甄别》 — kazaff's blog&source=develop,code,full-stack,architecture,deploy,database,test" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2017/05/31/浏览器Tab页刷新和关闭操作的甄别/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《浏览器Tab页刷新和关闭操作的甄别》 — kazaff's blog&url=https://blog.kazaff.me/2017/05/31/浏览器Tab页刷新和关闭操作的甄别/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2017/05/31/浏览器Tab页刷新和关闭操作的甄别/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2017/06/27/论项目成败/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">论项目成败</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2017/05/22/gmail模拟登录失败处理/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Gmail模拟登录失败处理</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2017/05/31/浏览器Tab页刷新和关闭操作的甄别/&title=《浏览器Tab页刷新和关闭操作的甄别》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2017/05/31/浏览器Tab页刷新和关闭操作的甄别/&title=《浏览器Tab页刷新和关闭操作的甄别》 — kazaff's blog&source=develop,code,full-stack,architecture,deploy,database,test" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2017/05/31/浏览器Tab页刷新和关闭操作的甄别/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《浏览器Tab页刷新和关闭操作的甄别》 — kazaff's blog&url=https://blog.kazaff.me/2017/05/31/浏览器Tab页刷新和关闭操作的甄别/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2017/05/31/浏览器Tab页刷新和关闭操作的甄别/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2017/05/31/浏览器Tab页刷新和关闭操作的甄别/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

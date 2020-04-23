@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>React-Native-Android小结 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="react-native,android">
+    <meta name="description" content="最近尝试使用react-native android为我们的一个创业项目写了一个demo，项目放在github了，有兴趣的朋友可以看看，下面给出一些效果：">
+<meta name="keywords" content="react-native,android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React-Native-Android小结">
+<meta property="og:url" content="https://blog.kazaff.me/2015/12/21/React-Native-Android小结/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="最近尝试使用react-native android为我们的一个创业项目写了一个demo，项目放在github了，有兴趣的朋友可以看看，下面给出一些效果：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.378Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="React-Native-Android小结">
+<meta name="twitter:description" content="最近尝试使用react-native android为我们的一个创业项目写了一个demo，项目放在github了，有兴趣的朋友可以看看，下面给出一些效果：">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">React-Native-Android小结</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">React-Native-Android小结</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2015-12-21T09:37:12.000Z" itemprop="datePublished" class="page-time">
+  Dec 21 2015
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/移动端/">移动端</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+<article id="post-React-Native-Android小结"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">React-Native-Android小结</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2015年12月21日 9:37" datetime="2015-12-21T09:37:12.000Z"  itemprop="datePublished">Dec 21 2015</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/移动端/">移动端</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>最近尝试使用react-native android为我们的一个创业项目写了一个demo，项目放在<a href="https://github.com/kazaff/ZhuiYuanDemo" target="_blank" rel="noopener">github</a>了，有兴趣的朋友可以看看，下面给出一些效果：<br><a id="more"></a></p>
+<embed src="http://player.youku.com/player.php/sid/XMTQxOTg2Nzk2MA==/v.swf" allowfullscreen="true" quality="high" width="480" height="400" align="middle" allowscriptaccess="always" type="application/x-shockwave-flash">
+
+
+<p>###关于height</p>
+<p>很多时候，这都是一个不折不扣的大坑，比方说当你Image加载一个网络图片时，如果你不给该Image设置width和height，那你将什么都看不到。这还不算，当你使用ListView时如果该组件同时存在一个兄弟元素，那么此时ListView必须设置height，否则你会发现它不再响应用户的滚动操作。。。</p>
+<p>###关于Fetch</p>
+<p>当你试图提交附件表单数据的时候，请一定要使用FormData对象将数据包裹，这应该算不上什么太古怪的事儿～</p>
+<p>如果你只是普通的json提交，就按照官方例子来做：</p>
+<pre><code>fetch(API_LOGIN_URL, {
+    method: &apos;POST&apos;,
+    headers: {
+      &apos;Accept&apos;: &apos;application/json&apos;,
+      &apos;Content-Type&apos;: &apos;application/json&apos;,
+    },
+    body: JSON.stringify({
+      account: this.state.account,
+      password: this.state.password,
+    })
+  })
+.....
+</code></pre><p>不然fetch会报错说你使用了不支持的body属性值类型～</p>
+<p>如果你和我一样需要实现类似用户头像修改的功能，你可能需要下面两个类库：</p>
+<p><a href="https://github.com/marcshilling/react-native-image-picker" target="_blank" rel="noopener">react-native-image-picker</a>：用于头像图片获取</p>
+<p><a href="https://github.com/PhilippKrone/react-native-fileupload" target="_blank" rel="noopener">react-native-fileupload</a>：用于图片文件表单上传，这是由于你使用image-picker获取到的图片只是本地url，你需要这个uploader来组装成原始的file上传表单～～</p>
+<p>顺便说一下，第三方依赖更新较快，代码也可能有bug，各种bug，所以你最好主动的去github上和项目的维护人员沟通，一起想办法解决问题～～</p>
+<p>###关于async/await</p>
+<p>至少在我目前的环境（默认安装react-native0.16.0自带的babel）是没有默认开启该特性的，不过貌似是可以手动开启的，有兴趣可以看<a href="https://medium.com/the-exponent-log/react-native-meets-async-functions-3e6f81111173#.ekvqrsala" target="_blank" rel="noopener">这里</a>。</p>
+<p>###关于第三方类库</p>
+<p>个人感觉，目前很多关注度高的第三方库还是值得信赖的，不过面向android平台的库功能还不足够强大，这可能由于fb刚开源不久的缘故，但是关注度高的库的作者响应也一般都很快，这一点很值得赞许～</p>
+<p>但是，老实讲，如果你要开发的app包含大量特殊的业务，或者效果，这个时候你就只能自己去实现FB暂时没有提供的原生控件了，这就要求你同时要熟悉android原生开发，目前这个阶段，我觉得你是无法避免这种尴尬局面的。</p>
+<p>###响应屏幕尺寸的变化</p>
+<p>FB提供了Dimensions组件可以用来获取屏幕的当前尺寸：</p>
+<pre><code>var deviceHeight = Dimensions.get(&apos;window&apos;).height;
+var deviceWidth = Dimensions.get(&apos;window&apos;).width;
+</code></pre><p>不过，由于设备可能旋转，所以如果你的app支持设备旋转的话，你就需要找到一种方法来实时获取当前设备尺寸，官方推荐的方法是每次render都要调用这个方法来刷新设备尺寸，<strong>而目前我还没有解决，主要是不知道应该如何获取屏幕旋转事件～～</strong></p>
+<p>###style小知识</p>
+<p>当你打算在某个控件上套用设置好的某个样式，但需要单独为其设置一个额外特殊值时，你可以这样：</p>
+<pre><code>&lt;View style={[styles.demo, {backgroundColor: &quot;blue&quot;}]}&gt;&lt;/View&gt;
+</code></pre><p>我也不懂，为何用数组类型的，但就是能这么写哟～</p>
+<p>###布局</p>
+<p>布局和web比起来其实不算复杂，但你务必要掌握Flex布局，强烈推荐看<a href="http://www.ruanyifeng.com/blog/2015/07/flex-grammar.html#show-last-Point" target="_blank" rel="noopener">这里</a>。</p>
+<p>###TextInput</p>
+<p>这里主要说的是键盘问题，当用户点击这个控件后，系统会弹出键盘，这个键盘会占据屏幕控件的，所以，你可以将整个表单View放在ScollView中！这样用户就可以在屏幕上进行滚动了，但注意，滚动的是整个表单View，而不是滚动的TextInput内容（当你设置为支持多行输入时），最后还有就是别忘了给ScollView添加keyboardDismissMode属性，如下：<br>    <scrollview keyboarddismissmode="on-drag"></scrollview></p>
+<p>该属性会在滚动触发后自动关闭键盘～～</p>
+<p><strong><em>至于怎么滚动TextInput内部数据，目前没找到方法。</em></strong></p>
+<p>默认android系统的TextInput会有一个丑陋的下边框，style是无法去掉它的，不过你可以使用underlineColorAndroid属性将其设置为与背景色一样，来达到隐藏效果，这个时候你在外部包一个View来定义样式即可～～</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.378Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2015/12/21/React-Native-Android小结/" target="_blank" rel="external">https://blog.kazaff.me/2015/12/21/React-Native-Android小结/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/android/">android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/react-native/">react-native</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/12/21/React-Native-Android小结/&title=《React-Native-Android小结》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/12/21/React-Native-Android小结/&title=《React-Native-Android小结》 — kazaff's blog&source=最近尝试使用react-native android为我们的一个创业项目写了一个demo，项目放在github了，有兴趣的朋友可以看看，下面给出一些效果：" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/12/21/React-Native-Android小结/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《React-Native-Android小结》 — kazaff's blog&url=https://blog.kazaff.me/2015/12/21/React-Native-Android小结/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/12/21/React-Native-Android小结/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2015/12/21/react-native-android关于我是如何打包APK的/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">React-Native-Android关于我是如何打包APK的</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2015/12/05/关于React-Native的预备知识/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">关于React-Native的预备知识</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/12/21/React-Native-Android小结/&title=《React-Native-Android小结》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/12/21/React-Native-Android小结/&title=《React-Native-Android小结》 — kazaff's blog&source=最近尝试使用react-native android为我们的一个创业项目写了一个demo，项目放在github了，有兴趣的朋友可以看看，下面给出一些效果：" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/12/21/React-Native-Android小结/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《React-Native-Android小结》 — kazaff's blog&url=https://blog.kazaff.me/2015/12/21/React-Native-Android小结/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/12/21/React-Native-Android小结/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2015/12/21/React-Native-Android小结/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

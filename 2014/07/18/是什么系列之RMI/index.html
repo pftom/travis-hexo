@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>是什么系列之RMI | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="分布式,是什么系列,tcp">
+    <meta name="description" content="转型Java阵营没多久，就面对企业级的需求，所以大量的调研内容，“是什么系列”几乎都是针对javaEE领域的姿势，可见我最近是多么的充实啊~">
+<meta name="keywords" content="分布式,是什么系列,tcp">
+<meta property="og:type" content="article">
+<meta property="og:title" content="是什么系列之RMI">
+<meta property="og:url" content="https://blog.kazaff.me/2014/07/18/是什么系列之RMI/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="转型Java阵营没多久，就面对企业级的需求，所以大量的调研内容，“是什么系列”几乎都是针对javaEE领域的姿势，可见我最近是多么的充实啊~">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff_v/DUIsJPar/149UNc.png">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.386Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="是什么系列之RMI">
+<meta name="twitter:description" content="转型Java阵营没多久，就面对企业级的需求，所以大量的调研内容，“是什么系列”几乎都是针对javaEE领域的姿势，可见我最近是多么的充实啊~">
+<meta name="twitter:image" content="http://pic.yupoo.com/kazaff_v/DUIsJPar/149UNc.png">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">是什么系列之RMI</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">是什么系列之RMI</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2014-07-18T09:18:12.000Z" itemprop="datePublished" class="page-time">
+  Jul 18 2014
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/j2ee/">j2ee</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+<article id="post-是什么系列之RMI"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">是什么系列之RMI</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2014年07月18日 9:18" datetime="2014-07-18T09:18:12.000Z"  itemprop="datePublished">Jul 18 2014</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/j2ee/">j2ee</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>转型Java阵营没多久，就面对企业级的需求，所以大量的调研内容，“是什么系列”几乎都是针对javaEE领域的姿势，可见我最近是多么的充实啊~<br><a id="more"></a><br>这次记录一下关于RMI的科普知识，其实它比起之前的<a href="http://blog.kazaff.me/2014/07/07/%E6%98%AF%E4%BB%80%E4%B9%88%E7%B3%BB%E5%88%97%E4%B9%8BThrift/">Thrift</a>和<a href="http://blog.kazaff.me/2014/07/07/%E6%98%AF%E4%BB%80%E4%B9%88%E7%B3%BB%E5%88%97%E4%B9%8BAvro/">Avro</a>来说，已经非常的轻量级了~~</p>
+<p>RMI（Remote Method Invocation）是jdk1.1就已经存在的分布式应用解决方案，轻量简单是它最大的特点，广泛的应用在EJB中。如果我们的系统比较小，服务很少且很轻，并且不需要面向跨语言，那么RMI是一个比较理想的选择。</p>
+<p>在另外的一些场景，例如跨语言平台的分布式应用，RMI就显得过于简陋了，这个时候可能就需要其它的同类技术了~</p>
+<p>RMI是基于TCP协议的传递可序列化java对象字节数据的库，因此，在同等业务数据量的前提下，RMI的效率要高于基于SOAP规范的WebService。因此，RMI可以用在业务结构简单，要求实时性高的分布式应用中。</p>
+<p>设计角度上，java采用三层结构来实现RMI：客户端、服务端、注册表，这是很常见的基于服务的架构。具体细节可以从下图看出：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff_v/DUIsJPar/149UNc.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p><strong>客户端</strong>一方包含：</p>
+<ul>
+<li>桩（Stub）：远程对象在客户端上的代理；</li>
+<li>远程引用层（Remote Reference Layer）：解析并执行远程引用协议，完成了调用的方法与服务对应地址的转换；</li>
+<li>传输层（Transport）：发送调用、传递远程方法参数、接受远程方法执行结果。</li>
+</ul>
+<p><strong>服务端</strong>一方包含：</p>
+<ul>
+<li>骨架（Skeleton）：读取客户端传递的方法参数，调用服务器端的实际对象方法，并接受方法执行后的返回值；</li>
+<li>远程引用层（Remote Reference Layer）：处理远程引用语法之后向骨架发送远程方法调用；</li>
+<li>传输层（Transport）：监听客户端的入站连接，接受并转发调用到远程引用层。</li>
+</ul>
+<p><strong>注册表（Registry）</strong>：以URL形式注册远程对象，并向客户端回复远程对象的引用。</p>
+<p>在实际的应用中，客户端并没有真正的和服务端直接对话来进行远程调用，而是通过本地JVM的桩对象来进行的。</p>
+<ol>
+<li>客户端从远程服务器的注册表中查询并获得远程对象引用，当进行远程调用时，客户端首先会与桩对象进行对话，而这个桩对象将远程方法所需的参数序列化后，传递给它下层的远程引用层。</li>
+<li>桩对象与远程对象具有相同的接口和方法列表，当客户端调用远程对象时，实际是由相对应的桩对象代理完成的。远程引用层在将桩的本地引用转换为服务器上对象的远程引用后，再将调用传递给传输层，有传输层通过tcp协议发送调用。</li>
+<li>在服务器端，传输层监听入站连接，它一旦接受到客户端远程调用后，就将这个引用转发给其上层的远程引用。</li>
+<li>服务端的远程引用层将客户端发送的远程引用转化为本地虚拟机的引用后，再将请求传递给骨架。</li>
+<li>骨架读取参数，将请求传递给服务器，最后由服务器进行实际的方法调用。</li>
+<li>如果远程方法调用后有返回值，则服务器将这些结果又沿着骨架-&gt;远程引用层-&gt;传输层向下传递。</li>
+<li>客户端的传输层接受到返回值后，又沿着传输层-&gt;远程引用层-&gt;桩向上传递，最后由桩来反序列化这些返回值，并将最终结果传递给客户端程序。</li>
+</ol>
+<p>从这个流程上可以看出，java为我们隐藏了很多处理细节，开发者可以只关注业务细节。</p>
+<p>关于RMI的例子，网上非常的多，包括上面的内容，出自<a href="http://code727.iteye.com/blog/1874271" target="_blank" rel="noopener">这里</a>。</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.386Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2014/07/18/是什么系列之RMI/" target="_blank" rel="external">https://blog.kazaff.me/2014/07/18/是什么系列之RMI/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tcp/">tcp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/分布式/">分布式</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/是什么系列/">是什么系列</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2014/07/18/是什么系列之RMI/&title=《是什么系列之RMI》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2014/07/18/是什么系列之RMI/&title=《是什么系列之RMI》 — kazaff's blog&source=转型Java阵营没多久，就面对企业级的需求，所以大量的调研内容，“是什么系列”几乎都是针对javaEE领域的姿势，可见我最近是多么的充实啊~" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2014/07/18/是什么系列之RMI/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《是什么系列之RMI》 — kazaff's blog&url=https://blog.kazaff.me/2014/07/18/是什么系列之RMI/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2014/07/18/是什么系列之RMI/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2014/07/28/java命令行运行参数/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Java命令行参数</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2014/07/07/是什么系列之Thrift/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">是什么系列之Thrift</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2014/07/18/是什么系列之RMI/&title=《是什么系列之RMI》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2014/07/18/是什么系列之RMI/&title=《是什么系列之RMI》 — kazaff's blog&source=转型Java阵营没多久，就面对企业级的需求，所以大量的调研内容，“是什么系列”几乎都是针对javaEE领域的姿势，可见我最近是多么的充实啊~" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2014/07/18/是什么系列之RMI/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《是什么系列之RMI》 — kazaff's blog&url=https://blog.kazaff.me/2014/07/18/是什么系列之RMI/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2014/07/18/是什么系列之RMI/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2014/07/18/是什么系列之RMI/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

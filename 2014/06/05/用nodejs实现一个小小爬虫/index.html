@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>用Nodejs实现一个小小爬虫 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="缓存,爬虫">
+    <meta name="description" content="呵呵，不要被题目给忽悠了啊，我并不具备开发一个足够智能的网络爬虫程序的能力，那我到底要做什么呢？ 其实是这样的，目前公司开发了一个门户类型的网站客户端，但是由于数据流比较复杂，性能非常不理想。要解决这个问题其实也不难，那就是加缓存层（计算机领域提速的万能方案就是缓存，不论是硬件还是软件）。当然，你可能还会提到：全站静态化（其实也是缓存的理念）。">
+<meta name="keywords" content="缓存,爬虫">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用Nodejs实现一个小小爬虫">
+<meta property="og:url" content="https://blog.kazaff.me/2014/06/05/用nodejs实现一个小小爬虫/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="呵呵，不要被题目给忽悠了啊，我并不具备开发一个足够智能的网络爬虫程序的能力，那我到底要做什么呢？ 其实是这样的，目前公司开发了一个门户类型的网站客户端，但是由于数据流比较复杂，性能非常不理想。要解决这个问题其实也不难，那就是加缓存层（计算机领域提速的万能方案就是缓存，不论是硬件还是软件）。当然，你可能还会提到：全站静态化（其实也是缓存的理念）。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/DObSQL7k/XeJAN.png">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.386Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="用Nodejs实现一个小小爬虫">
+<meta name="twitter:description" content="呵呵，不要被题目给忽悠了啊，我并不具备开发一个足够智能的网络爬虫程序的能力，那我到底要做什么呢？ 其实是这样的，目前公司开发了一个门户类型的网站客户端，但是由于数据流比较复杂，性能非常不理想。要解决这个问题其实也不难，那就是加缓存层（计算机领域提速的万能方案就是缓存，不论是硬件还是软件）。当然，你可能还会提到：全站静态化（其实也是缓存的理念）。">
+<meta name="twitter:image" content="http://pic.yupoo.com/kazaff/DObSQL7k/XeJAN.png">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">用Nodejs实现一个小小爬虫</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">用Nodejs实现一个小小爬虫</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2014-06-05T11:37:12.000Z" itemprop="datePublished" class="page-time">
+  Jun 5 2014
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/nodejs/">nodejs</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#开发语言"><span class="post-toc-number">1.</span> <span class="post-toc-text">开发语言</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#依赖库"><span class="post-toc-number">2.</span> <span class="post-toc-text">依赖库</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#示意图"><span class="post-toc-number">3.</span> <span class="post-toc-text">示意图</span></a></li></ol>
+        </nav>
+    </aside>
+    
+<article id="post-用nodejs实现一个小小爬虫"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">用Nodejs实现一个小小爬虫</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2014年06月05日 11:37" datetime="2014-06-05T11:37:12.000Z"  itemprop="datePublished">Jun 5 2014</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/nodejs/">nodejs</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>呵呵，不要被题目给忽悠了啊，我并不具备开发一个足够智能的网络爬虫程序的能力，那我到底要做什么呢？</p>
+<p>其实是这样的，目前公司开发了一个门户类型的网站客户端，但是由于数据流比较复杂，性能非常不理想。要解决这个问题其实也不难，那就是加缓存层（计算机领域提速的万能方案就是缓存，不论是硬件还是软件）。当然，你可能还会提到：全站静态化（其实也是缓存的理念）。<br><a id="more"></a><br>后端开发增加缓存层，其实成本不高，很容易就可以把memcache或redis等内存性KV系统引入到当前项目中。一般情况下会设计为：<strong>当用户第一次访问某个页面时，把相关数据存储到缓存中，以加速下一次请求的响应速度</strong>。</p>
+<p>这里需要注意的是<strong>第一次访问</strong>，你大概知道我想说什么了吧？第一次访问的用户就不是亲娘养的了？，谁来保证他们的体验？</p>
+<p>我们姑且把这种方案叫做：<strong>被动缓存</strong>，那么如何使缓存更加的主动呢？最好是数据一旦发生CURD，就立刻映射到缓存层。这里面涉及到缓存颗粒度，缓存的键规则等细节问题，而且对于目前我们公司的项目而言，难度会更大，因为数据的CURD是发生在其他系统中，而这个门户网站客户端只有在访问时才需要与其他系统通信。</p>
+<p>那么如何快速的实现<strong>主动缓存</strong>呢？再回过头来看看文章标题，你应该猜到最终的解决方案了，对，用机器模拟请求，充当这“第一个用户”，姑且称为<strong>伪主动缓存</strong>吧~~</p>
+<p>好吧，说了这么多，总算到今天的主题了：写一个爬虫程序。<br>我觉得还是有必要再多说一下场景，这里面涉及到具体需求，有助于思考和权衡！</p>
+<p>我们的这个爬虫需要从给定的入口页面开始出发，扫描该页面下所有的链接，并继续进行请求，就这样不停的爬下去。当然，如果检测到的链接和当前入口页面的域不同，则丢弃，毕竟我们是为了创建本站缓存而工作的。另外，我们也不需要爬完全部的链接，按照业界的统计，只需要为三级以内的页面创建缓存即可，什么叫三级以内？简单的说，就是从主页出发，三次跳转以内能达到的页面都算三级以内！这样既能最大程度保证用户体验，又可以尽可能的降低内存占用率，而且我们的爬虫程序也会更快的完成任务！何乐而不为？</p>
+<p>最后还要说的是，我们采用广度优先规则进行爬行（而不是搜索引擎用的深度优先），原因很简单，可以简化编程模型，并且个人认为更符合<strong>伪主动缓存</strong>的需求。</p>
+<h2 id="开发语言"><a href="#开发语言" class="headerlink" title="开发语言"></a>开发语言</h2><p>我选择使用nodejs，当然从文章题目上，你早已知道答案了！nodejs的编程模型可以有效降低该项目的开发难度（避免多线程模型和锁冲突），又最大程度的确保并发性能（毕竟这个项目是网络IO阻塞型），另外，它有很丰满的工具库供我们使用，这样会让开发成本降至最低。</p>
+<h2 id="依赖库"><a href="#依赖库" class="headerlink" title="依赖库"></a>依赖库</h2><ol>
+<li><code>request</code>： 用于发起http请求，简化了操作api</li>
+<li><code>htmlparser2</code>: 用于解析取得的html内容，方便抽取url</li>
+<li><code>async</code>： 用于管理代码执行流程</li>
+<li><code>redis</code>： 用于清空redis中的旧缓存（并不是爬虫程序所必须的）</li>
+</ol>
+<h2 id="示意图"><a href="#示意图" class="headerlink" title="示意图"></a>示意图</h2><figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/DObSQL7k/XeJAN.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p>看，很简单吧，加上nodejs的强大社区，该程序应该三两天就能做完~我会把相关代码放到<a href="https://github.com/kazaff/spider" target="_blank" rel="noopener">github</a>上，有兴趣的朋友可去看看。</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.386Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2014/06/05/用nodejs实现一个小小爬虫/" target="_blank" rel="external">https://blog.kazaff.me/2014/06/05/用nodejs实现一个小小爬虫/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/爬虫/">爬虫</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/缓存/">缓存</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2014/06/05/用nodejs实现一个小小爬虫/&title=《用Nodejs实现一个小小爬虫》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2014/06/05/用nodejs实现一个小小爬虫/&title=《用Nodejs实现一个小小爬虫》 — kazaff's blog&source=呵呵，不要被题目给忽悠了啊，我并不具备开发一个足够智能的网络爬虫程序的能力，那我到底要做什么呢？
+其实是这样的，目前公司开发了一个门户类型的网站客户端，但..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2014/06/05/用nodejs实现一个小小爬虫/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《用Nodejs实现一个小小爬虫》 — kazaff's blog&url=https://blog.kazaff.me/2014/06/05/用nodejs实现一个小小爬虫/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2014/06/05/用nodejs实现一个小小爬虫/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2014/06/06/nodejs操作redis/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Nodejs操作redis</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2014/05/15/rabbitmq的认证/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">RabbitMQ的认证</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2014/06/05/用nodejs实现一个小小爬虫/&title=《用Nodejs实现一个小小爬虫》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2014/06/05/用nodejs实现一个小小爬虫/&title=《用Nodejs实现一个小小爬虫》 — kazaff's blog&source=呵呵，不要被题目给忽悠了啊，我并不具备开发一个足够智能的网络爬虫程序的能力，那我到底要做什么呢？
+其实是这样的，目前公司开发了一个门户类型的网站客户端，但..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2014/06/05/用nodejs实现一个小小爬虫/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《用Nodejs实现一个小小爬虫》 — kazaff's blog&url=https://blog.kazaff.me/2014/06/05/用nodejs实现一个小小爬虫/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2014/06/05/用nodejs实现一个小小爬虫/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2014/06/05/用nodejs实现一个小小爬虫/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

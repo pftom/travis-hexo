@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>dubbo中SPI的基础--Cooma微容器 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="dubbo,dubbox,cooma,微内核">
+    <meta name="description" content="断断续续研究dubbo其实有一段时间了，总是搁浅的原因和工作安排有很大关系，不过我始终保持着学习它的兴趣。随着dubbox项目的更新，我决定再一次尝试学习这个项目。">
+<meta name="keywords" content="dubbo,dubbox,cooma,微内核">
+<meta property="og:type" content="article">
+<meta property="og:title" content="dubbo中SPI的基础--Cooma微容器">
+<meta property="og:url" content="https://blog.kazaff.me/2015/01/15/dubbo中SPI的基础--Cooma微容器/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="断断续续研究dubbo其实有一段时间了，总是搁浅的原因和工作安排有很大关系，不过我始终保持着学习它的兴趣。随着dubbox项目的更新，我决定再一次尝试学习这个项目。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://pic.yupoo.com/kazaff/Elc1xnHk/7eCGH.png">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="dubbo中SPI的基础--Cooma微容器">
+<meta name="twitter:description" content="断断续续研究dubbo其实有一段时间了，总是搁浅的原因和工作安排有很大关系，不过我始终保持着学习它的兴趣。随着dubbox项目的更新，我决定再一次尝试学习这个项目。">
+<meta name="twitter:image" content="http://pic.yupoo.com/kazaff/Elc1xnHk/7eCGH.png">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">dubbo中SPI的基础--Cooma微容器</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">dubbo中SPI的基础--Cooma微容器</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2015-01-15T15:54:30.000Z" itemprop="datePublished" class="page-time">
+  Jan 15 2015
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/j2ee/">j2ee</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+<article id="post-dubbo中SPI的基础--Cooma微容器"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">dubbo中SPI的基础--Cooma微容器</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2015年01月15日 15:54" datetime="2015-01-15T15:54:30.000Z"  itemprop="datePublished">Jan 15 2015</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/j2ee/">j2ee</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>断断续续研究<a href="http://alibaba.github.io/dubbo-doc-static/Home-zh.htm" target="_blank" rel="noopener">dubbo</a>其实有一段时间了，总是搁浅的原因和工作安排有很大关系，不过我始终保持着学习它的兴趣。随着<a href="http://dangdangdotcom.github.io/dubbox/" target="_blank" rel="noopener">dubbox</a>项目的更新，我决定再一次尝试学习这个项目。<br><a id="more"></a><br>之前把玩的时候自己甚至连一本完整的javaEE资料都没有看完过，虽然现在也还是入门级新手，不过在其他项目中的工作也让我有了比之前更多的积累，应该可以看得更透一些。</p>
+<p>从哪里开始呢？我个人认为应该从dubbo的SPI理念开始，由于dubbo的项目Leader一开始就把其定义成一个方便扩展的服务框架，所以在dubbo的架构设计中始终保持了良好的依赖扩展机制：<strong>微内核+插件</strong>。简而言之就是让扩展者可以和项目开发者拥有一样的灵活度，这也是dubbo得以迅速流行的一个必要条件。</p>
+<p>要想实现这种自由度，除了在架构分层组件上要保持高内聚低耦合外，底层也需要一套强大的类管理工具。在javaEE世界里，把这份工作做到极致的也已经有成熟的标准规范：OSGi。不过OSGi并不完全适配dubbo的需求，而且这玩意儿也有些过于重了，所以在此基础上，dubbo结合JDK标准的SPI机制设计出来一个轻量级的实现：<a href="https://github.com/alibaba/cooma/wiki" target="_blank" rel="noopener">Cooma</a>。</p>
+<p>这篇文章，我就打算从Cooma说起，官方介绍的已经非常详细了，不过它在从dubbo独立出来发布之前是做过修改优化的，在dubbo项目中使用时可能会存在些许的不同，我们就从dubbo内部来研读这部分实现的代码，并结合dubbo中的上下文来了解一下dubbo是如何使用SPI的。</p>
+<p>我们把目标定位在dubbo的这个包上：</p>
+<blockquote>
+<p>com.alibaba.dubbo.common.extension</p>
+</blockquote>
+<p>看一下这个包的目录结构：</p>
+<pre><code>com.alibaba.dubbo.common.extension
+ |
+ |--factory
+ |     |--AdaptiveExtensionFactory   #稍后解释
+ |     |--SpiExtensionFactory        #稍后解释
+ |
+ |--support
+ |     |--ActivateComparator
+ |
+ |--Activate  #自动激活加载扩展的注解
+ |--Adaptive  #自适应扩展点的注解
+ |--ExtensionFactory  #扩展点对象生成工厂接口
+ |--ExtensionLoader   #扩展点加载器，扩展点的查找，校验，加载等核心逻辑的实现类
+ |--SPI   #扩展点注解
+</code></pre><p>我们通过对照dubbo如何使用扩展点机制来完成扩展点工厂实例的选择与加载来了解一下扩展点实现的细节，这句话很拗口，有点递归的味道，我们不妨直接从代码中来理解：</p>
+<pre><code>public class ExtensionLoader&lt;T&gt; {
+    ...
+    private static final ConcurrentMap&lt;Class&lt;?&gt;, ExtensionLoader&lt;?&gt;&gt; EXTENSION_LOADERS = new ConcurrentHashMap&lt;Class&lt;?&gt;, ExtensionLoader&lt;?&gt;&gt;();
+    private final Class&lt;?&gt; type;        
+    ...
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public static &lt;T&gt; ExtensionLoader&lt;T&gt; getExtensionLoader(Class&lt;T&gt; type) {
+        if (type == null)
+            throw new IllegalArgumentException(&quot;Extension type == null&quot;);
+        if(!type.isInterface()) {
+            throw new IllegalArgumentException(&quot;Extension type(&quot; + type + &quot;) is not interface!&quot;);
+        }
+        if(!withExtensionAnnotation(type)) {
+            throw new IllegalArgumentException(&quot;Extension type(&quot; + type + 
+                    &quot;) is not extension, because WITHOUT @&quot; + SPI.class.getSimpleName() + &quot; Annotation!&quot;);
+        }
+
+        ExtensionLoader&lt;T&gt; loader = (ExtensionLoader&lt;T&gt;) EXTENSION_LOADERS.get(type);
+        if (loader == null) {
+            EXTENSION_LOADERS.putIfAbsent(type, new ExtensionLoader&lt;T&gt;(type));
+            loader = (ExtensionLoader&lt;T&gt;) EXTENSION_LOADERS.get(type);
+        }
+        return loader;
+    }
+
+    private ExtensionLoader(Class&lt;?&gt; type) {
+        this.type = type;
+        objectFactory = (type == ExtensionFactory.class ? null : ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension());
+    }        
+    ...
+}
+</code></pre><p>我们主要看<code>ExtensionLoader</code>构造方法，其中它初始化了<code>type</code>和<code>objectFactory</code>，前者为要作为扩展点的接口类型，后者表示要如何获取指定名称的扩展点实例（工厂类），目前dubbo提供了2个实现类，上面在包结构图上已经标注过了。</p>
+<pre><code>@SuppressWarnings(&quot;unchecked&quot;)
+public T getAdaptiveExtension() {
+    Object instance = cachedAdaptiveInstance.get();
+    if (instance == null) {
+        if(createAdaptiveInstanceError == null) {
+            synchronized (cachedAdaptiveInstance) {
+                instance = cachedAdaptiveInstance.get();
+                if (instance == null) {
+                    try {
+                        instance = createAdaptiveExtension();
+                        cachedAdaptiveInstance.set(instance);
+                    } catch (Throwable t) {
+                        createAdaptiveInstanceError = t;
+                        throw new IllegalStateException(&quot;fail to create adaptive instance: &quot; + t.toString(), t);
+                    }
+                }
+            }
+        }
+        else {
+            throw new IllegalStateException(&quot;fail to create adaptive instance: &quot; + createAdaptiveInstanceError.toString(), createAdaptiveInstanceError);
+        }
+    }
+
+    return (T) instance;
+}
+</code></pre><p>上面这个方法是用来获取自适应扩展类实例的，但其实它只是封装了一层缓存而已，真正完成创建实例的是<code>createAdaptiveExtension</code>方法。由于调用关系太深，请看下面的图：</p>
+<figure class="image-bubble">
+                <div class="img-lightbox">
+                    <div class="overlay"></div>
+                    <img src="http://pic.yupoo.com/kazaff/Elc1xnHk/7eCGH.png" alt title>
+                </div>
+                <div class="image-caption"></div>
+            </figure>
+<p>上图中给出的路径，缺少了查找扩展点实现的细节，也就是并没有展开<code>getExtensionClasses</code>方法，该方法会根据指定位置的配置文件扫描并解析拿到所有可用的扩展点实现，代码如下：</p>
+<pre><code>private Map&lt;String, Class&lt;?&gt;&gt; getExtensionClasses() {
+    Map&lt;String, Class&lt;?&gt;&gt; classes = cachedClasses.get();
+    if (classes == null) {
+        synchronized (cachedClasses) {
+            classes = cachedClasses.get();
+            if (classes == null) {
+                classes = loadExtensionClasses();
+                cachedClasses.set(classes);
+            }
+        }
+    }
+    return classes;
+}
+</code></pre><p>可见它也只是封装了一层缓存而已，我们继续深挖<code>loadExtensionClasses</code>方法：</p>
+<pre><code>// 此方法已经getExtensionClasses方法同步过。
+private Map&lt;String, Class&lt;?&gt;&gt; loadExtensionClasses() {
+    //检查并获取该接口类型声明的默认扩展点实现
+    final SPI defaultAnnotation = type.getAnnotation(SPI.class);
+    if(defaultAnnotation != null) {
+        String value = defaultAnnotation.value();
+        if(value != null &amp;&amp; (value = value.trim()).length() &gt; 0) {
+            String[] names = NAME_SEPARATOR.split(value);
+            if(names.length &gt; 1) {
+                throw new IllegalStateException(&quot;more than 1 default extension name on extension &quot; + type.getName()
+                        + &quot;: &quot; + Arrays.toString(names));
+            }
+            if(names.length == 1) cachedDefaultName = names[0];
+        }
+    }
+
+    //去三个指定的位置查找配置文件并解析拿到扩展点键值映射关系
+    Map&lt;String, Class&lt;?&gt;&gt; extensionClasses = new HashMap&lt;String, Class&lt;?&gt;&gt;();
+    loadFile(extensionClasses, DUBBO_INTERNAL_DIRECTORY);
+    loadFile(extensionClasses, DUBBO_DIRECTORY);
+    loadFile(extensionClasses, SERVICES_DIRECTORY);
+
+    return extensionClasses;
+}
+</code></pre><p>我们先来看一下配置文件的格式：</p>
+<pre><code>adaptive=com.alibaba.dubbo.common.extension.factory.AdaptiveExtensionFactory
+spi=com.alibaba.dubbo.common.extension.factory.SpiExtensionFactory
+</code></pre><p><code>loadFile</code>方法会从指定位置（<code>META-INF/dubbo/internal/</code>）根据指定接口类型（<code>type</code>）为文件名称查找目标配置文件，然后解析并校验，最终拿到匹配的扩展点类的所有<code>Class</code>实例。对应上面给出的配置文件，也就是<code>AdaptiveExtensionFactory</code>和<code>SpiExtensionFactory</code>，它们已经在包结构图上提到过了。</p>
+<p>现在我们来着重看一下这两个类，它们到底是做什么用的呢？首先，<code>AdaptiveExtensionFactory</code>定义上有<code>@Adaptive</code>注解标识，很明显，它就是自适应扩展点的实现，从<code>loadFile</code>方法中可以留意到：<strong>同一个接口类型只能存在一个自适应扩展点实现</strong>：</p>
+<pre><code>@Adaptive
+public class AdaptiveExtensionFactory implements ExtensionFactory {
+
+    private final List&lt;ExtensionFactory&gt; factories;
+
+    public AdaptiveExtensionFactory() {
+        ExtensionLoader&lt;ExtensionFactory&gt; loader = ExtensionLoader.getExtensionLoader(ExtensionFactory.class);
+        List&lt;ExtensionFactory&gt; list = new ArrayList&lt;ExtensionFactory&gt;();
+        for (String name : loader.getSupportedExtensions()) {
+            list.add(loader.getExtension(name));
+        }
+        factories = Collections.unmodifiableList(list);
+    }
+
+    //从这个方法定义来看，这个自适应扩展点实现类并没有做任何事儿，唯一的工作就是把真正获取扩展点实例的逻辑依次交给
+    //框架中声明的所有ExtensionFactory扩展点实例，默认也就是SpiExtensionFactory
+    public &lt;T&gt; T getExtension(Class&lt;T&gt; type, String name) {
+        for (ExtensionFactory factory : factories) {
+            T extension = factory.getExtension(type, name);
+            if (extension != null) {
+                return extension;
+            }
+        }
+        return null;
+    }
+}
+</code></pre><p>可以看到，<code>AdaptiveExtensionFactory</code>把逻辑委托给<code>SpiExtensionFactory</code>来做，而后者又是怎么做的呢：</p>
+<pre><code>public class SpiExtensionFactory implements ExtensionFactory {
+
+    public &lt;T&gt; T getExtension(Class&lt;T&gt; type, String name) {
+        if (type.isInterface() &amp;&amp; type.isAnnotationPresent(SPI.class)) {
+            ExtensionLoader&lt;T&gt; loader = ExtensionLoader.getExtensionLoader(type);
+            if (loader.getSupportedExtensions().size() &gt; 0) {
+                //获取自适应扩展点实例，这是dubbo默认的行为，
+                //也可以自己写一个ExtensionFactory来按照要求加载扩展点
+                return loader.getAdaptiveExtension();   
+            }
+        }
+        return null;
+    }
+}
+</code></pre><p>而<code>objectFactory</code>（真实工作的也就是<code>SpiExtensionFactory.getExtension</code>）只是用在ExtendLoader的注入方法（<code>injectExtension</code>）中，该方法用于为选定的扩展点实现注入相关的其他扩展点实例。</p>
+<p>目前为止，我们已经大概了解在dubbo内部，是以什么样的规则来使用扩展点机制，也为以后学习dubbo的其它方面提供了基础。</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.382Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2015/01/15/dubbo中SPI的基础--Cooma微容器/" target="_blank" rel="external">https://blog.kazaff.me/2015/01/15/dubbo中SPI的基础--Cooma微容器/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cooma/">cooma</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dubbo/">dubbo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dubbox/">dubbox</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/微内核/">微内核</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/01/15/dubbo中SPI的基础--Cooma微容器/&title=《dubbo中SPI的基础--Cooma微容器》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/01/15/dubbo中SPI的基础--Cooma微容器/&title=《dubbo中SPI的基础--Cooma微容器》 — kazaff's blog&source=断断续续研究dubbo其实有一段时间了，总是搁浅的原因和工作安排有很大关系，不过我始终保持着学习它的兴趣。随着dubbox项目的更新，我决定再一次尝试学习..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/01/15/dubbo中SPI的基础--Cooma微容器/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《dubbo中SPI的基础--Cooma微容器》 — kazaff's blog&url=https://blog.kazaff.me/2015/01/15/dubbo中SPI的基础--Cooma微容器/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/01/15/dubbo中SPI的基础--Cooma微容器/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2015/01/26/twemproxy安装问题与不支持的操作明细/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Twemproxy安装问题与不支持的操作明细</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2015/01/04/Jedis异常Could not get a resource from the pool/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Jedis异常Could Not Get a Resource From the Pool</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/01/15/dubbo中SPI的基础--Cooma微容器/&title=《dubbo中SPI的基础--Cooma微容器》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/01/15/dubbo中SPI的基础--Cooma微容器/&title=《dubbo中SPI的基础--Cooma微容器》 — kazaff's blog&source=断断续续研究dubbo其实有一段时间了，总是搁浅的原因和工作安排有很大关系，不过我始终保持着学习它的兴趣。随着dubbox项目的更新，我决定再一次尝试学习..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/01/15/dubbo中SPI的基础--Cooma微容器/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《dubbo中SPI的基础--Cooma微容器》 — kazaff's blog&url=https://blog.kazaff.me/2015/01/15/dubbo中SPI的基础--Cooma微容器/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/01/15/dubbo中SPI的基础--Cooma微容器/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2015/01/15/dubbo中SPI的基础--Cooma微容器/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

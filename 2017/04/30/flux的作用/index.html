@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>Flux的作用 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="redux,vuex,扁平化,不可变,数据表概念">
+    <meta name="description" content="很久很久之前，应该是fb刚提出flux的初期，我就花时间在学习如何使用它了。不过断断续续的工作经验，很多东西的记忆已经模糊了，亦或者是从来没有悟出什么深层次的东西，导致前段时间另外一个团队的同事在聊到vuex时，我脑子里除了文档中教条式的使用方法，一片空白。问题大了啊~~ 今天无意间逛到了一篇文章，其中扯到了redux的意义，使我受益匪浅。为了避免再次忘记，我赶紧记录下了这篇文章。 关于flux、">
+<meta name="keywords" content="redux,vuex,扁平化,不可变,数据表概念">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flux的作用">
+<meta property="og:url" content="https://blog.kazaff.me/2017/04/30/flux的作用/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="很久很久之前，应该是fb刚提出flux的初期，我就花时间在学习如何使用它了。不过断断续续的工作经验，很多东西的记忆已经模糊了，亦或者是从来没有悟出什么深层次的东西，导致前段时间另外一个团队的同事在聊到vuex时，我脑子里除了文档中教条式的使用方法，一片空白。问题大了啊~~ 今天无意间逛到了一篇文章，其中扯到了redux的意义，使我受益匪浅。为了避免再次忘记，我赶紧记录下了这篇文章。 关于flux、">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Flux的作用">
+<meta name="twitter:description" content="很久很久之前，应该是fb刚提出flux的初期，我就花时间在学习如何使用它了。不过断断续续的工作经验，很多东西的记忆已经模糊了，亦或者是从来没有悟出什么深层次的东西，导致前段时间另外一个团队的同事在聊到vuex时，我脑子里除了文档中教条式的使用方法，一片空白。问题大了啊~~ 今天无意间逛到了一篇文章，其中扯到了redux的意义，使我受益匪浅。为了避免再次忘记，我赶紧记录下了这篇文章。 关于flux、">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Flux的作用</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Flux的作用</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2017-04-30T09:37:12.000Z" itemprop="datePublished" class="page-time">
+  Apr 30 2017
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/前端/">前端</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#实例"><span class="post-toc-number">1.</span> <span class="post-toc-text">实例</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#工具"><span class="post-toc-number">2.</span> <span class="post-toc-text">工具</span></a></li></ol>
+        </nav>
+    </aside>
+    
+<article id="post-flux的作用"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Flux的作用</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2017年04月30日 9:37" datetime="2017-04-30T09:37:12.000Z"  itemprop="datePublished">Apr 30 2017</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/前端/">前端</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>很久很久之前，应该是fb刚提出flux的初期，我就花时间在学习如何使用它了。不过断断续续的工作经验，很多东西的记忆已经模糊了，亦或者是从来没有悟出什么深层次的东西，导致前段时间另外一个团队的同事在聊到vuex时，我脑子里除了文档中教条式的使用方法，一片空白。问题大了啊~~</p>
+<p>今天无意间逛到了一篇文章，其中扯到了redux的意义，使我受益匪浅。为了避免再次忘记，我赶紧记录下了这篇文章。</p>
+<p>关于flux、redux和vuex，我们不谈它们之间具体的用法，这篇文章的关注点在于这种思想的意义（比较空，但很重要）。<br>对这种思想的一种粗浅理解是，<strong>通过增加这一中间层，让整个项目对数据的操作（CURD）由原先的混乱与随意改善为统一和明确</strong>，做大的好处应该就是增加了代码维护性。</p>
+<p>而仅仅这一种维度的解释，实在无法说服别人来引入这个玩意儿，毕竟如果仅仅想做到这样，自己封装一个数据操作类即可啊。</p>
+<p>另外一个模糊的认识，是来自于早期官方的一个示例，通过这个中间层，我们可以很轻易的就让应用实现“后退”功能。不过这依然可以简单的将历史版本数据保存在localstorage中而轻易实现。那么，flux还有什么深意么？</p>
+<p>直到看到了<a href="http://redux.js.org/docs/recipes/reducers/NormalizingStateShape.html#show-last-Point" target="_blank" rel="noopener">这篇文章</a>，我们来总结一下文章中提到的几个要点：</p>
+<ul>
+<li>如果数据出现在多个不同的地方，势必存在重复和嵌套层次，这会让更新数据的逻辑变得复杂</li>
+<li>过深的嵌套和严重的重复会加剧操作数据的复杂性，降低处理性能</li>
+<li>伴随着引入不可变数据类型，这种嵌套和重复还会丧失不可变数据类型的优势，进一步降低渲染性能</li>
+</ul>
+<p>这样，flux的作用就基本上已经变得不可或缺，不再是可有可无了。</p>
+<p>那么，具体flux提出了哪些概念来解决问题呢？</p>
+<p>文章中提到了“data table”，其实就是数据库概念，由于种种原因，数据库往往都被我们设计成尽量扁平的（关系型数据库只有行列概念），除了范式外，上面提到的要点也都自然而言的考虑在内了。</p>
+<p>按照flux的最佳实践，我们需要：</p>
+<ul>
+<li>为每一个概念实体都创建独立的存储单元</li>
+<li>实体之间依赖id来进行关联</li>
+<li>多对多关系也抽象成一种概念实体（和关系型数据库处理多对多关系完全一致）</li>
+</ul>
+<p>其实完全是借助数据库思想来解决问题的，只是这种想法在当时还是很超前的。</p>
+<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><p>嵌套结构：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">const</span> blogPosts = [</span><br><span class="line">    &#123;</span><br><span class="line">        id : <span class="string">"post1"</span>,</span><br><span class="line">        author : &#123;<span class="attr">username</span> : <span class="string">"user1"</span>, <span class="attr">name</span> : <span class="string">"User 1"</span>&#125;,</span><br><span class="line">        body : <span class="string">"......"</span>,</span><br><span class="line">        comments : [</span><br><span class="line">            &#123;</span><br><span class="line">                id : <span class="string">"comment1"</span>,</span><br><span class="line">                author : &#123;<span class="attr">username</span> : <span class="string">"user2"</span>, <span class="attr">name</span> : <span class="string">"User 2"</span>&#125;,</span><br><span class="line">                comment : <span class="string">"....."</span>,</span><br><span class="line">            &#125;,</span><br><span class="line">            &#123;</span><br><span class="line">                id : <span class="string">"comment2"</span>,</span><br><span class="line">                author : &#123;<span class="attr">username</span> : <span class="string">"user3"</span>, <span class="attr">name</span> : <span class="string">"User 3"</span>&#125;,</span><br><span class="line">                comment : <span class="string">"....."</span>,</span><br><span class="line">            &#125;</span><br><span class="line">        ]    </span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        id : <span class="string">"post2"</span>,</span><br><span class="line">        author : &#123;<span class="attr">username</span> : <span class="string">"user2"</span>, <span class="attr">name</span> : <span class="string">"User 2"</span>&#125;,</span><br><span class="line">        body : <span class="string">"......"</span>,</span><br><span class="line">        comments : [</span><br><span class="line">            &#123;</span><br><span class="line">                id : <span class="string">"comment3"</span>,</span><br><span class="line">                author : &#123;<span class="attr">username</span> : <span class="string">"user3"</span>, <span class="attr">name</span> : <span class="string">"User 3"</span>&#125;,</span><br><span class="line">                comment : <span class="string">"....."</span>,</span><br><span class="line">            &#125;,</span><br><span class="line">            &#123;</span><br><span class="line">                id : <span class="string">"comment4"</span>,</span><br><span class="line">                author : &#123;<span class="attr">username</span> : <span class="string">"user1"</span>, <span class="attr">name</span> : <span class="string">"User 1"</span>&#125;,</span><br><span class="line">                comment : <span class="string">"....."</span>,</span><br><span class="line">            &#125;,</span><br><span class="line">            &#123;</span><br><span class="line">                id : <span class="string">"comment5"</span>,</span><br><span class="line">                author : &#123;<span class="attr">username</span> : <span class="string">"user3"</span>, <span class="attr">name</span> : <span class="string">"User 3"</span>&#125;,</span><br><span class="line">                comment : <span class="string">"....."</span>,</span><br><span class="line">            &#125;</span><br><span class="line">        ]    </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// and repeat many times</span></span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p>扁平化结构：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    posts : &#123;</span><br><span class="line">        byId : &#123;</span><br><span class="line">            <span class="string">"post1"</span> : &#123;</span><br><span class="line">                id : <span class="string">"post1"</span>,</span><br><span class="line">                author : <span class="string">"user1"</span>,</span><br><span class="line">                body : <span class="string">"......"</span>,</span><br><span class="line">                comments : [<span class="string">"comment1"</span>, <span class="string">"comment2"</span>]    </span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="string">"post2"</span> : &#123;</span><br><span class="line">                id : <span class="string">"post2"</span>,</span><br><span class="line">                author : <span class="string">"user2"</span>,</span><br><span class="line">                body : <span class="string">"......"</span>,</span><br><span class="line">                comments : [<span class="string">"comment3"</span>, <span class="string">"comment4"</span>, <span class="string">"comment5"</span>]    </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        allIds : [<span class="string">"post1"</span>, <span class="string">"post2"</span>]</span><br><span class="line">    &#125;,</span><br><span class="line">    comments : &#123;</span><br><span class="line">        byId : &#123;</span><br><span class="line">            <span class="string">"comment1"</span> : &#123;</span><br><span class="line">                id : <span class="string">"comment1"</span>,</span><br><span class="line">                author : <span class="string">"user2"</span>,</span><br><span class="line">                comment : <span class="string">"....."</span>,</span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="string">"comment2"</span> : &#123;</span><br><span class="line">                id : <span class="string">"comment2"</span>,</span><br><span class="line">                author : <span class="string">"user3"</span>,</span><br><span class="line">                comment : <span class="string">"....."</span>,</span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="string">"comment3"</span> : &#123;</span><br><span class="line">                id : <span class="string">"comment3"</span>,</span><br><span class="line">                author : <span class="string">"user3"</span>,</span><br><span class="line">                comment : <span class="string">"....."</span>,</span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="string">"comment4"</span> : &#123;</span><br><span class="line">                id : <span class="string">"comment4"</span>,</span><br><span class="line">                author : <span class="string">"user1"</span>,</span><br><span class="line">                comment : <span class="string">"....."</span>,</span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="string">"comment5"</span> : &#123;</span><br><span class="line">                id : <span class="string">"comment5"</span>,</span><br><span class="line">                author : <span class="string">"user3"</span>,</span><br><span class="line">                comment : <span class="string">"....."</span>,</span><br><span class="line">            &#125;,</span><br><span class="line">        &#125;,</span><br><span class="line">        allIds : [<span class="string">"comment1"</span>, <span class="string">"comment2"</span>, <span class="string">"comment3"</span>, <span class="string">"commment4"</span>, <span class="string">"comment5"</span>]</span><br><span class="line">    &#125;,</span><br><span class="line">    users : &#123;</span><br><span class="line">        byId : &#123;</span><br><span class="line">            <span class="string">"user1"</span> : &#123;</span><br><span class="line">                username : <span class="string">"user1"</span>,</span><br><span class="line">                name : <span class="string">"User 1"</span>,</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="string">"user2"</span> : &#123;</span><br><span class="line">                username : <span class="string">"user2"</span>,</span><br><span class="line">                name : <span class="string">"User 2"</span>,</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="string">"user3"</span> : &#123;</span><br><span class="line">                username : <span class="string">"user3"</span>,</span><br><span class="line">                name : <span class="string">"User 3"</span>,</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        allIds : [<span class="string">"user1"</span>, <span class="string">"user2"</span>, <span class="string">"user3"</span>]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实体关系处理：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    entities: &#123;</span><br><span class="line">        authors : &#123; <span class="attr">byId</span> : &#123;&#125;, <span class="attr">allIds</span> : [] &#125;,</span><br><span class="line">        books : &#123; <span class="attr">byId</span> : &#123;&#125;, <span class="attr">allIds</span> : [] &#125;,</span><br><span class="line">        authorBook : &#123;</span><br><span class="line">            byId : &#123;</span><br><span class="line">                <span class="number">1</span> : &#123;</span><br><span class="line">                    id : <span class="number">1</span>,</span><br><span class="line">                    authorId : <span class="number">5</span>,</span><br><span class="line">                    bookId : <span class="number">22</span></span><br><span class="line">                &#125;,</span><br><span class="line">                <span class="number">2</span> : &#123;</span><br><span class="line">                    id : <span class="number">2</span>,</span><br><span class="line">                    authorId : <span class="number">5</span>,</span><br><span class="line">                    bookId : <span class="number">15</span>,</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="number">3</span> : &#123;</span><br><span class="line">                    id : <span class="number">3</span>,</span><br><span class="line">                    authorId : <span class="number">42</span>,</span><br><span class="line">                    bookId : <span class="number">12</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;,</span><br><span class="line">            allIds : [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="工具"><a href="#工具" class="headerlink" title="工具"></a>工具</h3><p>思想有了，工具也不能落后，<a href="https://github.com/paularmstrong/normalizr" target="_blank" rel="noopener">normalizr</a>就是来帮我们来快速实现不同结构之间的转化的。</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.382Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2017/04/30/flux的作用/" target="_blank" rel="external">https://blog.kazaff.me/2017/04/30/flux的作用/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redux/">redux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vuex/">vuex</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/不可变/">不可变</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/扁平化/">扁平化</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/数据表概念/">数据表概念</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2017/04/30/flux的作用/&title=《Flux的作用》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2017/04/30/flux的作用/&title=《Flux的作用》 — kazaff's blog&source=develop,code,full-stack,architecture,deploy,database,test" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2017/04/30/flux的作用/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Flux的作用》 — kazaff's blog&url=https://blog.kazaff.me/2017/04/30/flux的作用/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2017/04/30/flux的作用/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2017/05/22/gmail模拟登录失败处理/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">Gmail模拟登录失败处理</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2017/04/17/拥有这些Casperjs技巧理论上就能采集全世界了/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">拥有这些Casperjs技巧理论上就能采集全世界了</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2017/04/30/flux的作用/&title=《Flux的作用》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2017/04/30/flux的作用/&title=《Flux的作用》 — kazaff's blog&source=develop,code,full-stack,architecture,deploy,database,test" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2017/04/30/flux的作用/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Flux的作用》 — kazaff's blog&url=https://blog.kazaff.me/2017/04/30/flux的作用/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2017/04/30/flux的作用/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2017/04/30/flux的作用/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

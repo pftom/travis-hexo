@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>论项目成败 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="项目管理">
+    <meta name="description" content="俗话说：常在河边儿走，哪儿能不尿炕。 毕业到现在，web开发行业也已经干了快十年了。参与过，负责过也不少项目了，有大有小，有自研性质的，有外包类型的。我一直觉得，一个系统到底用何种方式来开发，取决于这个项目在公司所处的位置和重要程度来衡量。即便是一些处于中间位置的项目，选择外包团队来做的话，至少也要在需求层面把握的足够细致清楚，不要指望外包团队来帮你发现需求问题，甚至是逻辑问题。">
+<meta name="keywords" content="项目管理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="论项目成败">
+<meta property="og:url" content="https://blog.kazaff.me/2017/06/27/论项目成败/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="俗话说：常在河边儿走，哪儿能不尿炕。 毕业到现在，web开发行业也已经干了快十年了。参与过，负责过也不少项目了，有大有小，有自研性质的，有外包类型的。我一直觉得，一个系统到底用何种方式来开发，取决于这个项目在公司所处的位置和重要程度来衡量。即便是一些处于中间位置的项目，选择外包团队来做的话，至少也要在需求层面把握的足够细致清楚，不要指望外包团队来帮你发现需求问题，甚至是逻辑问题。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.386Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="论项目成败">
+<meta name="twitter:description" content="俗话说：常在河边儿走，哪儿能不尿炕。 毕业到现在，web开发行业也已经干了快十年了。参与过，负责过也不少项目了，有大有小，有自研性质的，有外包类型的。我一直觉得，一个系统到底用何种方式来开发，取决于这个项目在公司所处的位置和重要程度来衡量。即便是一些处于中间位置的项目，选择外包团队来做的话，至少也要在需求层面把握的足够细致清楚，不要指望外包团队来帮你发现需求问题，甚至是逻辑问题。">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">论项目成败</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">论项目成败</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2017-06-27T09:37:12.000Z" itemprop="datePublished" class="page-time">
+  Jun 27 2017
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/talk/">talk</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#需求提供方素质太低，沟通起来完全就是在耍流氓"><span class="post-toc-number">1.</span> <span class="post-toc-text">需求提供方素质太低，沟通起来完全就是在耍流氓</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#设计人员参与度不够"><span class="post-toc-number">2.</span> <span class="post-toc-text">设计人员参与度不够</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#角色定位混乱，没有责任感"><span class="post-toc-number">3.</span> <span class="post-toc-text">角色定位混乱，没有责任感</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#不遵守合同"><span class="post-toc-number">4.</span> <span class="post-toc-text">不遵守合同</span></a></li></ol>
+        </nav>
+    </aside>
+    
+<article id="post-论项目成败"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">论项目成败</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2017年06月27日 9:37" datetime="2017-06-27T09:37:12.000Z"  itemprop="datePublished">Jun 27 2017</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/talk/">talk</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p><strong>俗话说：常在河边儿走，哪儿能不尿炕。</strong></p>
+<p>毕业到现在，web开发行业也已经干了快十年了。参与过，负责过也不少项目了，有大有小，有自研性质的，有外包类型的。<br>我一直觉得，一个系统到底用何种方式来开发，取决于这个项目在公司所处的位置和重要程度来衡量。<br>即便是一些处于中间位置的项目，选择外包团队来做的话，至少也要在需求层面把握的足够细致清楚，不要指望外包团队来帮你发现需求问题，甚至是逻辑问题。<br><a id="more"></a><br>不过，最近我就碰到了一个相当奇葩的项目，我认为几乎涵盖了所有失败的必然条件，我一度怀疑客户是故意的，项目就是他用来打发时间的一场游戏。现在，就由我来罗列一下其中的几宗罪吧，让你们也开开眼。</p>
+<h2 id="需求提供方素质太低，沟通起来完全就是在耍流氓"><a href="#需求提供方素质太低，沟通起来完全就是在耍流氓" class="headerlink" title="需求提供方素质太低，沟通起来完全就是在耍流氓"></a>需求提供方素质太低，沟通起来完全就是在耍流氓</h2><p>关于这一点，你可能会说：客户一般都不是专业人士，你不能期望对方给你提供完美的沟通保证。这一点，完全正确。不过，首先我要明确的是，甲方是日本一家专门做IT项目开发的公司，就是那种将自己公司IT人员外派到客户企业做定制开发的公司。当然，我们也不能因为这个，就假设他们的老板就一定是个程序员。这没问题，但问题在于，在前期项目接洽环节，这个老板的态度是细节完全不管，只负责扯一些官话，什么大家要用心做啊，什么大家辛苦了，一定要把项目做好啊一类的话，我不知道这些话是他用来骗自己的，还是他的口头禅，完全没有卵用啊。一旦涉及到具体项目问题，他立刻就会说：我不管这些细节，你找XXXX来沟通。</p>
+<p>听起来是一个甩手掌柜，很懂得放权嘛~~可是，到了验收阶段，他冒出来，对着系统又开始云里雾里：</p>
+<ul>
+<li>我感觉咱们的页面看起来有点怪怪的，和我们公司现用的一些系统不太一样。</li>
+<li>那请问您是看到了哪个具体地方有问题了吗？</li>
+<li>这些细节我不管，你还是找设计人员沟通一下吧，反正我感觉有点不太舒服。</li>
+</ul>
+<p>这些细节可能还不足够让你无语，更悲催的是，在项目开发到中期，他突然空降了一个秘书作为项目的负责人，还在项目会议上说：大家以后都要听XXX的指令，我完全信任他的判断，你们要知道，我公司的很多财务转账我都是交给他来做的，可见我对他的信任了吧。</p>
+<p>而这个所谓的秘书，对当前的项目完全不清楚需求，自诩也是开发人员出身，但提的很多问题都让人哭笑不得。最可气的是，他完全不理会设计人员提供的设计书，按照他自己的想法后期提了很多需求变更问题。但是他拒绝提供标准的设计书，按照自己的方式提供变更描述，还狐假虎威的勒令开发人员赶进度。</p>
+<p>到此为止，就已经犯了软件开发的无数大忌。不过这才刚开始。</p>
+<p>在项目验收阶段，我突然收到了这个秘书的一条信息，大致内容是他离职了。此时，甲方老板则一改之前的态度，会议上说：这个人（秘书）对我们项目的需求把握的达不到我的要求，而且由于不是开发人员出身，你们沟通起来可能不顺畅，所以把他撤出项目组了。</p>
+<p>这些由于甲方公司内部组织架构变更而导致的风险，难道乙方也要承担么？而在过程中多次要求提供标准设计书和需求变更文档，被当做是无理取闹，最终由于一个人的个人喜好导致的错误的需求变化，老板简简单单的一句“撤出项目”就可以把问题解决了吗？</p>
+<h2 id="设计人员参与度不够"><a href="#设计人员参与度不够" class="headerlink" title="设计人员参与度不够"></a>设计人员参与度不够</h2><p>由于甲方公司在日本，沟通本来就只能依赖网络，再加上中日文沟通障碍，所以甲方委托了大连的一个设计团队来把控需求。看起来也很合理，但问题在于这些设计人员都是兼职，他们只有晚上的时间才可以提供QA支持，这一点就已经严重了影响到了开发效率。而这些设计人员提供的设计书又十分的粗糙，很多低级错误，如错别字，数据库表字段类型与设计书不匹配，等等。</p>
+<p>设计人员对该项目的理解和甲方的存在不一致，导致很多问题两方的回答不一致。本来这也不是解决不了的问题，三方对峙就可以了。但，实际情况是根本就没有组织这种会议的可能性，在每周例会中，开发团队提出的任何问题，都会被甲方当作是借口，不管是设计问题，还是开发问题，都需要开发团队来承担。在甲方眼里，设计人员不存在任何问题。这种不尊重事实的假设，不知道理由到底是什么？</p>
+<h2 id="角色定位混乱，没有责任感"><a href="#角色定位混乱，没有责任感" class="headerlink" title="角色定位混乱，没有责任感"></a>角色定位混乱，没有责任感</h2><p>在这个项目中，除了开发团队，似乎其它每个参与进来的角色都在提意见。而且，甲方对设计人员的过分信任，对开发团队的质疑，这种厚此薄彼的态度，对于这种三方合作非常的不利。</p>
+<p>设计人员初期拥有较多的话语权，中后期被秘书夺走，秘书离职后设计人员又开始颠覆秘书提出的要求。不过，不管是谁拥有话语权的时期，都不愿为自己说过的话来负责，这是核心问题。</p>
+<h2 id="不遵守合同"><a href="#不遵守合同" class="headerlink" title="不遵守合同"></a>不遵守合同</h2><p>在合同中，明确提到的责任划分，在实际项目实施过程中完全没有被尊重。开发进度中原本只包含的工作量与实际工作量相比，发生了成倍的变化，但工期并没有合理的安排，这一点使得开发团队整体情绪低落，间接影响了各个项目的各个方面，如代码质量，沟通等。</p>
+<hr>
+<p>整个项目，我们作为开发方，无疑存在自身的问题。但，尊重事实的讲，我们自身的问题占的比重非常的少。所以，这篇文章并不是反省，而是总结。以后，此类型的项目，最佳的处理方式，就是果断的终止合作。任何一秒的投入，都可以算是浪费资源。</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.386Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2017/06/27/论项目成败/" target="_blank" rel="external">https://blog.kazaff.me/2017/06/27/论项目成败/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/项目管理/">项目管理</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2017/06/27/论项目成败/&title=《论项目成败》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2017/06/27/论项目成败/&title=《论项目成败》 — kazaff's blog&source=俗话说：常在河边儿走，哪儿能不尿炕。
+毕业到现在，web开发行业也已经干了快十年了。参与过，负责过也不少项目了，有大有小，有自研性质的，有外包类型的。我一..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2017/06/27/论项目成败/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《论项目成败》 — kazaff's blog&url=https://blog.kazaff.me/2017/06/27/论项目成败/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2017/06/27/论项目成败/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2017/09/07/阿里云EC2-Centos6内核升级/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">阿里云EC2-Centos6内核升级</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2017/05/31/浏览器Tab页刷新和关闭操作的甄别/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">浏览器Tab页刷新和关闭操作的甄别</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2017/06/27/论项目成败/&title=《论项目成败》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2017/06/27/论项目成败/&title=《论项目成败》 — kazaff's blog&source=俗话说：常在河边儿走，哪儿能不尿炕。
+毕业到现在，web开发行业也已经干了快十年了。参与过，负责过也不少项目了，有大有小，有自研性质的，有外包类型的。我一..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2017/06/27/论项目成败/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《论项目成败》 — kazaff's blog&url=https://blog.kazaff.me/2017/06/27/论项目成败/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2017/06/27/论项目成败/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2017/06/27/论项目成败/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

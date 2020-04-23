@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>GraphQL运行原理 | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="GraphQL">
+    <meta name="description" content="最近依然在关注GraphQL这个技术，感觉它非常有前景。结合现有的业界关于网关服务的实践和总结，再融合GraphQL的思想，瞬间一个先进无比的网关服务出现在了眼前。 之前翻译过一篇文章，感觉是读过的最完整的一篇深入浅出graphql的实战文章。今天打算继续消化一下文章中引用的一份文档：Execution。这篇文档解释了GraphQL是如何根据定义的schema来完成数据的组装和聚合的，应该算是整个">
+<meta name="keywords" content="GraphQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GraphQL运行原理">
+<meta property="og:url" content="https://blog.kazaff.me/2018/08/29/GraphQL运行原理/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="最近依然在关注GraphQL这个技术，感觉它非常有前景。结合现有的业界关于网关服务的实践和总结，再融合GraphQL的思想，瞬间一个先进无比的网关服务出现在了眼前。 之前翻译过一篇文章，感觉是读过的最完整的一篇深入浅出graphql的实战文章。今天打算继续消化一下文章中引用的一份文档：Execution。这篇文档解释了GraphQL是如何根据定义的schema来完成数据的组装和聚合的，应该算是整个">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.378Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="GraphQL运行原理">
+<meta name="twitter:description" content="最近依然在关注GraphQL这个技术，感觉它非常有前景。结合现有的业界关于网关服务的实践和总结，再融合GraphQL的思想，瞬间一个先进无比的网关服务出现在了眼前。 之前翻译过一篇文章，感觉是读过的最完整的一篇深入浅出graphql的实战文章。今天打算继续消化一下文章中引用的一份文档：Execution。这篇文档解释了GraphQL是如何根据定义的schema来完成数据的组装和聚合的，应该算是整个">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">GraphQL运行原理</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">GraphQL运行原理</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2018-08-29T10:37:12.000Z" itemprop="datePublished" class="page-time">
+  Aug 29 2018
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/nodejs/">nodejs</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#Execution"><span class="post-toc-number">1.</span> <span class="post-toc-text">Execution</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#Root-fields-amp-resolvers"><span class="post-toc-number">1.1.</span> <span class="post-toc-text">Root fields &amp; resolvers</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#Asynchronous-resolvers"><span class="post-toc-number">1.2.</span> <span class="post-toc-text">Asynchronous resolvers</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#Trivial-resolvers"><span class="post-toc-number">1.3.</span> <span class="post-toc-text">Trivial resolvers</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#Scalar-coercion"><span class="post-toc-number">1.4.</span> <span class="post-toc-text">Scalar coercion</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#List-resolvers"><span class="post-toc-number">1.5.</span> <span class="post-toc-text">List resolvers</span></a></li><li class="post-toc-item post-toc-level-4"><a class="post-toc-link" href="#Producing-the-result"><span class="post-toc-number">1.6.</span> <span class="post-toc-text">Producing the result</span></a></li></ol></li></ol>
+        </nav>
+    </aside>
+    
+<article id="post-GraphQL运行原理"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">GraphQL运行原理</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2018年08月29日 10:37" datetime="2018-08-29T10:37:12.000Z"  itemprop="datePublished">Aug 29 2018</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/nodejs/">nodejs</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>最近依然在关注GraphQL这个技术，感觉它非常有前景。结合现有的业界关于网关服务的实践和总结，再融合GraphQL的思想，瞬间一个先进无比的网关服务出现在了眼前。</p>
+<p>之前翻译过一篇<a href="https://blog.kazaff.me/2018/03/25/%E5%86%8D%E5%93%81GraphQL/">文章</a>，感觉是读过的最完整的一篇深入浅出graphql的实战文章。今天打算继续消化一下文章中引用的一份文档：<a href="https://graphql.org/learn/execution/" target="_blank" rel="noopener">Execution</a>。这篇文档解释了GraphQL是如何根据定义的schema来完成数据的组装和聚合的，应该算是整个GraphQL架构中最核心的设计之一了，值得了解。<br>下面废话不多说，正文走起。</p>
+<h3 id="Execution"><a href="#Execution" class="headerlink" title="Execution"></a>Execution</h3><p>在必要的数据校验环境后，GraphQL（译：后面简称GQL）服务端会根据每一个query的实际要求来剪裁恰如其分的数据结构以进行响应，通常来说是JSON格式。</p>
+<p>GQL非常依赖其类型模型（type system），我们来看一个实际的例子来演示如何执行一个query。这个例子和文档中其他部分是一致的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">type Query &#123;</span><br><span class="line">  human(id: ID!): Human</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type Human &#123;</span><br><span class="line">  name: String</span><br><span class="line">  appearsIn: [Episode]</span><br><span class="line">  starships: [Starship]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">enum Episode &#123;</span><br><span class="line">  NEWHOPE</span><br><span class="line">  EMPIRE</span><br><span class="line">  JEDI</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type Starship &#123;</span><br><span class="line">  name: String</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>为了了解query执行的细节，我们来看一个例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">// 请求</span><br><span class="line">&#123;</span><br><span class="line">  human(id: 1002) &#123;</span><br><span class="line">    name</span><br><span class="line">    appearsIn</span><br><span class="line">    starships &#123;</span><br><span class="line">      name</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 响应</span><br><span class="line">&#123;</span><br><span class="line">  &quot;data&quot;: &#123;</span><br><span class="line">    &quot;human&quot;: &#123;</span><br><span class="line">      &quot;name&quot;: &quot;Han Solo&quot;,</span><br><span class="line">      &quot;appearsIn&quot;: [</span><br><span class="line">        &quot;NEWHOPE&quot;,</span><br><span class="line">        &quot;EMPIRE&quot;,</span><br><span class="line">        &quot;JEDI&quot;</span><br><span class="line">      ],</span><br><span class="line">      &quot;starships&quot;: [</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;name&quot;: &quot;Millenium Falcon&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;name&quot;: &quot;Imperial shuttle&quot;</span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>你可以将在GQL查询中每一个字段（field）看做是前一种类型的函数或方法，它返回下一种类型。事实上，这就是GQL的工作原理。在GQL服务端，每一个类型的每一个字段背后都是靠一个被称为<code>resolver</code>的函数来支撑的（译：提供数据）。每当一个字段被要求返回，与其对应的<code>resolver</code>函数就会被执行，并产生下一个值（译：进入新一轮<code>resolver</code>执行）。</p>
+<p>如果发现字段返回的是一个标量值，如字符串或数字，此时执行就算告一段落了。<br>然而如果该字段执行后返回的是一个对象值，那么执行器会继续试图获取该对象值包含的字段，一直到最终得到一个标量值为止。</p>
+<h4 id="Root-fields-amp-resolvers"><a href="#Root-fields-amp-resolvers" class="headerlink" title="Root fields &amp; resolvers"></a>Root fields &amp; resolvers</h4><p>每个GQL服务的最顶层类型是一个包含一切的统一API入口类型，通常我们称之为<code>Roottype</code>或<code>Querytype</code>。<br>在我们的例子中，<code>Querytype</code>提供了一个字段叫<code>human</code>，它接受一个参数<code>id</code>。这个字段对应的<code>resolver</code>函数通过操作数据库并构建和返回<code>human</code>对象。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Query: &#123;</span><br><span class="line">  human(obj, args, context, info) &#123;</span><br><span class="line">    return context.db.loadHumanByID(args.id).then(</span><br><span class="line">      userData =&gt; new Human(userData)</span><br><span class="line">    )</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个例子是用JavaScript写的，但GQL服务端可以用<a href="https://graphql.org/code/" target="_blank" rel="noopener">多种语言</a>来实现。<code>resolver</code>函数接受4个参数：</p>
+<ul>
+<li>obj: 前一个对象（译：触发该<code>resolver</code>的字段所在的对象），这个参数对最顶层字段没有意义（译：当然啊，不然嘞~）</li>
+<li>args: 来自GQL query</li>
+<li>context: 提供所有<code>resolver</code>依赖的资源，例如数据库连接对象，当前登录的用户信息等</li>
+<li>info: 包含与当前查询相关的特定于字段的信息的值，以及模式细节，可以参考<a href="https://graphql.org/graphql-js/type/#graphqlobjecttype" target="_blank" rel="noopener">graphqlobjecttype</a></li>
+</ul>
+<h4 id="Asynchronous-resolvers"><a href="#Asynchronous-resolvers" class="headerlink" title="Asynchronous resolvers"></a>Asynchronous resolvers</h4><p>我们来近距离看一下这个<code>resolver</code>函数的细节：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">human(obj, args, context, info) &#123;</span><br><span class="line">  return context.db.loadHumanByID(args.id).then(</span><br><span class="line">    userData =&gt; new Human(userData)</span><br><span class="line">  )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>context</code>参数中包含了数据库连接对象，用于数据查询来得到GQL query中要求的<code>id</code>数据。查询数据库是一个异步调用，所以返回一个<code>promise</code>。<code>promise</code>是javascript中的异步调用概念，不过其他很多语言也有对应的实现方式，通常被称之为<code>futures</code>，<code>tasks</code>或者<code>Deferred</code>。当数据库操作返回后，我们就可以构建和返回一个新的<code>Human</code>对象啦。</p>
+<p>需要注意的是尽管<code>resolver</code>函数返回的是<code>promise</code>，但GQL query并不是异步的，它会期望<code>human</code>携带了所有要求返回的数据。在执行过程中，GQL会一直等到<code>Promise</code>,<code>Futures</code>或<code>Tasks</code>完结后才会继续并最大化保持并发度（译：这一点很重要）。</p>
+<h4 id="Trivial-resolvers"><a href="#Trivial-resolvers" class="headerlink" title="Trivial resolvers"></a>Trivial resolvers</h4><p>现在我们已经得到了一个<code>Human</code>对象，接下来GQL执行器将继续处理其下的字段。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Human: &#123;</span><br><span class="line">  name(obj, args, context, info) &#123;</span><br><span class="line">    return obj.name</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>GQL服务依靠类型系统来决定如何继续执行下去。甚至是在<code>human</code>返回任何结果之前，GQL就可以根据类型系统要求提供的<code>human</code>类型声明得到下一步应该处理的字段有哪些。</p>
+<p>在这个例子里<code>name</code>字段的处理是非常简单明了的。传入<code>name resolver</code>函数的<code>obj</code>参数就是前一步返回的那个<code>new Human</code>对象。例子中我们期望得到的<code>human</code>对象包含<code>name</code>字段，已经如愿以偿。</p>
+<p>事实上，很多GQL类库都不需要你提供这种简单的<code>resolver</code>，它们会默认自动从<code>obj</code>中读取并返回对应名字的属性（译：默认解析器规则）。</p>
+<h4 id="Scalar-coercion"><a href="#Scalar-coercion" class="headerlink" title="Scalar coercion"></a>Scalar coercion</h4><p>当<code>name</code>字段被处理过后，<code>appearsIn</code>和<code>starships</code>字段会被同时处理。<code>appearsIn</code>字段也有一个<code>trivial resolver</code>，我们来仔细看一下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Human: &#123;</span><br><span class="line">  appearsIn(obj) &#123;</span><br><span class="line">    return obj.appearsIn // returns [ 4, 5, 6 ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意，我们的类型系统声明<code>appearsIn</code>将返回一个枚举类型，然而这个函数却返回的是number数组！实际上，如果我们查看结果，我们将看到相应的Enum值被归还。发生了什么？</p>
+<p>这就是一个<code>Scalar coercion</code>的例子。类型系统知道应该返回什么，并将解析器返回的数据转换成了API声明要求的类型。在这个例子中，在服务的其他位置应该存在一个枚举类型的定义来标识<code>4,5,6</code>对应的枚举值。</p>
+<h4 id="List-resolvers"><a href="#List-resolvers" class="headerlink" title="List resolvers"></a>List resolvers</h4><p>通过<code>appearsIn</code>，我们已经看到了当一个字段需要一个返回多条数据时的细节。它返回了一个枚举值数组，然后类型系统将每个值转换成了对应的枚举值。那<code>starships</code>字段解析的细节有是什么呢？</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Human: &#123;</span><br><span class="line">  starships(obj, args, context, info) &#123;</span><br><span class="line">    return obj.starshipIDs.map(</span><br><span class="line">      id =&gt; context.db.loadStarshipByID(id).then(</span><br><span class="line">        shipData =&gt; new Starship(shipData)</span><br><span class="line">      )</span><br><span class="line">    )</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个字段的<code>resolver</code>不只是返回一个<code>promise</code>，它返回了一个<code>promise</code>数组（译：屌不屌）。<code>human</code>对象拥有一个<code>starships</code>的<code>id</code>数组，但我们需要加载所有这些<code>id</code>关联的<code>starship</code>对象。</p>
+<p>GQL会等待所有的<code>promise</code>并发的完成后才会继续，当所有<code>starship</code>对象都得到后，GQL会继续并发的尝试获取这些对象的<code>name</code>字段。</p>
+<h4 id="Producing-the-result"><a href="#Producing-the-result" class="headerlink" title="Producing the result"></a>Producing the result</h4><p>当所有字段都处理完毕后，结果值构建成一个从叶子节点到根节点全链路的键值对映射，键为字段名，值为<code>resolver</code>返回的结果，最终按照请求的结构返回给客户端对应的数据结构（JSON结构）。</p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.378Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2018/08/29/GraphQL运行原理/" target="_blank" rel="external">https://blog.kazaff.me/2018/08/29/GraphQL运行原理/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GraphQL/">GraphQL</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2018/08/29/GraphQL运行原理/&title=《GraphQL运行原理》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2018/08/29/GraphQL运行原理/&title=《GraphQL运行原理》 — kazaff's blog&source=develop,code,full-stack,architecture,deploy,database,test" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2018/08/29/GraphQL运行原理/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《GraphQL运行原理》 — kazaff's blog&url=https://blog.kazaff.me/2018/08/29/GraphQL运行原理/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2018/08/29/GraphQL运行原理/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2018/09/05/GraphQL的前提/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">GraphQL的前提</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2018/08/27/golang依赖包下载被禁解决方案/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">Golang依赖包下载被禁解决方案</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2018/08/29/GraphQL运行原理/&title=《GraphQL运行原理》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2018/08/29/GraphQL运行原理/&title=《GraphQL运行原理》 — kazaff's blog&source=develop,code,full-stack,architecture,deploy,database,test" data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2018/08/29/GraphQL运行原理/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《GraphQL运行原理》 — kazaff's blog&url=https://blog.kazaff.me/2018/08/29/GraphQL运行原理/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2018/08/29/GraphQL运行原理/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2018/08/29/GraphQL运行原理/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+    
+<!-- Google Analytics -->
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-35141228-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<!-- End Google Analytics -->
+
+
+    
+
+    
+
+
+
+    <meta charset="utf-8">
+    
+    
+    
+    <title>Logstash整合kafka | kazaff&#39;s blog | 要相信，一切都是最好的安排~</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <meta name="theme-color" content="#3F51B5">
+    
+    
+    <meta name="keywords" content="Logstash,kafka,logstash-output-kafka,logstash插件">
+    <meta name="description" content="今天要搞一搞的，是把logstash和kafka整合起来，由于我们使用的是logstash1.5.0+版本，此版本下官方已经提拱了plugin用来整合kafka，这篇文章的目的就是简单的搭建这么一个环境。 kafka的安装kafka是基于scala实现的，scala是一种jvm语言，也就是说你得先装jdk，我就不从jdk开始介绍如何安装了，我们直接开始安装kafka，其实这玩意儿官方提供了编译好的">
+<meta name="keywords" content="Logstash,kafka,logstash-output-kafka,logstash插件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Logstash整合kafka">
+<meta property="og:url" content="https://blog.kazaff.me/2015/06/05/logstash整合kafka/index.html">
+<meta property="og:site_name" content="kazaff&#39;s blog">
+<meta property="og:description" content="今天要搞一搞的，是把logstash和kafka整合起来，由于我们使用的是logstash1.5.0+版本，此版本下官方已经提拱了plugin用来整合kafka，这篇文章的目的就是简单的搭建这么一个环境。 kafka的安装kafka是基于scala实现的，scala是一种jvm语言，也就是说你得先装jdk，我就不从jdk开始介绍如何安装了，我们直接开始安装kafka，其实这玩意儿官方提供了编译好的">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-04-23T08:24:11.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Logstash整合kafka">
+<meta name="twitter:description" content="今天要搞一搞的，是把logstash和kafka整合起来，由于我们使用的是logstash1.5.0+版本，此版本下官方已经提拱了plugin用来整合kafka，这篇文章的目的就是简单的搭建这么一个环境。 kafka的安装kafka是基于scala实现的，scala是一种jvm语言，也就是说你得先装jdk，我就不从jdk开始介绍如何安装了，我们直接开始安装kafka，其实这玩意儿官方提供了编译好的">
+    
+        <link rel="alternative" href="/atom.xml" title="kazaff&#39;s blog" type="application/atom+xml">
+    
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css?v=1.4.14">
+    <script>window.lazyScripts=[]</script>
+</head>
+
+<body>
+    <div id="loading" class="active"></div>
+
+    <aside id="menu" class="hide" >
+  <div class="inner flex-row-vertical">
+    <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menu-off">
+        <i class="icon icon-lg icon-close"></i>
+    </a>
+    <div class="brand-wrap">
+      <div class="brand">
+        <a href="/" class="avatar waves-effect waves-circle waves-light">
+          <img src="/img/avatar.jpg">
+        </a>
+        <hgroup class="introduce">
+          <h5 class="nickname">kazaff</h5>
+          <a href="mailto:edisondik@gmail.com" title="edisondik@gmail.com" class="mail">edisondik@gmail.com</a>
+        </hgroup>
+      </div>
+    </div>
+    <div class="scroll-wrap flex-col">
+      <ul class="nav">
+        
+            <li class="waves-block waves-effect">
+              <a href="/"  >
+                <i class="icon icon-lg icon-home"></i>
+                Index
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/archives"  >
+                <i class="icon icon-lg icon-archives"></i>
+                Archives
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/tags"  >
+                <i class="icon icon-lg icon-tags"></i>
+                Tags
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="/categories"  >
+                <i class="icon icon-lg icon-th-list"></i>
+                Categories
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="https://github.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-github"></i>
+                Github
+              </a>
+            </li>
+        
+            <li class="waves-block waves-effect">
+              <a href="http://www.weibo.com/kazaff" target="_blank" >
+                <i class="icon icon-lg icon-weibo"></i>
+                Weibo
+              </a>
+            </li>
+        
+      </ul>
+    </div>
+  </div>
+</aside>
+
+    <main id="main">
+        <header class="top-header" id="header">
+    <div class="flex-row">
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
+          <i class="icon icon-lg icon-navicon"></i>
+        </a>
+        <div class="flex-col header-title ellipsis">Logstash整合kafka</div>
+        
+        <div class="search-wrap" id="search-wrap">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
+                <i class="icon icon-lg icon-chevron-left"></i>
+            </a>
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
+            <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
+                <i class="icon icon-lg icon-search"></i>
+            </a>
+        </div>
+        
+        
+        <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="menuShare">
+            <i class="icon icon-lg icon-share-alt"></i>
+        </a>
+        
+    </div>
+</header>
+<header class="content-header post-header">
+
+    <div class="container fade-scale">
+        <h1 class="title">Logstash整合kafka</h1>
+        <h5 class="subtitle">
+            
+                <time datetime="2015-06-05T09:37:12.000Z" itemprop="datePublished" class="page-time">
+  Jun 5 2015
+</time>
+
+
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/运维/">运维</a></li></ul>
+
+            
+        </h5>
+    </div>
+
+    
+
+</header>
+
+
+<div class="container body-wrap">
+    
+    <aside class="post-widget">
+        <nav class="post-toc-wrap" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#kafka的安装"><span class="post-toc-number">1.</span> <span class="post-toc-text">kafka的安装</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#logstash–-gt-kafka"><span class="post-toc-number">2.</span> <span class="post-toc-text">logstash–&gt;kafka</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#参考"><span class="post-toc-number">3.</span> <span class="post-toc-text">参考</span></a></li></ol>
+        </nav>
+    </aside>
+    
+<article id="post-logstash整合kafka"
+  class="post-article article-type-post fade" itemprop="blogPost">
+
+    <div class="post-card">
+        <h1 class="post-card-title">Logstash整合kafka</h1>
+        <div class="post-meta">
+            <time class="post-time" title="2015年06月05日 9:37" datetime="2015-06-05T09:37:12.000Z"  itemprop="datePublished">Jun 5 2015</time>
+
+            
+	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/运维/">运维</a></li></ul>
+
+
+
+            
+<span id="busuanzi_container_page_pv" title="文章总阅读量" style='display:none'>
+    <i class="icon icon-eye icon-pr"></i><span id="busuanzi_value_page_pv"></span>
+</span>
+
+
+            
+
+        </div>
+        <div class="post-content" id="post-content" itemprop="postContent">
+            <p>今天要搞一搞的，是把logstash和kafka整合起来，由于我们使用的是logstash1.5.0+版本，此版本下官方已经提拱了plugin用来整合kafka，这篇文章的目的就是简单的搭建这么一个环境。</p>
+<h2 id="kafka的安装"><a href="#kafka的安装" class="headerlink" title="kafka的安装"></a>kafka的安装</h2><p>kafka是基于scala实现的，scala是一种jvm语言，也就是说你得先装jdk，我就不从jdk开始介绍如何安装了，我们直接开始安装kafka，其实这玩意儿官方提供了编译好的版本，你只需要下载，解压，运行即可~<br><a id="more"></a><br>当然，如果想搭建集群，还是需要了解一下kafka的配置的，这不是我们关注的重点，so，我们就简单地先跑起来它吧：</p>
+<ol>
+<li><a href="http://kafka.apache.org/downloads.html" target="_blank" rel="noopener">下载</a></li>
+<li>解压，我们解压在<code>/usr/local</code>下</li>
+<li>运行，为了测试方便，我们需要一共开启四个终端窗口：</li>
+</ol>
+<p>首先，我们要运行zookeeper，kafka自带了zookeeper，所以我们无需下载，只需要在/usr/local/kafka目录下执行：</p>
+<pre><code>bin/zookeeper-server-start.sh config/zookeeper.properties
+</code></pre><p>然后，再开启一个终端，执行：</p>
+<pre><code>bin/kafka-server-start.sh config/server.properties
+</code></pre><p>这样，我们的kafka就已经运行起来了，不过还不是集群环境，只有一个borker哟~但是，我们测试足够了。</p>
+<p>再然后，开启一个新的终端，执行：</p>
+<pre><code>bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test
+</code></pre><p>这样我们就创建了一个用于测试的topic，接下来继续执行：</p>
+<pre><code>bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test
+</code></pre><p>该命令执行完毕后会阻塞终端，你可以随便输入一些数据，每一行都相当于一个消息，会发送给kafka。</p>
+<p>最后，再再开启一个新终端，执行：</p>
+<pre><code>bin/kafka-console-consumer.sh --zookeeper localhost:2181 --topic test --from-beginning
+</code></pre><p>你会看到你之前输入的那些消息都会显示在终端中，这就完成了kafka的测试环境搭建。</p>
+<p><strong>值得注意的是</strong>，上面消息生产者的命令，需要参数<code>broker-list</code>，也就是说我们的kafka生产者必须自己知道所有的kafka broker的位置，而其它命令则只需要填写zookeeper的位置即可，我不清楚这样做的用意是什么，我只是隐约感到有些问题（<strong>如果broker出现扩容，如何更新应用代码中的borker信息？？</strong>），但这不是我们本次的关注的重点。</p>
+<h2 id="logstash–-gt-kafka"><a href="#logstash–-gt-kafka" class="headerlink" title="logstash–&gt;kafka"></a>logstash–&gt;kafka</h2><p>我们现在想要干的，是从logstash的Shipper中收集到的数据发送给kafka，所以我们需要安装<a href="https://github.com/logstash-plugins/logstash-output-kafka" target="_blank" rel="noopener">logstash-output-kafka</a>插件。</p>
+<p>但是由于未知原因，我试图安装插件时却碰到了报错：</p>
+<pre><code>[root@kazaff logstash-1.5.0]# bin/plugin install logstash-output-kafka
+Validating logstash-output-kafka
+Plugin logstash-output-kafka does not exist
+ERROR: Installation aborted, verification failed for logstash-output-kafka 
+</code></pre><p>不像是被墙了的味道，因为提醒的是不存在，而不是网络连接超时。本来还想搭建一个翻墙环境，后来执行了一下这个命令：</p>
+<pre><code>bin/plugin list  
+</code></pre><p>竟然发现kafka插件已经预装好了，我也是醉了。OK，我们可以继续了，接下来就是配置一下logstash：</p>
+<pre><code>input {
+    stdin{}
+}
+
+
+output {
+    kafka {
+        broker_list =&gt; &quot;localhost:9092&quot;
+        topic_id =&gt; &quot;test&quot;
+        compression_codec =&gt; &quot;snappy&quot;
+    }
+}
+</code></pre><p>不多做解释了，在终端运行logstash后，就可以直接输入“helloworld”测试一下了，如果没有问题的话，你将会在之前的kafka消费者终端中看到输出：</p>
+<pre><code>{&quot;message&quot;:&quot;hello world!&quot;,&quot;@version&quot;:&quot;1&quot;,&quot;@timestamp&quot;:&quot;2015-06-11T10:01:21.183Z&quot;,&quot;host&quot;:&quot;kazaff&quot;}
+</code></pre><p>就是这么简单啦~</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="http://colobu.com/2014/08/06/kafka-quickstart/#show-last-Point" target="_blank" rel="noopener">Kafka快速入门</a></p>
+<p><a href="http://corejava2008.iteye.com/blog/2215545" target="_blank" rel="noopener">Logstash入门教程 - 启动命令行参数及插件安装</a></p>
+<p><a href="http://bigbo.github.io/pages/2015/03/26/logstash_performance/" target="_blank" rel="noopener">logstash-input-file以及logstash-output-kafka插件性能测试</a></p>
+
+        </div>
+
+        <blockquote class="post-copyright">
+    <div class="content">
+        
+<span class="post-time">
+    最后更新时间：<time datetime="2020-04-23T08:24:11.382Z" itemprop="dateUpdated">2020年4月23日 8:24</time>
+</span><br>
+
+
+        这里写留言或版权声明：<a href="/2015/06/05/logstash整合kafka/" target="_blank" rel="external">https://blog.kazaff.me/2015/06/05/logstash整合kafka/</a>
+    </div>
+    <footer>
+        <a href="https://blog.kazaff.me">
+            <img src="/img/avatar.jpg" alt="kazaff">
+            kazaff
+        </a>
+    </footer>
+</blockquote>
+
+        
+<div class="page-reward">
+    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
+</div>
+
+
+
+        <div class="post-footer">
+            
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Logstash/">Logstash</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafka/">kafka</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/logstash-output-kafka/">logstash-output-kafka</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/logstash插件/">logstash插件</a></li></ul>
+
+
+            
+<div class="page-share-wrap">
+    
+
+<div class="page-share" id="pageShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/06/05/logstash整合kafka/&title=《Logstash整合kafka》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/06/05/logstash整合kafka/&title=《Logstash整合kafka》 — kazaff's blog&source=今天要搞一搞的，是把logstash和kafka整合起来，由于我们使用的是logstash1.5.0+版本，此版本下官方已经提拱了plugin用来整合ka..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/06/05/logstash整合kafka/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Logstash整合kafka》 — kazaff's blog&url=https://blog.kazaff.me/2015/06/05/logstash整合kafka/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/06/05/logstash整合kafka/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+
+    <a href="javascript:;" id="shareFab" class="page-share-fab waves-effect waves-circle">
+        <i class="icon icon-share-alt icon-lg"></i>
+    </a>
+</div>
+
+
+
+        </div>
+    </div>
+
+    
+<nav class="post-nav flex-row flex-justify-between">
+  
+    <div class="waves-block waves-effect prev">
+      <a href="/2015/07/19/日志/" id="post-prev" class="post-nav-link">
+        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
+        <h4 class="title">这几天的感想</h4>
+      </a>
+    </div>
+  
+
+  
+    <div class="waves-block waves-effect next">
+      <a href="/2015/06/05/日志收集架构--ELK/" id="post-next" class="post-nav-link">
+        <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
+        <h4 class="title">日志收集架构－ELK</h4>
+      </a>
+    </div>
+  
+</nav>
+
+
+
+    
+
+
+
+
+<section class="comments" id="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    var disqus_shortname = 'http-blog-kazaff-me';
+    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
+
+
+
+
+</article>
+
+<div id="reward" class="page-modal reward-lay">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <h3 class="reward-title">
+        <i class="icon icon-quote-left"></i>
+        感激不尽
+        <i class="icon icon-quote-right"></i>
+    </h3>
+    <ul class="reward-items">
+        
+        <li>
+            <img src="/img/weichat.png" title="微信打赏二维码" alt="微信打赏二维码">
+            <p>微信</p>
+        </li>
+        
+
+        
+        <li>
+            <img src="/img/alipay.png" title="支付宝打赏二维码" alt="支付宝打赏二维码">
+            <p>支付宝</p>
+        </li>
+        
+    </ul>
+</div>
+
+
+
+</div>
+
+        <footer class="footer">
+    <div class="top">
+        
+<p>
+    <span id="busuanzi_container_site_uv" style='display:none'>
+        站点总访客数：<span id="busuanzi_value_site_uv"></span>
+    </span>
+    <span id="busuanzi_container_site_pv" style='display:none'>
+        站点总访问量：<span id="busuanzi_value_site_pv"></span>
+    </span>
+</p>
+
+
+        <p>
+            <span><a href="/atom.xml" target="_blank" class="rss" title="rss"><i class="icon icon-lg icon-rss"></i></a></span>
+            <span>博客内容遵循 <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0协议</a></span>
+        </p>
+    </div>
+    <div class="bottom">
+        <p>
+            <span>Power by <a href="http://hexo.io/" target="_blank">Hexo</a> Theme <a href="https://github.com/yscoder/hexo-theme-indigo" target="_blank">indigo</a></span>
+            <span>kazaff's blog &copy; 2017 - 2020</span>
+        </p>
+    </div>
+</footer>
+
+    </main>
+    <div class="mask" id="mask"></div>
+<a href="javascript:;" id="gotop" class="waves-effect waves-circle waves-light"><span class="icon icon-lg icon-chevron-up"></span></a>
+
+
+
+<div class="global-share" id="globalShare">
+    <ul class="reset share-icons">
+      <li>
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://blog.kazaff.me/2015/06/05/logstash整合kafka/&title=《Logstash整合kafka》 — kazaff's blog&pic=https://blog.kazaff.me/img/avatar.jpg" data-title="微博">
+          <i class="icon icon-weibo"></i>
+        </a>
+      </li>
+      <li>
+        <a class="weixin share-sns wxFab" href="javascript:;" data-title="微信">
+          <i class="icon icon-weixin"></i>
+        </a>
+      </li>
+      <li>
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://blog.kazaff.me/2015/06/05/logstash整合kafka/&title=《Logstash整合kafka》 — kazaff's blog&source=今天要搞一搞的，是把logstash和kafka整合起来，由于我们使用的是logstash1.5.0+版本，此版本下官方已经提拱了plugin用来整合ka..." data-title=" QQ">
+          <i class="icon icon-qq"></i>
+        </a>
+      </li>
+      <li>
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://blog.kazaff.me/2015/06/05/logstash整合kafka/" data-title=" Facebook">
+          <i class="icon icon-facebook"></i>
+        </a>
+      </li>
+      <li>
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Logstash整合kafka》 — kazaff's blog&url=https://blog.kazaff.me/2015/06/05/logstash整合kafka/&via=https://blog.kazaff.me" data-title=" Twitter">
+          <i class="icon icon-twitter"></i>
+        </a>
+      </li>
+      <li>
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://blog.kazaff.me/2015/06/05/logstash整合kafka/" data-title=" Google+">
+          <i class="icon icon-google-plus"></i>
+        </a>
+      </li>
+    </ul>
+ </div>
+
+
+<div class="page-modal wx-share" id="wxShare">
+    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://blog.kazaff.me/2015/06/05/logstash整合kafka/" alt="微信分享二维码">
+</div>
+
+
+
+
+    <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
+<script>
+var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+
+
+
+</script>
+
+<script src="/js/main.min.js?v=1.4.14"></script>
+
+
+<div class="search-panel" id="search-panel">
+    <ul class="search-result" id="search-result"></ul>
+</div>
+<template id="search-tpl">
+<li class="item">
+    <a href="{path}" class="waves-block waves-effect">
+        <div class="title ellipsis" title="{title}">{title}</div>
+        <div class="flex-row flex-middle">
+            <div class="tags ellipsis">
+                {tags}
+            </div>
+            <time class="flex-col time">{date}</time>
+        </div>
+    </a>
+</li>
+</template>
+
+<script src="/js/search.min.js?v=1.4.14" async></script>
+
+
+
+
+
+
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+<script>
+(function() {
+    var OriginTitile = document.title, titleTime;
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            document.title = '(┬＿┬)';
+            clearTimeout(titleTime);
+        } else {
+            document.title = 'kazaff';
+            titleTime = setTimeout(function() {
+                document.title = OriginTitile;
+            },2000);
+        }
+    });
+})();
+</script>
+
+
+
+</body>
+</html>
